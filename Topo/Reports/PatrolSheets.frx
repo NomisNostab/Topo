@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report ScriptLanguage="CSharp" ReportInfo.Created="02/19/2022 09:11:06" ReportInfo.Modified="02/22/2022 23:28:18" ReportInfo.CreatorVersion="2022.1.0.0">
+  <Dictionary>
+    <BusinessObjectDataSource Name="Members" ReferenceName="Members" DataType="null" Enabled="true">
+      <Column Name="id" DataType="System.String"/>
+      <Column Name="member_number" DataType="System.String"/>
+      <Column Name="first_name" DataType="System.String"/>
+      <Column Name="last_name" DataType="System.String"/>
+      <Column Name="status" DataType="System.String"/>
+      <Column Name="date_of_birth" DataType="System.String"/>
+      <Column Name="unit_council" DataType="System.Boolean" BindableControl="CheckBox"/>
+      <Column Name="patrol_name" DataType="System.String"/>
+      <Column Name="patrol_duty" DataType="System.String"/>
+      <Column Name="patrol_order" DataType="System.Int32"/>
+    </BusinessObjectDataSource>
+    <Parameter Name="ReportDate" DataType="System.String"/>
+  </Dictionary>
+  <ReportPage Name="Page1" Watermark.Font="Arial, 60pt">
+    <ReportTitleBand Name="ReportTitle1" Width="718.2"/>
+    <PageHeaderBand Name="PageHeader1" Top="4" Width="718.2"/>
+    <GroupHeaderBand Name="GroupHeader1" Top="8" Width="718.2" Height="113.4" StartNewPage="true" Condition="[Members.patrol_name]">
+      <TextObject Name="Text12" Left="18.9" Width="670.95" Height="103.95" CanGrow="true" Text="[Members.patrol_name]" HorzAlign="Center" Font="Arial, 48pt, style=Bold"/>
+      <DataBand Name="Data1" Top="125.4" Width="718.2" Height="37.8" DataSource="Members">
+        <TableObject Name="Table1" Left="18.9" Width="670.95" Height="37.8" Border.Lines="All">
+          <TableColumn Name="Column1" Width="248.85"/>
+          <TableColumn Name="Column2" Width="333.9"/>
+          <TableColumn Name="Column3" Width="88.2"/>
+          <TableRow Name="Row1" Height="37.8">
+            <TableCell Name="Cell1" Border.Lines="All" Text="[Members.first_name]" Font="Arial, 20pt">
+              <Highlight>
+                <Condition Expression="Length([Members.patrol_duty]) &gt; 0" Fill.Color="LightGray" Font="Arial, 10pt" ApplyFill="true" ApplyTextFill="false"/>
+              </Highlight>
+            </TableCell>
+            <TableCell Name="Cell2" Border.Lines="All" Text="[Members.last_name]" Font="Arial, 20pt">
+              <Highlight>
+                <Condition Expression="Length([Members.patrol_duty]) &gt; 0" Fill.Color="Gainsboro" Font="Arial, 10pt" ApplyFill="true" ApplyTextFill="false"/>
+              </Highlight>
+            </TableCell>
+            <TableCell Name="Cell3" Border.Lines="All" Text="[Members.patrol_duty]" Font="Arial, 20pt">
+              <Highlight>
+                <Condition Expression="Length([Members.patrol_duty]) &gt; 0" Fill.Color="Gainsboro" Font="Arial, 10pt" ApplyFill="true" ApplyTextFill="false"/>
+              </Highlight>
+            </TableCell>
+          </TableRow>
+        </TableObject>
+        <Sort>
+          <Sort Expression="[Members.patrol_order]"/>
+          <Sort Expression="[Members.first_name]"/>
+        </Sort>
+      </DataBand>
+      <GroupFooterBand Name="GroupFooter1" Top="167.2" Width="718.2" Height="18.9"/>
+    </GroupHeaderBand>
+    <PageFooterBand Name="PageFooter1" Top="190.1" Width="718.2" Height="18.9">
+      <TextObject Name="Text13" Left="604.8" Width="94.5" Height="18.9" Text="[ReportDate]" Font="Arial, 10pt"/>
+    </PageFooterBand>
+  </ReportPage>
+</Report>

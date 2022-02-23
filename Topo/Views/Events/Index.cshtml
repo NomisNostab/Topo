@@ -1,0 +1,62 @@
+﻿@model Topo.Models.Events.EventsListViewModel
+
+@{
+    ViewData["Title"] = "Program Events Page";
+}
+
+<form class="row g-3" asp-action="Index">
+
+    <div class="mt-3 mb-3 row">
+        <label class="col-sm-2 col-form-label"> @Html.DisplayNameFor(m => m.SelectedCalendar)</label>
+        <div class="col-sm-2">
+            @Html.DropDownListFor(m => m.SelectedCalendar, Model.Calendars, "Select unit calendar", new { @class ="form-select"})
+            <span asp-validation-for="SelectedCalendar" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="mt-3 mb-3 row">
+        <label class="col-sm-2 col-form-label"> @Html.DisplayNameFor(m => m.CalendarSearchDate)</label>
+        <div class="col-sm-2">
+            @Html.EditorFor(m => m.CalendarSearchDate, new { htmlAttributes = new { @class = "form-control" } })
+            <span asp-validation-for="CalendarSearchDate" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="mb-3 row">
+        <div class="col-sm-2">
+        </div>
+        <div class="col-sm-2">
+            <button type="submit" class="btn btn-primary">Show Unit Calendar</button>
+        </div>
+    </div>
+
+    @if (Model.Events != null)
+    {
+        <div class="row">
+            <div class="col">
+                <strong>@Html.DisplayNameFor(model => model.Events.FirstOrDefault().EventName)</strong>
+            </div>
+            <div class="col">
+                <strong>@Html.DisplayNameFor(model => model.Events.FirstOrDefault().EventDate)</strong>
+            </div>
+            <div class="col">
+            </div>
+        </div>
+        @foreach (var item in Model?.Events)
+        {
+            <div class="row">
+                <div class="col">
+                    @Html.DisplayFor(model => item.EventName)
+                </div>
+                <div class="col">
+                    @Html.DisplayFor(model => item.EventDate)
+                </div>
+                <div class="col">
+                    @Html.ActionLink("Generate Sign In Sheet", "SignInSheet", "Events", new { eventId = item.Id }) |
+                    @Html.ActionLink("Download Attendance", "AttendanceList", "Events", new { eventId = item.Id })
+                </div>
+            </div>
+        }
+    }
+
+
+</form>
+

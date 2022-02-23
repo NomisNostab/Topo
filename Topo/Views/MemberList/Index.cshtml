@@ -1,0 +1,76 @@
+﻿@model Topo.Models.MemberList.MemberListViewModel
+
+@{
+    ViewData["Title"] = "Member List Page";
+}
+
+<form class="row g-3" asp-action="Index">
+
+    <div class="mt-3 mb-3 row">
+        <label class="col-sm-3 col-form-label">Please select a Unit to view:</label>
+        <div class="col-sm-2 ">
+            @Html.DropDownListFor(m => m.SelectedUnitId, Model.Units, "Select Unit", new { @class ="form-select"})
+            <span asp-validation-for="SelectedUnitId" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="mb-3 row">
+        <div class="col-sm-3">
+        </div>
+        <div class="col-sm-2">
+            <button type="submit" class="btn btn-primary">Set Unit</button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.SelectedUnitId) && Model.Members != null)
+    {
+        <div class="mb-3 row">
+            <div class="text-center">
+                <h2>@ViewBag.Unit Members</h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <strong>@Html.DisplayNameFor(model => model.Members.FirstOrDefault().first_name)</strong>
+            </div>
+            <div class="col">
+                <strong>@Html.DisplayNameFor(model => model.Members.FirstOrDefault().last_name)</strong>
+            </div>
+            <div class="col">
+                <strong>@Html.DisplayNameFor(model => model.Members.FirstOrDefault().member_number)</strong>
+            </div>
+            <div class="col">
+                <strong>@Html.DisplayNameFor(model => model.Members.FirstOrDefault().patrol_name)</strong>
+            </div>
+            <div class="col">
+                <strong>@Html.DisplayNameFor(model => model.Members.FirstOrDefault().patrol_duty)</strong>
+            </div>
+        </div>
+        @foreach (var item in Model?.Members)
+        {
+            <div class="row">
+                <div class="col">
+                    @Html.DisplayFor(model => item.first_name)
+                </div>
+                <div class="col">
+                    @Html.DisplayFor(model => item.last_name)
+                </div>
+                <div class="col">
+                    @Html.DisplayFor(model => item.member_number)
+                </div>
+                <div class="col">
+                    @Html.DisplayFor(model => item.patrol_name)
+                </div>
+                <div class="col">
+                    @Html.DisplayFor(model => item.patrol_duty)
+                </div>
+            </div>
+        }
+        <div class="mt-3 mb-3 row">
+            <div class="col-sm-12">
+                @Html.ActionLink("Generate Patrol list", "PatrolList", "MemberList", null, new { @class = "btn btn-primary" }) &nbsp;
+                @Html.ActionLink("Generate Patrol sheets", "PatrolSheet", "MemberList", null, new { @class = "btn btn-primary" })
+            </div>
+        </div>
+    }
+
+</form>
