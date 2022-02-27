@@ -15,14 +15,12 @@ namespace Topo.Controllers
     public class EventsController : Controller
     {
         private readonly StorageService _storageService;
-        private readonly ITerrainAPIService _terrainAPIService;
         private readonly IMemberListService _memberListService;
         private readonly IEventService _eventService;
 
-        public EventsController(StorageService storageService, ITerrainAPIService terrainAPIService, IMemberListService memberListService, IEventService eventService)
+        public EventsController(StorageService storageService, IMemberListService memberListService, IEventService eventService)
         {
             _storageService = storageService;
-            _terrainAPIService = terrainAPIService;
             _memberListService = memberListService;
             _eventService = eventService;
         }
@@ -122,48 +120,6 @@ namespace Topo.Controllers
             ms.Position = 0;
             return File(ms, "application/vnd.ms-excel", $"{eventListModel.EventDisplay}.csv");
         }
-
-        //[HttpPost]
-        //public async Task<ActionResult> SignInSheet()
-        //{
-        //    //viewModel.Events = _storageService.Events;
-
-        //    if (!ModelState.IsValid)
-        //    {
-        //        //return View(viewModel);
-        //    }
-        //    var Id = "";
-        //    var selectedEvent = _storageService.Events?.Where(e => e.Value == Id).FirstOrDefault().Text;
-        //    var model = await _memberListService.GetMembersAsync();
-        //    var signInSheetReport = new Report();
-        //    var directory = Directory.GetCurrentDirectory();
-        //    signInSheetReport.Load($@"{directory}\Reports\SignInSheet.frx");
-        //    signInSheetReport.SetParameterValue("Event", selectedEvent);
-        //    signInSheetReport.RegisterData(model, "Members");
-
-        //    if (signInSheetReport.Prepare())
-        //    {
-        //        // Set PDF export props
-        //        PDFSimpleExport pdfExport = new PDFSimpleExport();
-        //        pdfExport.ShowProgress = false;
-
-        //        MemoryStream strm = new MemoryStream();
-        //        signInSheetReport.Report.Export(pdfExport, strm);
-        //        signInSheetReport.Dispose();
-        //        pdfExport.Dispose();
-        //        strm.Position = 0;
-
-        //        // return stream in browser
-        //        return File(strm, "application/pdf", "SignInSheet.pdf");
-        //    }
-        //    else
-        //    {
-        //        SetViewBag();
-        //        return View();
-        //    }
-
-        //}
-
 
     }
 }

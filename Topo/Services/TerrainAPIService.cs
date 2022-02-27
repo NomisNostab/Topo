@@ -4,6 +4,7 @@ using System.Text;
 using Topo.Models.Login;
 using Topo.Models.MemberList;
 using Topo.Models.Events;
+using Topo.Models.OAS;
 
 namespace Topo.Services
 {
@@ -20,6 +21,8 @@ namespace Topo.Services
         public Task<GetEventResultModel?> GetEventAsync(string eventId);
         public Task<GetCalendarsResultModel?> GetCalendarsAsync();
         public Task<bool> PutCalendarsAsync(GetCalendarsResultModel putCalendarsResultModel);
+        public Task<GetOASTreeResultsModel?> GetOASTreeAsync(string stream);
+        public Task<GetUnitAchievementsResultsModel> GetUnitAchievements(string unit, string stream, string branch, int stage);
     }
     public class TerrainAPIService : ITerrainAPIService
     {
@@ -27,6 +30,8 @@ namespace Topo.Services
         private readonly string cognitoAddress = "https://cognito-idp.ap-southeast-2.amazonaws.com/";
         private readonly string membersAddress = "https://members.terrain.scouts.com.au/";
         private readonly string eventsAddress = "https://events.terrain.scouts.com.au/";
+        private readonly string templatesAddress = "https://templates.terrain.scouts.com.au/";
+        private readonly string achievementsAddress = "https://achievements.terrain.scouts.com.au/";
         private readonly string clientId = "6v98tbc09aqfvh52fml3usas3c";
 
         public TerrainAPIService(StorageService storageService)
@@ -61,7 +66,10 @@ namespace Topo.Services
                 _storageService.AuthenticationResult = authenticationResult?.AuthenticationResult;
                 _storageService.IsAuthenticated = false;
                 if (authenticationResult != null)
+                {
                     _storageService.IsAuthenticated = true;
+                    _storageService.TokenExpiry = DateTime.Now.AddSeconds((authenticationResult?.AuthenticationResult?.ExpiresIn ?? 0) - 60);
+                }
             }
             return authenticationResult;
         }
@@ -90,33 +98,37 @@ namespace Topo.Services
 
         public async Task RefreshTokenAsync()
         {
-            AuthenticationResultModel? authenticationResult = new AuthenticationResultModel();
-            using (var httpClient = new HttpClient())
+            if (_storageService.TokenExpiry < DateTime.Now)
             {
-                var initiateAuth = new InitiateAuthModel();
-                initiateAuth.ClientMetadata = new ClientMetadata();
-                initiateAuth.AuthFlow = "REFRESH_TOKEN_AUTH";
-                initiateAuth.ClientId = clientId;
-                initiateAuth.AuthParameters = new AuthParameters();
-                initiateAuth.AuthParameters.REFRESH_TOKEN = _storageService?.AuthenticationResult?.RefreshToken;
-                initiateAuth.AuthParameters.DEVICE_KEY = null;
-
-                HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Post, cognitoAddress);
-                httpRequest.Content = new StringContent(JsonConvert.SerializeObject(initiateAuth), Encoding.UTF8, "application/x-amz-json-1.1");
-                httpRequest.Headers.Add("X-Amz-Target", "AWSCognitoIdentityProviderService.InitiateAuth");
-                httpRequest.Headers.Add("X-Amz-User-Agent", "aws-amplify/0.1.x js");
-
-                var response = await httpClient.SendAsync(httpRequest);
-
-                var responseContent = response.Content.ReadAsStringAsync();
-                var result = responseContent.Result;
-                authenticationResult = JsonConvert.DeserializeObject<AuthenticationResultModel>(result);
-                if (_storageService != null && _storageService.AuthenticationResult != null)
+                AuthenticationResultModel? authenticationResult = new AuthenticationResultModel();
+                using (var httpClient = new HttpClient())
                 {
-                    _storageService.AuthenticationResult.AccessToken = authenticationResult?.AuthenticationResult?.AccessToken;
-                    _storageService.AuthenticationResult.IdToken = authenticationResult?.AuthenticationResult?.IdToken;
-                    _storageService.AuthenticationResult.ExpiresIn = authenticationResult?.AuthenticationResult?.ExpiresIn;
-                    _storageService.AuthenticationResult.TokenType = authenticationResult?.AuthenticationResult?.TokenType;
+                    var initiateAuth = new InitiateAuthModel();
+                    initiateAuth.ClientMetadata = new ClientMetadata();
+                    initiateAuth.AuthFlow = "REFRESH_TOKEN_AUTH";
+                    initiateAuth.ClientId = clientId;
+                    initiateAuth.AuthParameters = new AuthParameters();
+                    initiateAuth.AuthParameters.REFRESH_TOKEN = _storageService?.AuthenticationResult?.RefreshToken;
+                    initiateAuth.AuthParameters.DEVICE_KEY = null;
+
+                    HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Post, cognitoAddress);
+                    httpRequest.Content = new StringContent(JsonConvert.SerializeObject(initiateAuth), Encoding.UTF8, "application/x-amz-json-1.1");
+                    httpRequest.Headers.Add("X-Amz-Target", "AWSCognitoIdentityProviderService.InitiateAuth");
+                    httpRequest.Headers.Add("X-Amz-User-Agent", "aws-amplify/0.1.x js");
+
+                    var response = await httpClient.SendAsync(httpRequest);
+
+                    var responseContent = response.Content.ReadAsStringAsync();
+                    var result = responseContent.Result;
+                    authenticationResult = JsonConvert.DeserializeObject<AuthenticationResultModel>(result);
+                    if (_storageService != null && _storageService.AuthenticationResult != null)
+                    {
+                        _storageService.AuthenticationResult.AccessToken = authenticationResult?.AuthenticationResult?.AccessToken;
+                        _storageService.AuthenticationResult.IdToken = authenticationResult?.AuthenticationResult?.IdToken;
+                        _storageService.AuthenticationResult.ExpiresIn = authenticationResult?.AuthenticationResult?.ExpiresIn;
+                        _storageService.AuthenticationResult.TokenType = authenticationResult?.AuthenticationResult?.TokenType;
+                        _storageService.TokenExpiry = DateTime.Now.AddSeconds((authenticationResult?.AuthenticationResult?.ExpiresIn ?? 0) - 60);
+                    }
                 }
             }
         }
@@ -144,7 +156,7 @@ namespace Topo.Services
 
         public List<SelectListItem>? GetUnits()
         {
-            return _storageService.GetProfilesResult?.profiles?.Select(p => p.unit).Select(u => new SelectListItem { Text = u?.name, Value = u?.id }).ToList();
+            return _storageService.GetProfilesResult?.profiles?.Select(p => p.unit).Distinct().Select(u => new SelectListItem { Text = u?.name, Value = u?.id }).ToList();
         }
 
         public async Task<GetMembersResultModel?> GetMembersAsync()
@@ -263,5 +275,44 @@ namespace Topo.Services
             }
         }
 
+        public async Task<GetOASTreeResultsModel?> GetOASTreeAsync(string stream)
+        {
+            await RefreshTokenAsync();
+            using (var httpClient = new HttpClient())
+            {
+                HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Get, $"{templatesAddress}oas/{stream}/tree.json");
+
+                httpRequest.Content = new StringContent("", Encoding.UTF8, "application/x-amz-json-1.1");
+                httpRequest.Headers.Add("authorization", _storageService?.AuthenticationResult?.IdToken);
+                httpRequest.Headers.Add("accept", "application/json, text/plain, */*");
+
+                var response = await httpClient.SendAsync(httpRequest);
+                var responseContent = response.Content.ReadAsStringAsync();
+                var result = responseContent.Result;
+                var getOASTreeResultsModel = JsonConvert.DeserializeObject<GetOASTreeResultsModel>(result);
+
+                return getOASTreeResultsModel;
+            }
+        }
+
+        public async Task<GetUnitAchievementsResultsModel> GetUnitAchievements(string unit, string stream, string branch, int stage)
+        {
+            await RefreshTokenAsync();
+            using (var httpClient = new HttpClient())
+            {
+                HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Get, $"{achievementsAddress}units/{unit}/achievements?type=outdoor_adventure_skill&stream={stream}&branch={branch}&stage={stage}");
+
+                httpRequest.Content = new StringContent("", Encoding.UTF8, "application/x-amz-json-1.1");
+                httpRequest.Headers.Add("authorization", _storageService?.AuthenticationResult?.IdToken);
+                httpRequest.Headers.Add("accept", "application/json, text/plain, */*");
+
+                var response = await httpClient.SendAsync(httpRequest);
+                var responseContent = response.Content.ReadAsStringAsync();
+                var result = responseContent.Result;
+                var getUnitAchievementsResultsModel = JsonConvert.DeserializeObject<GetUnitAchievementsResultsModel>(result);
+
+                return getUnitAchievementsResultsModel;
+            }
+        }
     }
 }

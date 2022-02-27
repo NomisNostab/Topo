@@ -1,0 +1,31 @@
+﻿@model Topo.Models.OAS.OASIndexViewModel
+
+@{
+    ViewData["Title"] = "OAS Report Page";
+}
+
+<form class="row g-3" asp-action="Index">
+
+    <div class="mt-3 mb-3 row">
+        <label class="col-sm-2 col-form-label">Please select a Unit:</label>
+        <div class="col-sm-2 ">
+            @Html.DropDownListFor(m => m.SelectedUnitId, Model.Units, "Select Unit", new { @class ="form-select" })
+            <span asp-validation-for="SelectedUnitId" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="mb-3 row">
+        <label class="col-sm-2 col-form-label">Please select a Stream:</label>
+        <div class="col-sm-2 ">
+            @Html.DropDownListFor(m => m.SelectedStream, Model.Streams, "Select Stream", new { @class ="form-select", onchange = "this.form.submit();" })
+            <span asp-validation-for="SelectedStream" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="mb-3 row">
+        <label class="col-sm-2 col-form-label">Please select a Stage:</label>
+        <div class="col-sm-3 ">
+            @Html.DropDownListFor(m => m.SelectedStage, Model.Stages, "Select Stage", new { @class ="form-select", onchange = "this.form.submit();" })
+            <span asp-validation-for="SelectedStage" class="text-danger"></span>
+        </div>
+    </div>
+
+</form>

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Report ScriptLanguage="CSharp" ReportInfo.Created="02/19/2022 09:11:06" ReportInfo.Modified="02/20/2022 21:47:41" ReportInfo.CreatorVersion="2022.1.0.0">
+<Report ScriptLanguage="CSharp" ReportInfo.Created="02/19/2022 09:11:06" ReportInfo.Modified="02/23/2022 23:00:45" ReportInfo.CreatorVersion="2022.1.0.0">
   <Dictionary>
     <BusinessObjectDataSource Name="Members" ReferenceName="Members" DataType="null" Enabled="true">
       <Column Name="id" DataType="System.String"/>
@@ -28,9 +28,21 @@
           <TableColumn Name="Column2" Width="122.85"/>
           <TableColumn Name="Column3" Width="103.95"/>
           <TableRow Name="Row1">
-            <TableCell Name="Cell1" Border.Lines="All" Text="[Members.first_name]" Font="Arial, 12pt"/>
-            <TableCell Name="Cell2" Border.Lines="All" Text="[Members.last_name]" Font="Arial, 12pt"/>
-            <TableCell Name="Cell3" Border.Lines="All" Text="[Members.patrol_duty]" Font="Arial, 12pt"/>
+            <TableCell Name="Cell1" Border.Lines="All" Text="[Members.first_name]" Font="Arial, 12pt">
+              <Highlight>
+                <Condition Expression="Length([Members.patrol_duty]) &gt; 0" Fill.Color="Gainsboro" Font="Arial, 10pt" ApplyFill="true" ApplyTextFill="false"/>
+              </Highlight>
+            </TableCell>
+            <TableCell Name="Cell2" Border.Lines="All" Text="[Members.last_name]" Font="Arial, 12pt">
+              <Highlight>
+                <Condition Expression="Length([Members.patrol_duty]) &gt; 0" Fill.Color="Gainsboro" Font="Arial, 10pt" ApplyFill="true" ApplyTextFill="false"/>
+              </Highlight>
+            </TableCell>
+            <TableCell Name="Cell3" Border.Lines="All" Text="[Members.patrol_duty]" Font="Arial, 12pt">
+              <Highlight>
+                <Condition Expression="Length([Members.patrol_duty]) &gt; 0" Fill.Color="Gainsboro" Font="Arial, 10pt" ApplyFill="true" ApplyTextFill="false"/>
+              </Highlight>
+            </TableCell>
           </TableRow>
         </TableObject>
         <Sort>

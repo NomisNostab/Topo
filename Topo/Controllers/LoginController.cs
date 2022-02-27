@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Topo.Models.Login;
 using Topo.Services;
+using Topo.Data;
 
 namespace Topo.Controllers
 {
@@ -8,12 +9,15 @@ namespace Topo.Controllers
     {
         private readonly ITerrainAPIService _terrainAPIService;
         private readonly StorageService _storageService;
+        private readonly TopoDBContext _dbContext;
 
         public LoginController(ITerrainAPIService terrainAPIService,
-            StorageService storageService)
+            StorageService storageService,
+            TopoDBContext topoDBContext)
         {
             _terrainAPIService = terrainAPIService;
             _storageService = storageService;
+            _dbContext = topoDBContext;
         }
         public IActionResult Login()
         {

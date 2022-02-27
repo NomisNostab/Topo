@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Report ScriptLanguage="CSharp" ReportInfo.Created="02/19/2022 09:11:06" ReportInfo.Modified="02/20/2022 22:38:09" ReportInfo.CreatorVersion="2022.1.0.0">
+<Report ScriptLanguage="CSharp" ReportInfo.Created="02/19/2022 09:11:06" ReportInfo.Modified="02/23/2022 22:53:50" ReportInfo.CreatorVersion="2022.1.0.0">
   <Dictionary>
     <BusinessObjectDataSource Name="Members" ReferenceName="Members" DataType="null" Enabled="true">
       <Column Name="id" DataType="System.String"/>
@@ -17,29 +17,29 @@
   </Dictionary>
   <ReportPage Name="Page1" Watermark.Font="Arial, 60pt">
     <ReportTitleBand Name="ReportTitle1" Width="718.2" Height="37.8">
-      <TextObject Name="Text11" Left="18.9" Top="9.45" Width="491.4" Height="28.35" Text="Sign in sheet for [Event]" Font="Arial, 14pt, style=Bold"/>
+      <TextObject Name="Text11" Top="9.45" Width="718.2" Height="28.35" Text="Sign in sheet for [Event]" Font="Arial, 14pt, style=Bold"/>
     </ReportTitleBand>
     <PageHeaderBand Name="PageHeader1" Top="41.8" Width="718.2"/>
     <GroupHeaderBand Name="GroupHeader1" Top="45.8" Width="718.2" Height="103.95" Condition="[Members.unit_order]">
-      <TextObject Name="Text2" Left="18.9" Top="75.6" Width="122.85" Height="18.9" Text="First Name" Font="Arial, 12pt, style=Bold"/>
-      <TextObject Name="Text4" Left="151.2" Top="75.6" Width="122.85" Height="18.9" Text="Family Name" Font="Arial, 12pt, style=Bold"/>
-      <TextObject Name="Text6" Left="274.05" Top="75.6" Width="94.5" Height="18.9" Text="Patrol" Font="Arial, 12pt, style=Bold"/>
-      <TextObject Name="Text8" Left="425.25" Top="75.6" Width="47.25" Height="18.9" Text="Role" Font="Arial, 12pt, style=Bold"/>
-      <TextObject Name="Text9" Left="567" Width="28.35" Height="94.5" Text="Attended" Angle="270" Font="Arial, 12pt, style=Bold"/>
-      <TextObject Name="Text13" Left="529.2" Width="28.35" Height="94.5" Text="Paid" Angle="270" Font="Arial, 12pt, style=Bold"/>
-      <TextObject Name="Text14" Left="491.4" Width="28.35" Height="94.5" Text="Registered" Angle="270" Font="Arial, 12pt, style=Bold"/>
+      <TextObject Name="Text2" Top="75.6" Width="122.85" Height="18.9" Text="Name" Font="Arial, 12pt, style=Bold"/>
+      <TextObject Name="Text4" Left="151.2" Top="75.6" Width="75.6" Height="18.9" Text="Number" Font="Arial, 12pt, style=Bold"/>
+      <TextObject Name="Text6" Left="226.8" Top="75.6" Width="56.7" Height="18.9" Text="Patrol" Font="Arial, 12pt, style=Bold"/>
+      <TextObject Name="Text8" Left="387.45" Top="75.6" Width="47.25" Height="18.9" Text="Role" Font="Arial, 12pt, style=Bold"/>
+      <TextObject Name="Text9" Left="491.4" Width="28.35" Height="94.5" Text="Attended" Angle="270" Font="Arial, 12pt, style=Bold"/>
+      <TextObject Name="Text13" Left="463.05" Width="28.35" Height="94.5" Text="Paid" Angle="270" Font="Arial, 12pt, style=Bold"/>
+      <TextObject Name="Text14" Left="434.7" Width="28.35" Height="94.5" Text="Registered" Angle="270" Font="Arial, 12pt, style=Bold"/>
       <DataBand Name="Data1" Top="153.75" Width="718.2" Height="18.9" DataSource="Members">
-        <TableObject Name="Table1" Left="18.9" Width="585.9" Height="18.9" Border.Lines="All">
-          <TableColumn Name="Column1" Width="132.3"/>
-          <TableColumn Name="Column2" Width="122.85"/>
-          <TableColumn Name="Column3" Width="151.2"/>
-          <TableColumn Name="Column4"/>
-          <TableColumn Name="Column5" Width="37.8"/>
-          <TableColumn Name="Column6" Width="37.8"/>
-          <TableColumn Name="Column7" Width="37.8"/>
+        <TableObject Name="Table1" Width="519.75" Height="18.9" Border.Lines="All">
+          <TableColumn Name="Column1" Width="151.2"/>
+          <TableColumn Name="Column2" Width="75.6"/>
+          <TableColumn Name="Column3" Width="160.65"/>
+          <TableColumn Name="Column4" Width="47.25"/>
+          <TableColumn Name="Column5" Width="28.35"/>
+          <TableColumn Name="Column6" Width="28.35"/>
+          <TableColumn Name="Column7" Width="28.35"/>
           <TableRow Name="Row1">
-            <TableCell Name="Cell1" Border.Lines="All" Text="[Members.first_name]" Font="Arial, 12pt"/>
-            <TableCell Name="Cell2" Border.Lines="All" Text="[Members.last_name]" Font="Arial, 12pt"/>
+            <TableCell Name="Cell1" Border.Lines="All" Text="[Members.first_name] [Members.last_name]" Font="Arial, 12pt"/>
+            <TableCell Name="Cell2" Border.Lines="All" Text="[Members.member_number]" Font="Arial, 12pt"/>
             <TableCell Name="Cell3" Border.Lines="All" Text="[Members.patrol_name]" Font="Arial, 12pt"/>
             <TableCell Name="Cell4" Border.Lines="All" Text="[Members.patrol_duty]" Font="Arial, 12pt"/>
             <TableCell Name="Cell5" Border.Lines="All" Font="Arial, 10pt"/>
