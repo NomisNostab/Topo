@@ -20,5 +20,6 @@ namespace Topo.Data
         }
 
         public DbSet<OASTemplate> OASTemplates { get; set; }
+        public DbSet<Authentication> Authentications { get; set; }
     }
 }

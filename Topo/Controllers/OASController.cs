@@ -64,13 +64,9 @@ namespace Topo.Controllers
                 model = SetUpViewModel();
                 model.Stages = _oasService.GetOASStageListItems(_storageService.OASStageList);
                 model.SelectedStream = oasIndexViewModel.SelectedStream;
-                model.SelectedStage = null;
-                if (oasIndexViewModel.SelectedStage.Contains(oasIndexViewModel.SelectedStream))
-                {
-                    var selectedStage = _storageService.OASStageList.Where(s => s.TemplateLink == oasIndexViewModel.SelectedStage).SingleOrDefault();
-                    _oasService.GetUnitAchievements(oasIndexViewModel.SelectedUnitId, selectedStage.Stream.ToLower(), selectedStage.Branch, selectedStage.Stage);
-                    model.SelectedStage = oasIndexViewModel.SelectedStage;
-                }
+                var selectedStage = _storageService.OASStageList.Where(s => s.TemplateLink == oasIndexViewModel.SelectedStage).SingleOrDefault();
+                await _oasService.GetUnitAchievements(oasIndexViewModel.SelectedUnitId, selectedStage.Stream.ToLower(), selectedStage.Branch, selectedStage.Stage);
+                model.SelectedStage = oasIndexViewModel.SelectedStage;
             }
             else
             {
@@ -78,7 +74,7 @@ namespace Topo.Controllers
 
                 if (oasIndexViewModel.SelectedStream != null)
                 {
-                    _storageService.OASStageList =  await _oasService.GetOASStageList(oasIndexViewModel.SelectedStream);
+                    _storageService.OASStageList = await _oasService.GetOASStageList(oasIndexViewModel.SelectedStream);
                     model.Stages = _oasService.GetOASStageListItems(_storageService.OASStageList);
                     model.SelectedStage = oasIndexViewModel.SelectedStage;
                     model.SelectedStream = oasIndexViewModel.SelectedStream;

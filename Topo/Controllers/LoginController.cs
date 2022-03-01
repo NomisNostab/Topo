@@ -36,17 +36,26 @@ namespace Topo.Controllers
             if (authenticationResult != null)
             {
                 await _terrainAPIService.GetUserAsync();
-                if (_storageService.GetUserResult != null && _storageService.GetUserResult.UserAttributes != null)
-                {
-                    foreach (var userAttribute in _storageService.GetUserResult.UserAttributes)
-                    {
-                        if (userAttribute.Name == "email")
-                            _storageService.Email = userAttribute.Value;
-                    }
-                }
                 await _terrainAPIService.GetProfilesAsync();
+                if (_storageService.GetProfilesResult != null && _storageService.GetProfilesResult.profiles != null && _storageService.GetProfilesResult.profiles.Length > 0)
+                    _storageService.MemberName = _storageService.GetProfilesResult.profiles[0].member?.name ?? "";
                 _storageService.Units = _terrainAPIService.GetUnits();
             }
+            var authentication = _dbContext.Authentications.FirstOrDefault();
+            if (authentication == null)
+            {
+                authentication = new Data.Models.Authentication();
+                _dbContext.Authentications.Add(authentication);
+            }
+            authentication.AccessToken = authenticationResult.AuthenticationResult.AccessToken;
+            authentication.IdToken = authenticationResult.AuthenticationResult.IdToken;
+            authentication.RefreshToken = authenticationResult.AuthenticationResult.RefreshToken;
+            authentication.TokenType = authenticationResult.AuthenticationResult.TokenType;
+            authentication.ExpiresIn = authenticationResult.AuthenticationResult.ExpiresIn;
+            authentication.MemberName = _storageService.MemberName;
+            authentication.TokenExpiry = _storageService.TokenExpiry;
+            _dbContext.SaveChanges();
+
             return RedirectToAction("Index", "Home");
         }
     }

@@ -5,6 +5,7 @@ using Topo.Models.Login;
 using Topo.Models.MemberList;
 using Topo.Models.Events;
 using Topo.Models.OAS;
+using Topo.Data;
 
 namespace Topo.Services
 {
@@ -23,10 +24,12 @@ namespace Topo.Services
         public Task<bool> PutCalendarsAsync(GetCalendarsResultModel putCalendarsResultModel);
         public Task<GetOASTreeResultsModel?> GetOASTreeAsync(string stream);
         public Task<GetUnitAchievementsResultsModel> GetUnitAchievements(string unit, string stream, string branch, int stage);
+        public Task<GetOASTemplateResultModel?> GetOASTemplateAsync(string stream);
     }
     public class TerrainAPIService : ITerrainAPIService
     {
         private readonly StorageService _storageService;
+        private readonly TopoDBContext _dbContext;
         private readonly string cognitoAddress = "https://cognito-idp.ap-southeast-2.amazonaws.com/";
         private readonly string membersAddress = "https://members.terrain.scouts.com.au/";
         private readonly string eventsAddress = "https://events.terrain.scouts.com.au/";
@@ -34,9 +37,11 @@ namespace Topo.Services
         private readonly string achievementsAddress = "https://achievements.terrain.scouts.com.au/";
         private readonly string clientId = "6v98tbc09aqfvh52fml3usas3c";
 
-        public TerrainAPIService(StorageService storageService)
+        public TerrainAPIService(StorageService storageService,
+            TopoDBContext topoDBContext)
         {
             _storageService = storageService;
+            _dbContext = topoDBContext;
         }
 
         public async Task<AuthenticationResultModel?> LoginAsync(string? username, string? password)
@@ -128,6 +133,19 @@ namespace Topo.Services
                         _storageService.AuthenticationResult.ExpiresIn = authenticationResult?.AuthenticationResult?.ExpiresIn;
                         _storageService.AuthenticationResult.TokenType = authenticationResult?.AuthenticationResult?.TokenType;
                         _storageService.TokenExpiry = DateTime.Now.AddSeconds((authenticationResult?.AuthenticationResult?.ExpiresIn ?? 0) - 60);
+
+                        var authentication = _dbContext.Authentications.FirstOrDefault();
+                        if (authentication == null)
+                        {
+                            authentication = new Data.Models.Authentication();
+                            _dbContext.Authentications.Add(authentication);
+                        }
+                        authentication.AccessToken = authenticationResult.AuthenticationResult.AccessToken;
+                        authentication.IdToken = authenticationResult.AuthenticationResult.IdToken;
+                        authentication.TokenType = authenticationResult.AuthenticationResult.TokenType;
+                        authentication.ExpiresIn = authenticationResult.AuthenticationResult.ExpiresIn;
+                        authentication.TokenExpiry = _storageService.TokenExpiry;
+                        _dbContext.SaveChanges();
                     }
                 }
             }
@@ -314,5 +332,26 @@ namespace Topo.Services
                 return getUnitAchievementsResultsModel;
             }
         }
+
+        public async Task<GetOASTemplateResultModel?> GetOASTemplateAsync(string stream)
+        {
+            await RefreshTokenAsync();
+            using (var httpClient = new HttpClient())
+            {
+                HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Get, $"{templatesAddress}oas/{stream}/latest.json");
+
+                httpRequest.Content = new StringContent("", Encoding.UTF8, "application/x-amz-json-1.1");
+                httpRequest.Headers.Add("authorization", _storageService?.AuthenticationResult?.IdToken);
+                httpRequest.Headers.Add("accept", "application/json, text/plain, */*");
+
+                var response = await httpClient.SendAsync(httpRequest);
+                var responseContent = response.Content.ReadAsStringAsync();
+                var result = responseContent.Result;
+                var getOASTemplateResultModel = JsonConvert.DeserializeObject<GetOASTemplateResultModel>(result);
+
+                return getOASTemplateResultModel;
+            }
+        }
+
     }
 }

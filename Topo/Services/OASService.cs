@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using Topo.Models.OAS;
-
+using Topo.Data;
+using Topo.Data.Models;
 
 namespace Topo.Services
 {
@@ -15,11 +16,13 @@ namespace Topo.Services
     {
         private readonly StorageService _storageService;
         private readonly ITerrainAPIService _terrainAPIService;
+        private readonly TopoDBContext _dbContext;
 
-        public OASService(StorageService storageService, ITerrainAPIService terrainAPIService)
+        public OASService(StorageService storageService, ITerrainAPIService terrainAPIService, TopoDBContext dBContext)
         {
             _storageService = storageService;
             _terrainAPIService = terrainAPIService;
+            _dbContext = dBContext;
         }
         public async Task<List<OASStageListModel>> GetOASStageList(string stream)
         {
@@ -103,6 +106,60 @@ namespace Topo.Services
         public async Task GetUnitAchievements(string unit, string stream, string branch, int stage)
         {
             var achievementsResultModel = await _terrainAPIService.GetUnitAchievements(unit, stream, branch, stage);
+        }
+
+        public async Task<List<OASTemplate>> GetOASTemplate(string templateName)
+        {
+            var templateList = _dbContext.OASTemplates
+                .Where(t => t.TemplateName == templateName && t.InputGroupSort < 4)
+                .OrderBy(t => t.InputGroupSort)
+                .ThenBy(t => t.Id)
+                .ToList();
+            if (templateList == null)
+            {
+                var templateTitle = "";
+                var inputGroupTitle = "";
+                var oasTemplateResult = await _terrainAPIService.GetOASTemplateAsync(templateName);
+                foreach (var document in oasTemplateResult.document)
+                {
+                    templateTitle = document.title;
+                    foreach (var inputGroup in document.input_groups)
+                    { 
+                        inputGroupTitle = inputGroup.title;
+                        foreach (var input in inputGroup.inputs)
+                        {
+                            var oasTemplate = new OASTemplate { 
+                                TemplateName = templateName,
+                                TemplateTitle = templateTitle,
+                                InputGroup = inputGroupTitle,
+                                InputGroupSort = GetInputGroupSort(inputGroupTitle),
+                                InputId = input.id,
+                                InputLabel = input.label
+                            };
+                            _dbContext.OASTemplates.Add(oasTemplate);
+                            _dbContext.SaveChanges();
+                            templateList = _dbContext.OASTemplates
+                                .Where(t => t.TemplateName == templateName && t.InputGroupSort < 4)
+                                .OrderBy(t => t.InputGroupSort)
+                                .ThenBy(t => t.Id)
+                                .ToList();
+                        }
+                    }
+                }
+            }
+
+            return templateList;
+        }
+
+        private int GetInputGroupSort(string inputGroup)
+        {
+            if (inputGroup == "PLan>")
+                return 1;
+            if (inputGroup == "Do>")
+                return 2;
+            if (inputGroup == "Review>")
+                return 3;
+            return 4;
         }
     }
 }

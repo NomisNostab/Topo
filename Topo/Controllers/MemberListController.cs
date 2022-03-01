@@ -25,21 +25,25 @@ namespace Topo.Controllers
             ViewBag.Unit = _storageService.SelectedUnitName;
         }
 
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
-            MemberListViewModel model = SetUpViewModel();
+            MemberListViewModel model = await SetUpViewModel();
             SetViewBag();
             return View(model);
         }
 
-        private MemberListViewModel SetUpViewModel()
+        private async Task<MemberListViewModel> SetUpViewModel()
         {
             var model = new MemberListViewModel();
             model.Units = new List<SelectListItem>();
             if (_storageService.Units != null)
                 model.Units = _storageService.Units;
             if (_storageService.SelectedUnitId != null)
+            {
                 model.SelectedUnitId = _storageService.SelectedUnitId;
+                var allMembers = await _memberListService.GetMembersAsync();
+                model.Members = allMembers.Where(m => m.unit_order == 0).OrderBy(m => m.first_name).ThenBy(m => m.last_name).ToList();
+            }
             if (_storageService.SelectedUnitName != null)
                 model.SelectedUnitName = _storageService.SelectedUnitName;
             return model;
@@ -54,13 +58,11 @@ namespace Topo.Controllers
                 _storageService.SelectedUnitId = memberListViewModel.SelectedUnitId;
                 if (_storageService.Units != null)
                     _storageService.SelectedUnitName = _storageService.Units.Where(u => u.Value == memberListViewModel.SelectedUnitId)?.SingleOrDefault()?.Text;
-                model = SetUpViewModel();
-                var allMembers = await _memberListService.GetMembersAsync();
-                model.Members = allMembers.Where(m => m.unit_order == 0).OrderBy(m => m.first_name).ThenBy(m => m.last_name).ToList();
+                model = await SetUpViewModel();
             }
             else
             {
-                model = SetUpViewModel();
+                model = await SetUpViewModel();
             }
             SetViewBag();
             return View(model);

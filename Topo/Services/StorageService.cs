@@ -8,7 +8,7 @@ namespace Topo.Services
     public class StorageService
     {
         public bool IsAuthenticated { get; set; }
-        public string? Email { get; set; }
+        public string? MemberName { get; set; }
         public AuthenticationResult? AuthenticationResult { get; set; }
         public GetUserResultModel? GetUserResult { get; set; } = null;
         public GetProfilesResultModel? GetProfilesResult { get; set; }
