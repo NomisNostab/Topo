@@ -6,6 +6,8 @@ using Topo.Models.MemberList;
 using Topo.Models.Events;
 using Topo.Models.OAS;
 using Topo.Data;
+using System.Dynamic;
+using Newtonsoft.Json.Converters;
 
 namespace Topo.Services
 {
@@ -326,8 +328,22 @@ namespace Topo.Services
 
                 var response = await httpClient.SendAsync(httpRequest);
                 var responseContent = response.Content.ReadAsStringAsync();
-                var result = responseContent.Result;
-                var getUnitAchievementsResultsModel = JsonConvert.DeserializeObject<GetUnitAchievementsResultsModel>(result);
+                var responseContentResult = responseContent.Result;
+                var fileUploaderStart = responseContentResult.IndexOf("\"file_uploader\":");
+                while (fileUploaderStart > 0)
+                {
+                    var padding = 2;
+                    var fileUploaderEnd = responseContentResult.IndexOf("],", fileUploaderStart);
+                    if (fileUploaderEnd < 0)
+                    {
+                        fileUploaderEnd = responseContentResult.IndexOf("]", fileUploaderStart);
+                        padding = 1;
+                    }
+                    var fileUploader = responseContentResult.Substring(fileUploaderStart, fileUploaderEnd - fileUploaderStart + padding);
+                    responseContentResult = responseContentResult.Replace(fileUploader, "");
+                    fileUploaderStart = responseContentResult.IndexOf("\"file_uploader\":", fileUploaderStart);
+                }
+                var getUnitAchievementsResultsModel = JsonConvert.DeserializeObject<GetUnitAchievementsResultsModel>(responseContentResult);
 
                 return getUnitAchievementsResultsModel;
             }
@@ -338,7 +354,7 @@ namespace Topo.Services
             await RefreshTokenAsync();
             using (var httpClient = new HttpClient())
             {
-                HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Get, $"{templatesAddress}oas/{stream}/latest.json");
+                HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Get, $"{templatesAddress}{stream}/latest.json");
 
                 httpRequest.Content = new StringContent("", Encoding.UTF8, "application/x-amz-json-1.1");
                 httpRequest.Headers.Add("authorization", _storageService?.AuthenticationResult?.IdToken);

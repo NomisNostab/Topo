@@ -90,7 +90,7 @@ namespace Topo.Controllers
                 strm.Position = 0;
 
                 // return stream in browser
-                return File(strm, "application/pdf", "SignInSheet.pdf");
+                return File(strm, "application/pdf", $"SignInSheet_{_storageService.SelectedUnitName.Replace(' ', '_')}_{selectedEvent.Replace(' ', '_')}.pdf");
             }
             else
             {
@@ -118,7 +118,7 @@ namespace Topo.Controllers
                 }
             }
             ms.Position = 0;
-            return File(ms, "application/vnd.ms-excel", $"{eventListModel.EventDisplay}.csv");
+            return File(ms, "application/vnd.ms-excel", $"Attendance_{_storageService.SelectedUnitName.Replace(' ', '_')}_{eventListModel.EventDisplay.Replace(' ', '_')}.csv");
         }
 
     }

@@ -10,7 +10,8 @@ namespace Topo.Services
         public Task<List<OASStageListModel>> GetOASStageList(string stream);
         public List<SelectListItem> GetOASStreamList();
         public List<SelectListItem> GetOASStageListItems(List<OASStageListModel> oasStageListModels);
-        public Task GetUnitAchievements(string unit, string stream, string branch, int stage);
+        public Task<GetUnitAchievementsResultsModel> GetUnitAchievements(string unit, string stream, string branch, int stage);
+        public Task<List<OASTemplate>> GetOASTemplate(string templateName);
     }
     public class OASService : IOASService
     {
@@ -103,9 +104,9 @@ namespace Topo.Services
             return oasStages;
         }
 
-        public async Task GetUnitAchievements(string unit, string stream, string branch, int stage)
+        public async Task<GetUnitAchievementsResultsModel> GetUnitAchievements(string unit, string stream, string branch, int stage)
         {
-            var achievementsResultModel = await _terrainAPIService.GetUnitAchievements(unit, stream, branch, stage);
+            return await _terrainAPIService.GetUnitAchievements(unit, stream, branch, stage);
         }
 
         public async Task<List<OASTemplate>> GetOASTemplate(string templateName)
@@ -115,7 +116,7 @@ namespace Topo.Services
                 .OrderBy(t => t.InputGroupSort)
                 .ThenBy(t => t.Id)
                 .ToList();
-            if (templateList == null)
+            if (templateList == null || templateList.Count == 0)
             {
                 var templateTitle = "";
                 var inputGroupTitle = "";
@@ -137,7 +138,6 @@ namespace Topo.Services
                                 InputLabel = input.label
                             };
                             _dbContext.OASTemplates.Add(oasTemplate);
-                            _dbContext.SaveChanges();
                             templateList = _dbContext.OASTemplates
                                 .Where(t => t.TemplateName == templateName && t.InputGroupSort < 4)
                                 .OrderBy(t => t.InputGroupSort)
@@ -146,6 +146,12 @@ namespace Topo.Services
                         }
                     }
                 }
+                _dbContext.SaveChanges();
+                templateList = _dbContext.OASTemplates
+                .Where(t => t.TemplateName == templateName && t.InputGroupSort < 4)
+                .OrderBy(t => t.InputGroupSort)
+                .ThenBy(t => t.Id)
+                .ToList();
             }
 
             return templateList;
@@ -153,7 +159,7 @@ namespace Topo.Services
 
         private int GetInputGroupSort(string inputGroup)
         {
-            if (inputGroup == "PLan>")
+            if (inputGroup == "Plan>")
                 return 1;
             if (inputGroup == "Do>")
                 return 2;

@@ -11,7 +11,7 @@ namespace Topo.Data
             if (!_created)
             {
                 _created = true;
-                Database.EnsureCreated();
+                //Database.EnsureCreated();
                 Database.Migrate();
             }
         }
@@ -21,5 +21,6 @@ namespace Topo.Data
 
         public DbSet<OASTemplate> OASTemplates { get; set; }
         public DbSet<Authentication> Authentications { get; set; }
+        public DbSet<OASWorksheetAnswers> OASWorksheetAnswers { get; set; }
     }
 }

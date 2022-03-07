@@ -1,7 +1,10 @@
-﻿namespace Topo.Data.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Topo.Data.Models
 {
     public class Authentication
     {
+        [Key]
         public int Id { get; set; }
         public string? AccessToken { get; set; }
         public int? ExpiresIn { get; set; }

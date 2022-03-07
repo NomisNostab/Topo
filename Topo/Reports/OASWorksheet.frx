@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report ScriptLanguage="CSharp" ReportInfo.Created="03/03/2022 17:29:10" ReportInfo.Modified="03/06/2022 23:31:38" ReportInfo.CreatorVersion="2022.1.0.0">
+  <Dictionary>
+    <BusinessObjectDataSource Name="OASWorksheets" ReferenceName="OASWorksheets" DataType="null" Enabled="true">
+      <Column Name="InputTitle" DataType="System.String"/>
+      <Column Name="InputLabel" DataType="System.String"/>
+      <Column Name="MemberName" DataType="System.String"/>
+      <Column Name="MemberAnswer" DataType="System.DateTime"/>
+    </BusinessObjectDataSource>
+    <Parameter Name="OASStage" DataType="System.String"/>
+  </Dictionary>
+  <ReportPage Name="Page1" Landscape="true" PaperWidth="420" PaperHeight="297" RawPaperSize="8" Watermark.Text="Topo" Watermark.Font="Arial, 60pt">
+    <ReportTitleBand Name="ReportTitle1" Width="1512" Height="37.8">
+      <TextObject Name="Text1" Top="9.45" Width="1181.25" Height="28.35" CanGrow="true" Text="[OASStage] [FormatDateTime([Date],&quot;dd/MM/yyyy&quot;)]" Font="Arial, 14pt, style=Bold"/>
+    </ReportTitleBand>
+    <PageHeaderBand Name="PageHeader1" Top="41.8" Width="1512" Height="18.9"/>
+    <DataBand Name="Data1" Top="64.7" Width="1512" Height="105.08">
+      <MatrixObject Name="Matrix1" Width="159.85" Height="105.08" Border.Lines="All" FixedRows="2" FixedColumns="1" DataSource="OASWorksheets">
+        <MatrixColumns>
+          <Header Expression="[OASWorksheets.InputTitle]" Sort="None" Totals="false"/>
+          <Header Expression="[OASWorksheets.InputLabel]" Sort="None" Totals="false"/>
+        </MatrixColumns>
+        <MatrixRows>
+          <Header Expression="[OASWorksheets.MemberName]" Totals="false"/>
+        </MatrixRows>
+        <MatrixCells>
+          <Cell Expression="[OASWorksheets.MemberAnswer]"/>
+        </MatrixCells>
+        <TableColumn Name="Column1" MinWidth="75.6" MaxWidth="113.4" Width="84.25" AutoSize="true"/>
+        <TableColumn Name="Column2" MinWidth="49.14" MaxWidth="75.6" Width="75.6" AutoSize="true"/>
+        <TableRow Name="Row1" Height="16.25" AutoSize="true">
+          <TableCell Name="Cell1" Border.Lines="All" HorzAlign="Center" VertAlign="Center" Font="Arial, 10pt"/>
+          <TableCell Name="Cell2" Border.Lines="All" Text="[InputTitle]" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt">
+            <Highlight>
+              <Condition Expression="Value == &quot;Plan&quot;" Fill.Color="PowderBlue" Font="Arial, 10pt" ApplyFill="true" ApplyTextFill="false"/>
+              <Condition Expression="Value == &quot;Do&quot;" Fill.Color="LightSkyBlue" Font="Arial, 10pt" ApplyFill="true" ApplyTextFill="false"/>
+              <Condition Expression="Value == &quot;Review&quot;" Fill.Color="SteelBlue" Font="Arial, 10pt" ApplyFill="true" ApplyTextFill="false"/>
+            </Highlight>
+          </TableCell>
+        </TableRow>
+        <TableRow Name="Row2" MaxHeight="264.6" Height="61.97" AutoSize="true">
+          <TableCell Name="Cell3" Border.Lines="All" Text="Scout" VertAlign="Bottom" Font="Arial, 10pt"/>
+          <TableCell Name="Cell4" Border.Lines="All" Text="[InputLabel]" Padding="0, 0, 0, 0" HorzAlign="Center" VertAlign="Center" Angle="270" Font="Arial, 8pt"/>
+        </TableRow>
+        <TableRow Name="Row3" Height="26.86" AutoSize="true">
+          <TableCell Name="Cell9" Border.Lines="All" Text="[MemberName]" VertAlign="Center" Font="Arial, 8pt"/>
+          <TableCell Name="Cell10" Border.Lines="All" Text="[MemberAnswer]" Padding="0, 0, 0, 0" Format="Custom" Format.Format="dd/MM/yy" HorzAlign="Right" VertAlign="Center" Font="Arial, 8pt">
+            <Highlight>
+              <Condition Expression="Value != &quot;&quot;" Fill.Color="DarkSeaGreen" Font="Arial, 10pt" ApplyFill="true" ApplyTextFill="false"/>
+            </Highlight>
+          </TableCell>
+        </TableRow>
+      </MatrixObject>
+    </DataBand>
+    <PageFooterBand Name="PageFooter1" Top="173.78" Width="1512" Height="18.9"/>
+  </ReportPage>
+</Report>

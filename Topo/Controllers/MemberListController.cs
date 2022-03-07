@@ -92,7 +92,7 @@ namespace Topo.Controllers
                 strm.Position = 0;
 
                 // return stream in browser
-                return File(strm, "application/pdf", "PatrolList.pdf");
+                return File(strm, "application/pdf", $"Patrol_List_{_storageService.SelectedUnitName.Replace(' ', '_')}.pdf");
             }
             else
             {
@@ -124,7 +124,7 @@ namespace Topo.Controllers
                 strm.Position = 0;
 
                 // return stream in browser
-                return File(strm, "application/pdf", "PatrolSheets.pdf");
+                return File(strm, "application/pdf", $"Patrol_Sheets_{_storageService.SelectedUnitName.Replace(' ', '_')}.pdf");
             }
             else
             {
