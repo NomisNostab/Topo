@@ -20,5 +20,21 @@ namespace Topo.Services
         public GetCalendarsResultModel? GetCalendarsResult { get; set;} = null;
         public DateTime TokenExpiry { get; set; }
         public List<OASStageListModel> OASStageList { get; set; } = new List<OASStageListModel>();
+        public void ClearStorage()
+        {
+            IsAuthenticated = false;
+            AuthenticationResult = null;
+            MemberName = "";
+            AuthenticationResult = null;
+            GetUserResult = null;
+            GetProfilesResult = null;
+            Units = null;
+            Events = null;
+            Calendars = null;
+            SelectedUnitName = null;
+            SelectedUnitId = null;
+            GetCalendarsResult = null;
+            TokenExpiry = DateTime.MinValue;
+        }
     }
 }

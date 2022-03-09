@@ -13,7 +13,7 @@ builder.Services.AddScoped<ITerrainAPIService, TerrainAPIService>();
 builder.Services.AddScoped<IMemberListService, MemberListService>();
 builder.Services.AddScoped<IOASService, OASService>();
 builder.Services.AddScoped<IEventService, EventService>();
-builder.Services.AddSqlite<Topo.Data.TopoDBContext>("Data Source=Topo.db");
+builder.Services.AddSqlite<Topo.Data.TopoDBContext>("Data Source=Database/Topo.db");
 
 var app = builder.Build();
 

@@ -14,7 +14,7 @@ namespace Topo.Services
 
     public interface ITerrainAPIService
     {
-        public Task<AuthenticationResultModel?> LoginAsync(string? username, string? password);
+        public Task<AuthenticationResultModel?> LoginAsync(string? branch, string? username, string? password);
         public Task<GetUserResultModel?> GetUserAsync();
         public Task GetProfilesAsync();
         public List<SelectListItem>? GetUnits();
@@ -46,10 +46,9 @@ namespace Topo.Services
             _dbContext = topoDBContext;
         }
 
-        public async Task<AuthenticationResultModel?> LoginAsync(string? username, string? password)
+        public async Task<AuthenticationResultModel?> LoginAsync(string? branch, string? username, string? password)
         {
-
-            AuthenticationResultModel? authenticationResult = new AuthenticationResultModel();
+            AuthenticationResultModel authenticationResultModel = new AuthenticationResultModel();
             using (var httpClient = new HttpClient())
             {
                 var initiateAuth = new InitiateAuthModel();
@@ -57,7 +56,7 @@ namespace Topo.Services
                 initiateAuth.AuthFlow = "USER_PASSWORD_AUTH";
                 initiateAuth.ClientId = clientId;
                 initiateAuth.AuthParameters = new AuthParameters();
-                initiateAuth.AuthParameters.USERNAME = $"nsw-{username}";
+                initiateAuth.AuthParameters.USERNAME = $"{branch}-{username}";
                 initiateAuth.AuthParameters.PASSWORD = password;
 
                 HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Post, cognitoAddress);
@@ -69,16 +68,22 @@ namespace Topo.Services
 
                 var responseContent = response.Content.ReadAsStringAsync();
                 var result = responseContent.Result;
-                authenticationResult = JsonConvert.DeserializeObject<AuthenticationResultModel>(result);
-                _storageService.AuthenticationResult = authenticationResult?.AuthenticationResult;
+                var authenticationSuccessResult = JsonConvert.DeserializeObject<AuthenticationSuccessResultModel>(result);
+                _storageService.AuthenticationResult = authenticationSuccessResult?.AuthenticationResult;
                 _storageService.IsAuthenticated = false;
-                if (authenticationResult != null)
+                if (authenticationSuccessResult.AuthenticationResult != null)
                 {
                     _storageService.IsAuthenticated = true;
-                    _storageService.TokenExpiry = DateTime.Now.AddSeconds((authenticationResult?.AuthenticationResult?.ExpiresIn ?? 0) - 60);
+                    _storageService.TokenExpiry = DateTime.Now.AddSeconds((authenticationSuccessResult?.AuthenticationResult?.ExpiresIn ?? 0) - 60);
+                    authenticationResultModel.AuthenticationSuccessResultModel = authenticationSuccessResult;
+                }
+                else
+                {
+                    var authenticationErrorResultModel = JsonConvert.DeserializeObject<AuthenticationErrorResultModel>(result);
+                    authenticationResultModel.AuthenticationErrorResultModel = authenticationErrorResultModel;
                 }
             }
-            return authenticationResult;
+            return authenticationResultModel;
         }
 
         public async Task<GetUserResultModel?> GetUserAsync()
@@ -107,7 +112,7 @@ namespace Topo.Services
         {
             if (_storageService.TokenExpiry < DateTime.Now)
             {
-                AuthenticationResultModel? authenticationResult = new AuthenticationResultModel();
+                AuthenticationSuccessResultModel? authenticationResult = new AuthenticationSuccessResultModel();
                 using (var httpClient = new HttpClient())
                 {
                     var initiateAuth = new InitiateAuthModel();
@@ -127,7 +132,7 @@ namespace Topo.Services
 
                     var responseContent = response.Content.ReadAsStringAsync();
                     var result = responseContent.Result;
-                    authenticationResult = JsonConvert.DeserializeObject<AuthenticationResultModel>(result);
+                    authenticationResult = JsonConvert.DeserializeObject<AuthenticationSuccessResultModel>(result);
                     if (_storageService != null && _storageService.AuthenticationResult != null)
                     {
                         _storageService.AuthenticationResult.AccessToken = authenticationResult?.AuthenticationResult?.AccessToken;

@@ -13,15 +13,24 @@
         <p>Enter you scout login details below and sign in</p><br />
     </div>
     <div class="mb-3 row">
+        <label asp-for="SelectedBranch" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-4 ">
+            @Html.DropDownListFor(m => m.SelectedBranch, Model.Branches, "Select Branch", new { @class ="form-select" })
+            <span asp-validation-for="SelectedBranch" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="mb-3 row">
         <label asp-for="UserName" class="col-sm-2 col-form-label"></label>
         <div class="col-sm-4">
             <input asp-for="UserName" class="form-control" />
+            <span asp-validation-for="UserName" class="text-danger"></span>
         </div>
     </div>
     <div class="mb-3 row">
         <label asp-for="Password" class="col-sm-2 col-form-label"></label>
         <div class="col-sm-4">
             <input asp-for="Password" class="form-control" type="password" />
+            <span asp-validation-for="Password" class="text-danger"></span>
         </div>
     </div>
     <div class="mb-3 row">

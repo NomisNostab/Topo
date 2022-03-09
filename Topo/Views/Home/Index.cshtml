@@ -20,10 +20,13 @@
         </div>
         <div class="mb-3 row">
             <p>
-                Use Member Lists to see the members of your units, print patrol lists and patrol corner lists.
+                Use @Html.ActionLink("Member Lists", "Index", "MemberList") to see the members of your units, print patrol lists and patrol corner sheets.
             </p>
             <p>
-                Use Program Events to see the calendar of your units, print sign in sheets and print attendance lists.
+                Use @Html.ActionLink("Program Events", "Index", "Events") to see the calendar of your units, print sign in sheets and print attendance lists.
+            </p>
+            <p>
+                Use @Html.ActionLink("OAS Reports", "Index", "OAS") to print OAS Stage reports.
             </p>
         </div>
     }
