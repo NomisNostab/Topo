@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Report ScriptLanguage="CSharp" ReportInfo.Created="03/03/2022 17:29:10" ReportInfo.Modified="03/06/2022 23:31:38" ReportInfo.CreatorVersion="2022.1.0.0">
+<Report ScriptLanguage="CSharp" ReportInfo.Created="03/03/2022 17:29:10" ReportInfo.Modified="03/28/2022 21:55:22" ReportInfo.CreatorVersion="2022.1.0.0">
   <Dictionary>
     <BusinessObjectDataSource Name="OASWorksheets" ReferenceName="OASWorksheets" DataType="null" Enabled="true">
       <Column Name="InputTitle" DataType="System.String"/>
@@ -26,10 +26,10 @@
         <MatrixCells>
           <Cell Expression="[OASWorksheets.MemberAnswer]"/>
         </MatrixCells>
-        <TableColumn Name="Column1" MinWidth="75.6" MaxWidth="113.4" Width="84.25" AutoSize="true"/>
+        <TableColumn Name="Column1" MaxWidth="189" Width="84.25" AutoSize="true"/>
         <TableColumn Name="Column2" MinWidth="49.14" MaxWidth="75.6" Width="75.6" AutoSize="true"/>
         <TableRow Name="Row1" Height="16.25" AutoSize="true">
-          <TableCell Name="Cell1" Border.Lines="All" HorzAlign="Center" VertAlign="Center" Font="Arial, 10pt"/>
+          <TableCell Name="Cell1" Border.Lines="All" CanBreak="false" HorzAlign="Center" VertAlign="Center" Font="Arial, 10pt"/>
           <TableCell Name="Cell2" Border.Lines="All" Text="[InputTitle]" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt">
             <Highlight>
               <Condition Expression="Value == &quot;Plan&quot;" Fill.Color="PowderBlue" Font="Arial, 10pt" ApplyFill="true" ApplyTextFill="false"/>
@@ -39,11 +39,11 @@
           </TableCell>
         </TableRow>
         <TableRow Name="Row2" MaxHeight="264.6" Height="61.97" AutoSize="true">
-          <TableCell Name="Cell3" Border.Lines="All" Text="Scout" VertAlign="Bottom" Font="Arial, 10pt"/>
+          <TableCell Name="Cell3" Border.Lines="All" CanBreak="false" Text="Scout" VertAlign="Bottom" Font="Arial, 10pt"/>
           <TableCell Name="Cell4" Border.Lines="All" Text="[InputLabel]" Padding="0, 0, 0, 0" HorzAlign="Center" VertAlign="Center" Angle="270" Font="Arial, 8pt"/>
         </TableRow>
         <TableRow Name="Row3" Height="26.86" AutoSize="true">
-          <TableCell Name="Cell9" Border.Lines="All" Text="[MemberName]" VertAlign="Center" Font="Arial, 8pt"/>
+          <TableCell Name="Cell9" Border.Lines="All" CanBreak="false" Text="[MemberName]" VertAlign="Center" WordWrap="false" Font="Arial, 8pt"/>
           <TableCell Name="Cell10" Border.Lines="All" Text="[MemberAnswer]" Padding="0, 0, 0, 0" Format="Custom" Format.Format="dd/MM/yy" HorzAlign="Right" VertAlign="Center" Font="Arial, 8pt">
             <Highlight>
               <Condition Expression="Value != &quot;&quot;" Fill.Color="DarkSeaGreen" Font="Arial, 10pt" ApplyFill="true" ApplyTextFill="false"/>

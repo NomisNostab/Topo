@@ -126,7 +126,7 @@ namespace Topo.Controllers
                         InputTitleSortIndex = item.InputGroupSort,
                         InputSortIndex = item.Id,
                         MemberId = member.id,
-                        MemberName = member.first_name,
+                        MemberName = $"{member.first_name} {member.last_name}",
                         MemberAnswer = null
                     };
                     _dbContext.OASWorksheetAnswers.Add(oASWorksheetAnswers);
