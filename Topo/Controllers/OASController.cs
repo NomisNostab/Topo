@@ -69,7 +69,7 @@ namespace Topo.Controllers
         public async Task<ActionResult> Index(OASIndexViewModel oasIndexViewModel)
         {
             var model = new OASIndexViewModel();
-            if (oasIndexViewModel.SelectedStage != null && !oasIndexViewModel.SelectedStage.Contains(oasIndexViewModel.SelectedStream))
+            if (oasIndexViewModel.SelectedStream != null && oasIndexViewModel.SelectedStage != null && !oasIndexViewModel.SelectedStage.Contains(oasIndexViewModel.SelectedStream))
                 ModelState.AddModelError("SelectedStage", "Select new stage");
 
             if (ModelState.IsValid)
@@ -81,13 +81,6 @@ namespace Topo.Controllers
                 model.Stages = _oasService.GetOASStageListItems(_storageService.OASStageList);
                 model.SelectedStream = oasIndexViewModel.SelectedStream;
                 model.SelectedStage = oasIndexViewModel.SelectedStage;
-                var selectedStage = _storageService.OASStageList.Where(s => s.TemplateLink == oasIndexViewModel.SelectedStage).SingleOrDefault();
-                var getUnitAchievementsResultsModel = await _oasService.GetUnitAchievements(oasIndexViewModel.SelectedUnitId, selectedStage.Stream.ToLower(), selectedStage.Branch, selectedStage.Stage);
-                var members = await _memberListService.GetMembersAsync();
-                var sortedMemberList = members.Where(m => m.unit_order == 0).OrderBy(m => m.first_name).ThenBy(m => m.last_name).ToList();
-                //var templateList = await _oasService.GetOASTemplate(getUnitAchievementsResultsModel.results[0].template);
-                var templateList = await _oasService.GetOASTemplate(oasIndexViewModel.SelectedStage.Replace("/latest.json", ""));
-                return GenerateAchievementResults(getUnitAchievementsResultsModel, sortedMemberList, templateList);
             }
             else
             {
@@ -97,12 +90,22 @@ namespace Topo.Controllers
                 {
                     _storageService.OASStageList = await _oasService.GetOASStageList(oasIndexViewModel.SelectedStream);
                     model.Stages = _oasService.GetOASStageListItems(_storageService.OASStageList);
-                    model.SelectedStage = oasIndexViewModel.SelectedStage;
                     model.SelectedStream = oasIndexViewModel.SelectedStream;
+                    model.SelectedStage = "";
                 }
             }
             SetViewBag();
             return View(model);
+        }
+
+        public async Task<ActionResult> OASReport(string selectedUnitId, string selectedStageTemplate)
+        {
+            var selectedStage = _storageService.OASStageList.Where(s => s.TemplateLink == selectedStageTemplate).SingleOrDefault();
+            var getUnitAchievementsResultsModel = await _oasService.GetUnitAchievements(selectedUnitId, selectedStage.Stream.ToLower(), selectedStage.Branch, selectedStage.Stage);
+            var members = await _memberListService.GetMembersAsync();
+            var sortedMemberList = members.Where(m => m.unit_order == 0).OrderBy(m => m.first_name).ThenBy(m => m.last_name).ToList();
+            var templateList = await _oasService.GetOASTemplate(selectedStageTemplate.Replace("/latest.json", ""));
+            return GenerateAchievementResults(getUnitAchievementsResultsModel, sortedMemberList, templateList);
         }
 
         private FileStreamResult GenerateAchievementResults(GetUnitAchievementsResultsModel getUnitAchievementsResultsModel,
@@ -221,7 +224,8 @@ namespace Topo.Controllers
                 strm.Position = 0;
 
                 // return stream in browser
-                return File(strm, "application/pdf", $"OAS_Worksheet_{_storageService.SelectedUnitName.Replace(' ', '_')}_{templateName.Replace('/', '_')}.pdf");
+                var fileName = $"OAS_Worksheet_{_storageService.SelectedUnitName.Replace(' ', '_')}_{templateName.Replace('/', '_')}.pdf";
+                return File(strm, "application/pdf", fileName);
             }
             return null;
 

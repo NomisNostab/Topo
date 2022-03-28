@@ -27,5 +27,13 @@
             <span asp-validation-for="SelectedStage" class="text-danger"></span>
         </div>
     </div>
+    @if (!string.IsNullOrEmpty(Model.SelectedStage))
+    {
+        <div class="mt-3 mb-3 row">
+            <div class="col-sm-12">
+                @Html.ActionLink("Generate OAS Report", "OASReport", "OAS", new { selectedUnitId = Model.SelectedUnitId, selectedStageTemplate = Model.SelectedStage }, new { @class = "btn btn-primary" })
+            </div>
+        </div>
+    }
 
 </form>
