@@ -1,6 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Topo.Services;
 
+// Create AppData folder
+string path = @"%LOCALAPPDATA%\Topo";
+path = Environment.ExpandEnvironmentVariables(path);
+if (!Directory.Exists(path))
+    Directory.CreateDirectory(path);
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -13,7 +19,7 @@ builder.Services.AddScoped<ITerrainAPIService, TerrainAPIService>();
 builder.Services.AddScoped<IMemberListService, MemberListService>();
 builder.Services.AddScoped<IOASService, OASService>();
 builder.Services.AddScoped<IEventService, EventService>();
-builder.Services.AddSqlite<Topo.Data.TopoDBContext>("Data Source=Database/Topo.db");
+builder.Services.AddSqlite<Topo.Data.TopoDBContext>($@"Data Source={path}\Topo.db");
 
 var app = builder.Build();
 

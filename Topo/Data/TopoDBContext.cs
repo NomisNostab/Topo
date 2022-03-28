@@ -11,12 +11,12 @@ namespace Topo.Data
             if (!_created)
             {
                 _created = true;
-                //Database.EnsureCreated();
                 Database.Migrate();
             }
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionbuilder)
         {
+            
         }
 
         public DbSet<OASTemplate> OASTemplates { get; set; }
