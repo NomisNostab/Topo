@@ -71,43 +71,21 @@ namespace Topo.Controllers
 
         public async Task<ActionResult> PatrolList()
         {
-            var model = await _memberListService.GetMembersAsync();
-            var sortedPatrolList = model.Where(m => m.unit_order == 0).OrderBy(m => m.patrol_name).ToList();
-            var patrolListReport = new Report();
-            var directory = Directory.GetCurrentDirectory();
-            patrolListReport.Load($@"{directory}\Reports\Patrols.frx");
-            patrolListReport.SetParameterValue("ReportDate", DateTime.Now.ToShortDateString());
-            patrolListReport.RegisterData(sortedPatrolList, "Members");
-
-            if (patrolListReport.Prepare())
-            {
-                // Set PDF export props
-                PDFSimpleExport pdfExport = new PDFSimpleExport();
-                pdfExport.ShowProgress = false;
-
-                MemoryStream strm = new MemoryStream();
-                patrolListReport.Report.Export(pdfExport, strm);
-                patrolListReport.Dispose();
-                pdfExport.Dispose();
-                strm.Position = 0;
-
-                // return stream in browser
-                return File(strm, "application/pdf", $"Patrol_List_{_storageService.SelectedUnitName.Replace(' ', '_')}.pdf");
-            }
-            else
-            {
-                SetViewBag();
-                return View();
-            }
+            return await GeneratePatrolReport("Patrols", "Patrol_List");
         }
 
         public async Task<ActionResult> PatrolSheet()
+        {
+            return await GeneratePatrolReport("PatrolSheets", "Patrol_Sheets");
+        }
+
+        private async Task<ActionResult> GeneratePatrolReport(string reportDefinitionName, string reportDownloadName)
         {
             var model = await _memberListService.GetMembersAsync();
             var sortedPatrolList = model.Where(m => m.unit_order == 0).OrderBy(m => m.patrol_name).ToList();
             var patrolListReport = new Report();
             var directory = Directory.GetCurrentDirectory();
-            patrolListReport.Load($@"{directory}\Reports\PatrolSheets.frx");
+            patrolListReport.Load($@"{directory}\Reports\{reportDefinitionName}.frx");
             patrolListReport.SetParameterValue("ReportDate", DateTime.Now.ToShortDateString());
             patrolListReport.RegisterData(sortedPatrolList, "Members");
 
@@ -124,7 +102,7 @@ namespace Topo.Controllers
                 strm.Position = 0;
 
                 // return stream in browser
-                return File(strm, "application/pdf", $"Patrol_Sheets_{_storageService.SelectedUnitName.Replace(' ', '_')}.pdf");
+                return File(strm, "application/pdf", $"{reportDownloadName}_{_storageService.SelectedUnitName.Replace(' ', '_')}.pdf");
             }
             else
             {
