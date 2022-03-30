@@ -13,16 +13,16 @@ namespace Topo.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly StorageService _storageService;
         private readonly TopoDBContext _dbContext;
-        private readonly ITerrainAPIService _terrainAPIService;
+        private readonly ILoginService _loginService;
 
         public HomeController(ILogger<HomeController> logger,
             StorageService storageService,
-            TopoDBContext dbContext, ITerrainAPIService terrainAPIService)
+            TopoDBContext dbContext, ILoginService loginService)
         {
             _logger = logger;
             _storageService = storageService;
             _dbContext = dbContext;
-            _terrainAPIService = terrainAPIService;
+            _loginService = loginService;
         }
 
         public IActionResult Index()
@@ -39,18 +39,26 @@ namespace Topo.Controllers
                 var authentication = _dbContext.Authentications.FirstOrDefault();
                 if (authentication != null)
                 {
-                    _storageService.IsAuthenticated = true;
-                    _storageService.AuthenticationResult = new Models.Login.AuthenticationResult();
-                    _storageService.AuthenticationResult.AccessToken = authentication.AccessToken;
-                    _storageService.AuthenticationResult.IdToken = authentication.IdToken;
-                    _storageService.AuthenticationResult.ExpiresIn = authentication.ExpiresIn;
-                    _storageService.AuthenticationResult.TokenType = authentication.TokenType;
-                    _storageService.AuthenticationResult.RefreshToken = authentication.RefreshToken;
-                    _storageService.MemberName = authentication.MemberName;
-                    _storageService.TokenExpiry = authentication.TokenExpiry ?? DateTime.Now.AddMinutes(-5);
-                    await _terrainAPIService.GetUserAsync();
-                    await _terrainAPIService.GetProfilesAsync();
-                    _storageService.Units = _terrainAPIService.GetUnits();
+                    if (authentication.TokenExpiry < DateTime.Now) // Token expired, login again
+                    {
+                        _dbContext.Remove(authentication);
+                        _dbContext.SaveChanges();
+                    }
+                    else
+                    {
+                        _storageService.IsAuthenticated = true;
+                        _storageService.AuthenticationResult = new Models.Login.AuthenticationResult();
+                        _storageService.AuthenticationResult.AccessToken = authentication.AccessToken;
+                        _storageService.AuthenticationResult.IdToken = authentication.IdToken;
+                        _storageService.AuthenticationResult.ExpiresIn = authentication.ExpiresIn;
+                        _storageService.AuthenticationResult.TokenType = authentication.TokenType;
+                        _storageService.AuthenticationResult.RefreshToken = authentication.RefreshToken;
+                        _storageService.MemberName = authentication.MemberName;
+                        _storageService.TokenExpiry = authentication.TokenExpiry ?? DateTime.Now.AddMinutes(-5);
+                        await _loginService.GetUserAsync();
+                        await _loginService.GetProfilesAsync();
+                        _storageService.Units = _loginService.GetUnits();
+                    }
                 }
             }
             var model = new HomeViewModel();

@@ -16,6 +16,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<StorageService>();
 
 builder.Services.AddScoped<ITerrainAPIService, TerrainAPIService>();
+builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped<IMemberListService, MemberListService>();
 builder.Services.AddScoped<IOASService, OASService>();
 builder.Services.AddScoped<IEventService, EventService>();

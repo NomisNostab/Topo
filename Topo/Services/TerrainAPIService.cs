@@ -16,8 +16,7 @@ namespace Topo.Services
     {
         public Task<AuthenticationResultModel?> LoginAsync(string? branch, string? username, string? password);
         public Task<GetUserResultModel?> GetUserAsync();
-        public Task GetProfilesAsync();
-        public List<SelectListItem>? GetUnits();
+        public Task<GetProfilesResultModel> GetProfilesAsync();
         public Task RefreshTokenAsync();
         public Task<GetMembersResultModel?> GetMembersAsync();
         public Task<GetEventsResultModel?> GetEventsAsync(DateTime fromDate, DateTime toDate);
@@ -69,12 +68,8 @@ namespace Topo.Services
                 var responseContent = response.Content.ReadAsStringAsync();
                 var result = responseContent.Result;
                 var authenticationSuccessResult = JsonConvert.DeserializeObject<AuthenticationSuccessResultModel>(result);
-                _storageService.AuthenticationResult = authenticationSuccessResult?.AuthenticationResult;
-                _storageService.IsAuthenticated = false;
                 if (authenticationSuccessResult.AuthenticationResult != null)
                 {
-                    _storageService.IsAuthenticated = true;
-                    _storageService.TokenExpiry = DateTime.Now.AddSeconds((authenticationSuccessResult?.AuthenticationResult?.ExpiresIn ?? 0) - 60);
                     authenticationResultModel.AuthenticationSuccessResultModel = authenticationSuccessResult;
                 }
                 else
@@ -103,7 +98,6 @@ namespace Topo.Services
                 var responseContent = response.Content.ReadAsStringAsync();
                 var result = responseContent.Result;
                 getUserResultModel = JsonConvert.DeserializeObject<GetUserResultModel>(result);
-                _storageService.GetUserResult = getUserResultModel;
             }
             return getUserResultModel;
         }
@@ -158,7 +152,7 @@ namespace Topo.Services
             }
         }
 
-        public async Task GetProfilesAsync()
+        public async Task<GetProfilesResultModel> GetProfilesAsync()
         {
             await RefreshTokenAsync();
             GetProfilesResultModel? getProfilesResultModel = new GetProfilesResultModel();
@@ -174,14 +168,8 @@ namespace Topo.Services
                 var responseContent = response.Content.ReadAsStringAsync();
                 var result = responseContent.Result;
                 getProfilesResultModel = JsonConvert.DeserializeObject<GetProfilesResultModel>(result);
-                if (_storageService != null)
-                    _storageService.GetProfilesResult = getProfilesResultModel;
+                return getProfilesResultModel;
             }
-        }
-
-        public List<SelectListItem>? GetUnits()
-        {
-            return _storageService.GetProfilesResult?.profiles?.Select(p => p.unit).Distinct().Select(u => new SelectListItem { Text = u?.name, Value = u?.id }).ToList();
         }
 
         public async Task<GetMembersResultModel?> GetMembersAsync()

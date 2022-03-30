@@ -8,15 +8,15 @@ namespace Topo.Controllers
 {
     public class LoginController : Controller
     {
-        private readonly ITerrainAPIService _terrainAPIService;
+        private readonly ILoginService _loginService;
         private readonly StorageService _storageService;
         private readonly TopoDBContext _dbContext;
 
-        public LoginController(ITerrainAPIService terrainAPIService,
+        public LoginController(ILoginService loginService,
             StorageService storageService,
             TopoDBContext topoDBContext)
         {
-            _terrainAPIService = terrainAPIService;
+            _loginService = loginService;
             _storageService = storageService;
             _dbContext = topoDBContext;
         }
@@ -55,14 +55,14 @@ namespace Topo.Controllers
                 model.Password = loginModel.Password;
                 return View(model);
             }
-            var authenticationResult = await _terrainAPIService.LoginAsync(loginModel.SelectedBranch, loginModel.UserName, loginModel.Password);
+            var authenticationResult = await _loginService.LoginAsync(loginModel.SelectedBranch, loginModel.UserName, loginModel.Password);
             if (authenticationResult != null && authenticationResult.AuthenticationSuccessResultModel.AuthenticationResult != null)
             {
-                await _terrainAPIService.GetUserAsync();
-                await _terrainAPIService.GetProfilesAsync();
+                await _loginService.GetUserAsync();
+                await _loginService.GetProfilesAsync();
                 if (_storageService.GetProfilesResult != null && _storageService.GetProfilesResult.profiles != null && _storageService.GetProfilesResult.profiles.Length > 0)
                     _storageService.MemberName = _storageService.GetProfilesResult.profiles[0].member?.name ?? "";
-                _storageService.Units = _terrainAPIService.GetUnits();
+                _storageService.Units = _loginService.GetUnits();
                 var authentication = _dbContext.Authentications.FirstOrDefault();
                 if (authentication == null)
                 {
