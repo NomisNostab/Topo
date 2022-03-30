@@ -69,7 +69,8 @@ namespace Topo.Controllers
         }
         public IActionResult Privacy()
         {
-            return View();
+            var model = PopulateModelFromStorage().Result;
+            return View(model);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
