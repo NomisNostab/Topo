@@ -23,7 +23,7 @@ namespace Topo.Services
 
         public async Task<List<CalendarListModel>> GetCalendars()
         {
-            var getCalendarsResultModel = await _terrainAPIService.GetCalendarsAsync();
+            var getCalendarsResultModel = await _terrainAPIService.GetCalendarsAsync(GetUser());
             if (getCalendarsResultModel != null && getCalendarsResultModel.own_calendars != null)
             {
                 var calendars = getCalendarsResultModel.own_calendars.Where(c => c.type == "unit")
@@ -45,12 +45,12 @@ namespace Topo.Services
             {
                 calendar.selected = calendar.id == calendarId;
             }
-            await _terrainAPIService.PutCalendarsAsync(_storageService.GetCalendarsResult);
+            await _terrainAPIService.PutCalendarsAsync(GetUser(), _storageService.GetCalendarsResult);
         }
 
         public async Task<List<EventListModel>> GetEventsForDates(DateTime fromDate, DateTime toDate)
         {
-            var getEventsResultModel = await _terrainAPIService.GetEventsAsync(fromDate, toDate);
+            var getEventsResultModel = await _terrainAPIService.GetEventsAsync(GetUser(), fromDate, toDate);
             if (getEventsResultModel != null && getEventsResultModel.results != null)
             {
                 var events = getEventsResultModel.results.Select(e => new EventListModel()
@@ -81,5 +81,14 @@ namespace Topo.Services
             return new EventListModel();
         }
 
+        private string GetUser()
+        {
+            var userId = "";
+            if (_storageService.GetProfilesResult != null && _storageService.GetProfilesResult.profiles != null && _storageService.GetProfilesResult.profiles.Length > 0)
+            {
+                userId = _storageService.GetProfilesResult.profiles[0].member?.id;
+            }
+            return userId;
+        }
     }
 }

@@ -19,10 +19,10 @@ namespace Topo.Services
         public Task<GetProfilesResultModel> GetProfilesAsync();
         public Task RefreshTokenAsync();
         public Task<GetMembersResultModel?> GetMembersAsync();
-        public Task<GetEventsResultModel?> GetEventsAsync(DateTime fromDate, DateTime toDate);
+        public Task<GetEventsResultModel?> GetEventsAsync(string userId, DateTime fromDate, DateTime toDate);
         public Task<GetEventResultModel?> GetEventAsync(string eventId);
-        public Task<GetCalendarsResultModel?> GetCalendarsAsync();
-        public Task PutCalendarsAsync(GetCalendarsResultModel putCalendarsResultModel);
+        public Task<GetCalendarsResultModel?> GetCalendarsAsync(string userId);
+        public Task PutCalendarsAsync(string userId, GetCalendarsResultModel putCalendarsResultModel);
         public Task<GetOASTreeResultsModel?> GetOASTreeAsync(string stream);
         public Task<GetUnitAchievementsResultsModel> GetUnitAchievements(string unit, string stream, string branch, int stage);
         public Task<GetOASTemplateResultModel?> GetOASTemplateAsync(string stream);
@@ -151,15 +151,10 @@ namespace Topo.Services
             return getMembersResultModel;
         }
 
-        public async Task<GetEventsResultModel?> GetEventsAsync(DateTime fromDate, DateTime toDate)
+        public async Task<GetEventsResultModel?> GetEventsAsync(string userId, DateTime fromDate, DateTime toDate)
         {
             await RefreshTokenAsync();
 
-            var userId = "";
-            if (_storageService.GetProfilesResult != null && _storageService.GetProfilesResult.profiles != null && _storageService.GetProfilesResult.profiles.Length > 0)
-            {
-                userId = _storageService.GetProfilesResult.profiles[0].member?.id;
-            }
             var fromDateString = fromDate.ToString("s");
             var toDateString = toDate.ToString("s");
             string requestUri = $"{eventsAddress}members/{userId}/events?start_datetime={fromDateString}&end_datetime={toDateString}";
@@ -180,15 +175,10 @@ namespace Topo.Services
             return getEventResultModel;
         }
 
-        public async Task<GetCalendarsResultModel?> GetCalendarsAsync()
+        public async Task<GetCalendarsResultModel?> GetCalendarsAsync(string userId)
         {
             await RefreshTokenAsync();
 
-            var userId = "";
-            if (_storageService.GetProfilesResult != null && _storageService.GetProfilesResult.profiles != null && _storageService.GetProfilesResult.profiles.Length > 0)
-            {
-                userId = _storageService.GetProfilesResult.profiles[0].member?.id;
-            }
             string requestUri = $"{eventsAddress}members/{userId}/calendars";
             var result = await SendRequest(HttpMethod.Get, requestUri);
             var getCalendarsResultModel = JsonConvert.DeserializeObject<GetCalendarsResultModel>(result);
@@ -196,15 +186,10 @@ namespace Topo.Services
             return getCalendarsResultModel;
         }
 
-        public async Task PutCalendarsAsync(GetCalendarsResultModel putCalendarsResultModel)
+        public async Task PutCalendarsAsync(string userId, GetCalendarsResultModel putCalendarsResultModel)
         {
             await RefreshTokenAsync();
 
-            var userId = "";
-            if (_storageService.GetProfilesResult != null && _storageService.GetProfilesResult.profiles != null && _storageService.GetProfilesResult.profiles.Length > 0)
-            {
-                userId = _storageService.GetProfilesResult.profiles[0].member?.id;
-            }
             string requestUri = $"{eventsAddress}members/{userId}/calendars";
             var content = JsonConvert.SerializeObject(putCalendarsResultModel);
             await SendRequest(HttpMethod.Put, requestUri, content);
