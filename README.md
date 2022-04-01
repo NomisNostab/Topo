@@ -38,4 +38,23 @@ The patrol sheets list each patrol on a single A4 to be attached to the patrol c
 
 These will download as pdf documents.
 
+### Program Events
+Select your unit and the date to search, click Show Unit Calendar. This will show the unit events one month either side of the selected date.
+
+![TopoProgramEventList](https://user-images.githubusercontent.com/65288066/161260135-d7e3ded6-1877-45f7-a88c-d3a14b73699a.png)
+
+The Generate Sign In Sheet link, to the right of the event, will download a sign in sheet pdf document to facilitate recording attendance, leaders are included.
+
+The Download Attendance link will download an attendance list in csv format, if such a report is required.
+
+### OAS Reports
+The OAS Report shows for a given unit, stream and stage what each I Statement a youth member has completed and when.
+
+This can be handy when planning events around OAS streams.
+
+![TopoOAS](https://user-images.githubusercontent.com/65288066/161261366-2f0a592d-75c0-44b9-a343-7d18d59eddec.png)
+
+Select the Unit, Stream, Stage and click Generate OAS Report to download the report.
+
+![TopoOASReport](https://user-images.githubusercontent.com/65288066/161261855-99dc0f97-115c-45ee-8564-f03f7dbe4451.png)
 
