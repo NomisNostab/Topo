@@ -12,6 +12,8 @@ This will open a terminal window similar to
 
 ![TopoServerApp](https://user-images.githubusercontent.com/65288066/161207943-1112f345-5fa0-4029-ae4b-06ca799ede5d.png)
 
+When you are finished you can either type Ctrl+c in the window or close the window.
+
 ## Using the Reporting App
 To access the Reporting application, ctrl-click on http://localhost:5000 to open in your browser.
 You could also open a browser and put http://localhost:5000 into the address bar.
