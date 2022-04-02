@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Report ScriptLanguage="CSharp" ReportInfo.Created="02/19/2022 09:11:06" ReportInfo.Modified="04/02/2022 10:07:08" ReportInfo.CreatorVersion="2022.1.0.0">
+<Report ScriptLanguage="CSharp" ReportInfo.Created="02/19/2022 09:11:06" ReportInfo.Modified="04/02/2022 20:31:12" ReportInfo.CreatorVersion="2022.1.0.0">
   <Dictionary>
     <BusinessObjectDataSource Name="Members" ReferenceName="Members" DataType="null" Enabled="true">
       <Column Name="id" DataType="System.String"/>
@@ -11,7 +11,7 @@
       <Column Name="unit_council" DataType="System.Boolean" BindableControl="CheckBox"/>
       <Column Name="patrol_name" DataType="System.String"/>
       <Column Name="patrol_duty" DataType="System.String"/>
-      <Column Name="unit_order" DataType="System.String"/>
+      <Column Name="isAdultLeader" DataType="System.String" PropName="unit_order"/>
     </BusinessObjectDataSource>
     <Parameter Name="Event" DataType="System.String"/>
     <Parameter Name="UnitName" DataType="System.String"/>
@@ -25,7 +25,7 @@
       <TextObject Name="Text16" Width="718.2" Height="37.8" Text="[GroupName]" HorzAlign="Center" Font="Arial, 16pt, style=Bold"/>
     </ReportTitleBand>
     <PageHeaderBand Name="PageHeader1" Top="79.6" Width="718.2"/>
-    <GroupHeaderBand Name="GroupHeader1" Top="83.6" Width="718.2" Height="103.95" Condition="[Members.unit_order]">
+    <GroupHeaderBand Name="GroupHeader1" Top="83.6" Width="718.2" Height="103.95" Condition="[Members.isAdultLeader]">
       <TextObject Name="Text2" Top="75.6" Width="122.85" Height="18.9" Text="Name" Font="Arial, 12pt, style=Bold"/>
       <TextObject Name="Text4" Left="170.1" Top="75.6" Width="75.6" Height="18.9" Text="Number" Font="Arial, 12pt, style=Bold"/>
       <TextObject Name="Text6" Left="245.7" Top="75.6" Width="56.7" Height="18.9" Text="Patrol" Font="Arial, 12pt, style=Bold"/>
@@ -55,7 +55,7 @@
           </TableRow>
         </TableObject>
         <Sort>
-          <Sort Expression="[Members.unit_order]"/>
+          <Sort Expression="[Members.isAdultLeader]"/>
           <Sort Expression="[Members.first_name]"/>
           <Sort Expression="[Members.last_name]"/>
         </Sort>

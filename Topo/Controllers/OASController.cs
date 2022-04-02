@@ -103,7 +103,7 @@ namespace Topo.Controllers
             var selectedStage = _storageService.OASStageList.Where(s => s.TemplateLink == selectedStageTemplate).SingleOrDefault();
             var getUnitAchievementsResultsModel = await _oasService.GetUnitAchievements(selectedUnitId, selectedStage.Stream.ToLower(), selectedStage.Branch, selectedStage.Stage);
             var members = await _memberListService.GetMembersAsync();
-            var sortedMemberList = members.Where(m => m.unit_order == 0).OrderBy(m => m.first_name).ThenBy(m => m.last_name).ToList();
+            var sortedMemberList = members.Where(m => m.isAdultLeader == 0).OrderBy(m => m.first_name).ThenBy(m => m.last_name).ToList();
             var templateList = await _oasService.GetOASTemplate(selectedStageTemplate.Replace("/latest.json", ""));
             return GenerateAchievementResults(getUnitAchievementsResultsModel, sortedMemberList, templateList);
         }

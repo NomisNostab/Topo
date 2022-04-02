@@ -20,6 +20,6 @@ namespace Topo.Models.MemberList
         [Display(Name = "Role")]
         public string patrol_duty { get; set; }
         public int patrol_order { get; set; } = 0;
-        public int unit_order { get; set; } = 0;
+        public int isAdultLeader { get; set; } = 0;
     }
 }

@@ -42,7 +42,7 @@ namespace Topo.Controllers
             {
                 model.SelectedUnitId = _storageService.SelectedUnitId;
                 var allMembers = await _memberListService.GetMembersAsync();
-                model.Members = allMembers.Where(m => m.unit_order == 0).OrderBy(m => m.first_name).ThenBy(m => m.last_name).ToList();
+                model.Members = allMembers.Where(m => m.isAdultLeader == 0).OrderBy(m => m.first_name).ThenBy(m => m.last_name).ToList();
             }
             if (_storageService.SelectedUnitName != null)
                 model.SelectedUnitName = _storageService.SelectedUnitName;
@@ -84,7 +84,7 @@ namespace Topo.Controllers
             var model = await _memberListService.GetMembersAsync();
             var groupName = _storageService.GroupName;
             var unitName = _storageService.SelectedUnitName ?? "";
-            var sortedPatrolList = model.Where(m => m.unit_order == 0).OrderBy(m => m.patrol_name).ToList();
+            var sortedPatrolList = model.Where(m => m.isAdultLeader == 0).OrderBy(m => m.patrol_name).ToList();
             var patrolListReport = new Report();
             var directory = Directory.GetCurrentDirectory();
             patrolListReport.Load($@"{directory}\Reports\{reportDefinitionName}.frx");
