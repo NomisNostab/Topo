@@ -24,4 +24,4 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal
     - name: Publish
-      run: dotnet publish Topo/Topo.csproj -c Release -o release — nologo
+      run: dotnet publish Topo/Topo/Topo.csproj -c Release -o release -p:PublishProfile=FolderProfile
