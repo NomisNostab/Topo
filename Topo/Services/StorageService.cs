@@ -20,6 +20,7 @@ namespace Topo.Services
         public GetCalendarsResultModel? GetCalendarsResult { get; set;} = null;
         public DateTime TokenExpiry { get; set; }
         public List<OASStageListModel> OASStageList { get; set; } = new List<OASStageListModel>();
+        public string GroupName { get; set; } = "";
         public void ClearStorage()
         {
             IsAuthenticated = false;

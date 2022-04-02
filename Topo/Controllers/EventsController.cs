@@ -70,10 +70,14 @@ namespace Topo.Controllers
         {
             var viewModel = new EventsListViewModel();
             var selectedEvent = _storageService.Events?.Where(e => e.Value == eventId).FirstOrDefault().Text;
+            var groupName = _storageService.GroupName;
+            var unitName = _storageService.SelectedUnitName ?? "";
             var model = await _memberListService.GetMembersAsync();
             var signInSheetReport = new Report();
             var directory = Directory.GetCurrentDirectory();
             signInSheetReport.Load($@"{directory}\Reports\SignInSheet.frx");
+            signInSheetReport.SetParameterValue("GroupName", groupName);
+            signInSheetReport.SetParameterValue("UnitName", unitName);
             signInSheetReport.SetParameterValue("Event", selectedEvent);
             signInSheetReport.RegisterData(model, "Members");
 
@@ -90,7 +94,7 @@ namespace Topo.Controllers
                 strm.Position = 0;
 
                 // return stream in browser
-                return File(strm, "application/pdf", $"SignInSheet_{_storageService.SelectedUnitName.Replace(' ', '_')}_{selectedEvent.Replace(' ', '_')}.pdf");
+                return File(strm, "application/pdf", $"SignInSheet_{unitName.Replace(' ', '_')}_{selectedEvent.Replace(' ', '_')}.pdf");
             }
             else
             {

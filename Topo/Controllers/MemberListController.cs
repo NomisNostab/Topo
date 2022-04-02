@@ -82,10 +82,14 @@ namespace Topo.Controllers
         private async Task<ActionResult> GeneratePatrolReport(string reportDefinitionName, string reportDownloadName)
         {
             var model = await _memberListService.GetMembersAsync();
+            var groupName = _storageService.GroupName;
+            var unitName = _storageService.SelectedUnitName ?? "";
             var sortedPatrolList = model.Where(m => m.unit_order == 0).OrderBy(m => m.patrol_name).ToList();
             var patrolListReport = new Report();
             var directory = Directory.GetCurrentDirectory();
             patrolListReport.Load($@"{directory}\Reports\{reportDefinitionName}.frx");
+            patrolListReport.SetParameterValue("GroupName", groupName);
+            patrolListReport.SetParameterValue("UnitName", unitName);
             patrolListReport.SetParameterValue("ReportDate", DateTime.Now.ToShortDateString());
             patrolListReport.RegisterData(sortedPatrolList, "Members");
 
@@ -102,7 +106,7 @@ namespace Topo.Controllers
                 strm.Position = 0;
 
                 // return stream in browser
-                return File(strm, "application/pdf", $"{reportDownloadName}_{_storageService.SelectedUnitName.Replace(' ', '_')}.pdf");
+                return File(strm, "application/pdf", $"{reportDownloadName}_{unitName.Replace(' ', '_')}.pdf");
             }
             else
             {

@@ -58,6 +58,7 @@ namespace Topo.Controllers
                         await _loginService.GetUserAsync();
                         await _loginService.GetProfilesAsync();
                         _storageService.Units = _loginService.GetUnits();
+                        _storageService.GroupName = _storageService.GetProfilesResult.profiles[0].group?.name ?? "";
                     }
                 }
             }

@@ -204,9 +204,13 @@ namespace Topo.Controllers
 
             _dbContext.OASWorksheetAnswers.RemoveRange(_dbContext.OASWorksheetAnswers);
 
+            var groupName = _storageService.GroupName;
+            var unitName = _storageService.SelectedUnitName ?? "";
             var report = new Report();
             var directory = Directory.GetCurrentDirectory();
             report.Load($@"{directory}\Reports\OASWorksheet.frx");
+            report.SetParameterValue("GroupName", groupName);
+            report.SetParameterValue("UnitName", unitName);
             report.SetParameterValue("OASStage", templateTitle);
             report.RegisterData(sortedAnswers, "OASWorksheets");
 

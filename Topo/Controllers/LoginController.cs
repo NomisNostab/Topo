@@ -61,7 +61,10 @@ namespace Topo.Controllers
                 await _loginService.GetUserAsync();
                 await _loginService.GetProfilesAsync();
                 if (_storageService.GetProfilesResult != null && _storageService.GetProfilesResult.profiles != null && _storageService.GetProfilesResult.profiles.Length > 0)
+                {
                     _storageService.MemberName = _storageService.GetProfilesResult.profiles[0].member?.name ?? "";
+                    _storageService.GroupName = _storageService.GetProfilesResult.profiles[0].group?.name ?? "";
+                }
                 _storageService.Units = _loginService.GetUnits();
                 var authentication = _dbContext.Authentications.FirstOrDefault();
                 if (authentication == null)
