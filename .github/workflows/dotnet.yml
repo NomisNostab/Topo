@@ -28,13 +28,13 @@ jobs:
       run: dotnet test --no-build --verbosity normal
     - name: Publish
       run: dotnet publish Topo/Topo.csproj -c Release -o release -p:PublishProfile=FolderProfile
-    - name: Archive Release
+    - name: Archive Publish Folder
       uses: thedoctor0/zip-release@master
       with:
         type: zip
         filename: 'release.zip'
         path: /home/runner/work/Topo/Topo/release/
-    - name: release
+    - name: Create Release
       uses: actions/create-release@v1
       id: create_release
       with:
@@ -43,4 +43,13 @@ jobs:
         release_name: ${{ steps.generate_version.outputs.version }}
         tag_name: ${{ steps.generate_version.outputs.version }}
       env:
-        GITHUB_TOKEN: ${{ github.token }}        
+        GITHUB_TOKEN: ${{ github.token }}
+    - name: Upload to Release
+      uses: actions/upload-release-asset@v1
+      env:
+      GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./bin/azblogfilter.windows-amd64.zip
+        asset_name: azblogfilter.windows-amd64.zip
+        asset_content_type: application/zip        
