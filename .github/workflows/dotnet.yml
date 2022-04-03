@@ -36,7 +36,7 @@ jobs:
       with:
         draft: false
         prerelease: false
-        release_name: v1.0.1
+        release_name: v1.0.$GITHUB_RUN_NUMBER
         tag_name: ${{ github.ref }}
       env:
         GITHUB_TOKEN: ${{ github.token }}        
