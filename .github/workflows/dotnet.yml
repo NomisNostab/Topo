@@ -28,10 +28,11 @@ jobs:
       run: dotnet test --no-build --verbosity normal
     - name: Publish
       run: dotnet publish Topo/Topo.csproj -c Release -o release -p:PublishProfile=FolderProfile
-    - name: Upload Build Artifact
-      uses: actions/upload-artifact@v2
+    - name: Archive Release
+      uses: thedoctor0/zip-release@master
       with:
-        name: Application_Artifact
+        type: zip
+        filename: 'release.zip'
         path: /home/runner/work/Topo/Topo/release/
     - name: release
       uses: actions/create-release@v1
