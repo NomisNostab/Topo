@@ -17,6 +17,9 @@ jobs:
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: 6.0.x
+    - name: version
+      id: generate_version
+      run: echo "::set-output name=version::v1.0.$(($GITHUB_RUN_NUMBER))"
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
@@ -36,7 +39,7 @@ jobs:
       with:
         draft: false
         prerelease: false
-        release_name: v1.0.$GITHUB_RUN_NUMBER
+        release_name: ${{ steps.generate_number.outputs.version }}
         tag_name: ${{ github.ref }}
       env:
         GITHUB_TOKEN: ${{ github.token }}        
