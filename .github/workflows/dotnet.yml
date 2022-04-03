@@ -30,3 +30,13 @@ jobs:
       with:
         name: Application_Artifact
         path: /home/runner/work/Topo/Topo/release/
+    - name: release
+      uses: actions/create-release@v1
+      id: create_release
+      with:
+        draft: false
+        prerelease: false
+        release_name: v1.0.1
+        tag_name: ${{ github.ref }}
+      env:
+        GITHUB_TOKEN: ${{ github.token }}        
