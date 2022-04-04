@@ -32,8 +32,8 @@ jobs:
       uses: thedoctor0/zip-release@master
       with:
         type: zip
-        filename: 'release.zip'
-        path: /home/runner/work/Topo/Topo/release/
+        filename: '/home/runner/work/Topo/Topo/topo.zip'
+        directory: /home/runner/work/Topo/Topo/release/
     - name: Create Release
       uses: actions/create-release@v1
       id: create_release
