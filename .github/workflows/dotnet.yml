@@ -1,0 +1,55 @@
+name: .NET
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: 6.0.x
+    - name: version
+      id: generate_version
+      run: echo "::set-output name=version::1.0.$(($GITHUB_RUN_NUMBER))"
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
+    - name: Publish
+      run: dotnet publish Topo/Topo.csproj -c Release -o release -p:PublishProfile=FolderProfile -p:Version=${{ steps.generate_version.outputs.version }} -p:FileVersion=${{ steps.generate_version.outputs.version }}
+    - name: Archive Publish Folder
+      uses: thedoctor0/zip-release@master
+      with:
+        type: zip
+        filename: '/home/runner/work/Topo/Topo/topo.zip'
+        directory: /home/runner/work/Topo/Topo/release/
+    - name: Create Release
+      uses: actions/create-release@v1
+      id: create_release
+      with:
+        draft: false
+        prerelease: false
+        release_name: v${{ steps.generate_version.outputs.version }}
+        tag_name: v${{ steps.generate_version.outputs.version }}
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+    - name: Upload to Release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: '/home/runner/work/Topo/Topo/topo.zip'
+        asset_name: topo.zip
+        asset_content_type: application/zip        
