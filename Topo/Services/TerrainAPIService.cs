@@ -31,6 +31,7 @@ namespace Topo.Services
     {
         private readonly StorageService _storageService;
         private readonly TopoDBContext _dbContext;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly string cognitoAddress = "https://cognito-idp.ap-southeast-2.amazonaws.com/";
         private readonly string membersAddress = "https://members.terrain.scouts.com.au/";
         private readonly string eventsAddress = "https://events.terrain.scouts.com.au/";
@@ -39,10 +40,12 @@ namespace Topo.Services
         private readonly string clientId = "6v98tbc09aqfvh52fml3usas3c";
 
         public TerrainAPIService(StorageService storageService,
-            TopoDBContext topoDBContext)
+            TopoDBContext topoDBContext,
+            IHttpClientFactory httpClientFactory)
         {
             _storageService = storageService;
             _dbContext = topoDBContext;
+            _httpClientFactory = httpClientFactory;
         }
 
         public async Task<AuthenticationResultModel?> LoginAsync(string? branch, string? username, string? password)
@@ -235,7 +238,7 @@ namespace Topo.Services
         public async Task<GetOASTemplateResultModel?> GetOASTemplateAsync(string stream)
         {
             await RefreshTokenAsync();
-            
+
             string requestUri = $"{templatesAddress}{stream}/latest.json";
             var result = await SendRequest(HttpMethod.Get, requestUri);
             var getOASTemplateResultModel = JsonConvert.DeserializeObject<GetOASTemplateResultModel>(result);
@@ -243,24 +246,22 @@ namespace Topo.Services
             return getOASTemplateResultModel;
         }
 
-        public async Task<string> SendRequest(HttpMethod httpMethod, string requestUri, string content = "", string xAmzTargetHeader = "" )
+        public async Task<string> SendRequest(HttpMethod httpMethod, string requestUri, string content = "", string xAmzTargetHeader = "")
         {
-            using (var httpClient = new HttpClient())
-            {
-                HttpRequestMessage httpRequest = new HttpRequestMessage(httpMethod, requestUri);
-                httpRequest.Content = new StringContent(content, Encoding.UTF8, "application/x-amz-json-1.1");
-                if (string.IsNullOrEmpty(xAmzTargetHeader))
-                    httpRequest.Headers.Add("authorization", _storageService?.AuthenticationResult?.IdToken);
-                else
-                    httpRequest.Headers.Add("X-Amz-Target", xAmzTargetHeader);
-                httpRequest.Headers.Add("accept", "application/json, text/plain, */*");
-                httpRequest.Headers.Add("X-Amz-User-Agent", "aws-amplify/0.1.x js");
+            var httpClient = _httpClientFactory.CreateClient();
+            HttpRequestMessage httpRequest = new HttpRequestMessage(httpMethod, requestUri);
+            httpRequest.Content = new StringContent(content, Encoding.UTF8, "application/x-amz-json-1.1");
+            if (string.IsNullOrEmpty(xAmzTargetHeader))
+                httpRequest.Headers.Add("authorization", _storageService?.AuthenticationResult?.IdToken);
+            else
+                httpRequest.Headers.Add("X-Amz-Target", xAmzTargetHeader);
+            httpRequest.Headers.Add("accept", "application/json, text/plain, */*");
+            httpRequest.Headers.Add("X-Amz-User-Agent", "aws-amplify/0.1.x js");
 
-                var response = await httpClient.SendAsync(httpRequest);
-                var responseContent = response.Content.ReadAsStringAsync();
-                var result = responseContent.Result;
-                return result;
-            }
+            var response = await httpClient.SendAsync(httpRequest);
+            var responseContent = response.Content.ReadAsStringAsync();
+            var result = responseContent.Result;
+            return result;
         }
     }
 }
