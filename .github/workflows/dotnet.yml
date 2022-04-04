@@ -19,7 +19,7 @@ jobs:
         dotnet-version: 6.0.x
     - name: version
       id: generate_version
-      run: echo "::set-output name=version::v1.0.$(($GITHUB_RUN_NUMBER))"
+      run: echo "::set-output name=version::1.0.$(($GITHUB_RUN_NUMBER))"
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
@@ -40,8 +40,8 @@ jobs:
       with:
         draft: false
         prerelease: false
-        release_name: ${{ steps.generate_version.outputs.version }}
-        tag_name: ${{ steps.generate_version.outputs.version }}
+        release_name: v${{ steps.generate_version.outputs.version }}
+        tag_name: v${{ steps.generate_version.outputs.version }}
       env:
         GITHUB_TOKEN: ${{ github.token }}
     - name: Upload to Release
