@@ -27,7 +27,7 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal
     - name: Publish
-      run: dotnet publish Topo/Topo.csproj -c Release -o release -p:PublishProfile=FolderProfile
+      run: dotnet publish Topo/Topo.csproj -c Release -o release -p:PublishProfile=FolderProfile -p:Version=${{ steps.generate_version.outputs.version }} -p:FileVersion=${{ steps.generate_version.outputs.version }}
     - name: Archive Publish Folder
       uses: thedoctor0/zip-release@master
       with:
