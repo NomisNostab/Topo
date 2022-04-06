@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
-using Topo.Models.OAS;
+﻿using FastReport;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Globalization;
 using Topo.Data;
 using Topo.Data.Models;
+using Topo.Models.OAS;
 
 namespace Topo.Services
 {
@@ -12,18 +14,21 @@ namespace Topo.Services
         public List<SelectListItem> GetOASStageListItems(List<OASStageListModel> oasStageListModels);
         public Task<GetUnitAchievementsResultsModel> GetUnitAchievements(string unit, string stream, string branch, int stage);
         public Task<List<OASTemplate>> GetOASTemplate(string templateName);
+        public Task<Report> GenerateOASWorksheet(string selectedUnitId, string selectedStageTemplate);
     }
     public class OASService : IOASService
     {
         private readonly StorageService _storageService;
         private readonly ITerrainAPIService _terrainAPIService;
         private readonly TopoDBContext _dbContext;
+        private readonly IMemberListService _memberListService;
 
-        public OASService(StorageService storageService, ITerrainAPIService terrainAPIService, TopoDBContext dBContext)
+        public OASService(StorageService storageService, ITerrainAPIService terrainAPIService, TopoDBContext dBContext, IMemberListService memberListService)
         {
             _storageService = storageService;
             _terrainAPIService = terrainAPIService;
             _dbContext = dBContext;
+            _memberListService = memberListService;
         }
         public async Task<List<OASStageListModel>> GetOASStageList(string stream)
         {
@@ -166,6 +171,118 @@ namespace Topo.Services
             if (inputGroup == "Review>")
                 return 3;
             return 4;
+        }
+
+        public async Task<Report> GenerateOASWorksheet(string selectedUnitId, string selectedStageTemplate)
+        {
+            var selectedStage = _storageService.OASStageList.Where(s => s.TemplateLink == selectedStageTemplate).SingleOrDefault();
+            var getUnitAchievementsResultsModel = await GetUnitAchievements(selectedUnitId, selectedStage.Stream.ToLower(), selectedStage.Branch, selectedStage.Stage);
+            var members = await _memberListService.GetMembersAsync();
+            var sortedMemberList = members.Where(m => m.isAdultLeader == 0).OrderBy(m => m.first_name).ThenBy(m => m.last_name).ToList();
+            var templateList = await GetOASTemplate(selectedStageTemplate.Replace("/latest.json", ""));
+
+            var templateTitle = templateList.Count > 0 ? templateList[0].TemplateTitle : "";
+
+            _dbContext.OASWorksheetAnswers.RemoveRange(_dbContext.OASWorksheetAnswers);
+
+            foreach (var item in templateList.Where(t => t.InputGroupSort < 4).OrderBy(t => t.InputGroupSort).ThenBy(t => t.Id))
+            {
+                foreach (var member in sortedMemberList)
+                {
+                    OASWorksheetAnswers oASWorksheetAnswers = new OASWorksheetAnswers()
+                    {
+                        InputId = item.InputId,
+                        InputTitle = item.InputGroup.Replace(">", ""),
+                        InputLabel = item.InputLabel,
+                        InputTitleSortIndex = item.InputGroupSort,
+                        InputSortIndex = item.Id,
+                        MemberId = member.id,
+                        MemberName = $"{member.first_name} {member.last_name}",
+                        MemberAnswer = null
+                    };
+                    _dbContext.OASWorksheetAnswers.Add(oASWorksheetAnswers);
+                }
+            }
+            _dbContext.SaveChanges();
+
+            foreach (var member in getUnitAchievementsResultsModel.results)
+            {
+                DateTime? awardedDate = member.status == "awarded" ? member.status_updated : null;
+                if (member.answers == null)
+                {
+                    var worksheetAnswers = _dbContext.OASWorksheetAnswers
+                        .Where(wa => wa.MemberId == member.member_id)
+                        .ToList();
+                    foreach (var worksheetAnswer in worksheetAnswers)
+                    {
+                        if (worksheetAnswer != null)
+                            worksheetAnswer.MemberAnswer = awardedDate;
+                    }
+                }
+                else
+                {
+
+                    var verifiedAnswers = member.answers.Where(a => a.Key.EndsWith("_verifiedDate"));
+                    if (verifiedAnswers.Any())
+                    {
+                        foreach (var answer in verifiedAnswers)
+                        {
+                            var worksheetAnswer = _dbContext.OASWorksheetAnswers
+                                .Where(wa => wa.InputId == answer.Key.Replace("_verifiedDate", ""))
+                                .Where(wa => wa.MemberId == member.member_id)
+                                .FirstOrDefault();
+                            if (worksheetAnswer != null)
+                                try
+                                {
+                                    worksheetAnswer.MemberAnswer = awardedDate ?? DateTime.Parse(answer.Value, CultureInfo.InvariantCulture);
+                                }
+                                catch (Exception ex)
+                                {
+
+                                }
+                        }
+                    }
+                    else
+                    {
+                        foreach (var answer in member.answers)
+                        {
+                            var worksheetAnswer = _dbContext.OASWorksheetAnswers
+                                .Where(wa => wa.InputId == answer.Key)
+                                .Where(wa => wa.MemberId == member.member_id)
+                                .FirstOrDefault();
+                            if (worksheetAnswer != null)
+                                try
+                                {
+                                    worksheetAnswer.MemberAnswer = awardedDate;
+                                }
+                                catch (Exception ex)
+                                {
+
+                                }
+                        }
+                    }
+                }
+            }
+            _dbContext.SaveChanges();
+
+            var sortedAnswers = _dbContext.OASWorksheetAnswers
+                .OrderBy(owa => owa.InputTitleSortIndex)
+                .ThenBy(owa => owa.InputSortIndex)
+                .ToList();
+
+            _dbContext.OASWorksheetAnswers.RemoveRange(_dbContext.OASWorksheetAnswers);
+
+            var groupName = _storageService.GroupName;
+            var unitName = _storageService.SelectedUnitName ?? "";
+            var report = new Report();
+            var directory = Directory.GetCurrentDirectory();
+            report.Load($@"{directory}\Reports\OASWorksheet.frx");
+            report.SetParameterValue("GroupName", groupName);
+            report.SetParameterValue("UnitName", unitName);
+            report.SetParameterValue("OASStage", templateTitle);
+            report.RegisterData(sortedAnswers, "OASWorksheets");
+
+            return report;
         }
     }
 }
