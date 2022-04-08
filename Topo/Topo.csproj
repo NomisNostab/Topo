@@ -43,6 +43,9 @@
 		<None Update="Reports\PatrolSheets.frx">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<None Update="Reports\SIAProjectReport.frx">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Update="Reports\SignInSheet.frx">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
