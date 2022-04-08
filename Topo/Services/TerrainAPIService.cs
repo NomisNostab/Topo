@@ -1,13 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System.Text;
+using Topo.Data;
+using Topo.Models.Events;
 using Topo.Models.Login;
 using Topo.Models.MemberList;
-using Topo.Models.Events;
 using Topo.Models.OAS;
-using Topo.Data;
-using System.Dynamic;
-using Newtonsoft.Json.Converters;
+using Topo.Models.SIA;
 
 namespace Topo.Services
 {
@@ -26,6 +24,7 @@ namespace Topo.Services
         public Task<GetOASTreeResultsModel?> GetOASTreeAsync(string stream);
         public Task<GetUnitAchievementsResultsModel> GetUnitAchievements(string unit, string stream, string branch, int stage);
         public Task<GetOASTemplateResultModel?> GetOASTemplateAsync(string stream);
+        public Task<GetSIAResultsModel> GetSIAResultsForMember(string memberId);
     }
     public class TerrainAPIService : ITerrainAPIService
     {
@@ -232,7 +231,7 @@ namespace Topo.Services
             }
             var getUnitAchievementsResultsModel = JsonConvert.DeserializeObject<GetUnitAchievementsResultsModel>(responseContentResult);
 
-            return getUnitAchievementsResultsModel;
+            return getUnitAchievementsResultsModel ?? new GetUnitAchievementsResultsModel();
         }
 
         public async Task<GetOASTemplateResultModel?> GetOASTemplateAsync(string stream)
@@ -244,6 +243,17 @@ namespace Topo.Services
             var getOASTemplateResultModel = JsonConvert.DeserializeObject<GetOASTemplateResultModel>(result);
 
             return getOASTemplateResultModel;
+        }
+
+        public async Task<GetSIAResultsModel> GetSIAResultsForMember(string memberId)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{achievementsAddress}members/{memberId}/achievements?type=special_interest_area";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var getSIAResultsModel = JsonConvert.DeserializeObject<GetSIAResultsModel>(result);
+
+            return getSIAResultsModel ?? new GetSIAResultsModel();
         }
 
         public async Task<string> SendRequest(HttpMethod httpMethod, string requestUri, string content = "", string xAmzTargetHeader = "")
