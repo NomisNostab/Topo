@@ -105,12 +105,17 @@ namespace Topo.Controllers
 
         public async Task<ActionResult> AttendanceList(string eventId)
         {
+            var groupName = _storageService.GroupName;
+            var unitName = _storageService.SelectedUnitName ?? "";
+
             var eventListModel = await _eventService.GetAttendanceForEvent(eventId);
 
             MemoryStream ms = new MemoryStream();
             // Encoding.UTF8 produces stream with BOM, new UTF8Encoding(false) - without BOM
             using (StreamWriter sw = new StreamWriter(ms, new UTF8Encoding(false), 8192, true))
             {
+                sw.WriteLine(groupName);
+                sw.WriteLine(unitName);
                 sw.WriteLine(eventListModel.EventDisplay);
                 sw.WriteLine();
                 PropertyInfo[] properties = typeof(Attendee_Members).GetProperties();
@@ -122,7 +127,7 @@ namespace Topo.Controllers
                 }
             }
             ms.Position = 0;
-            return File(ms, "application/vnd.ms-excel", $"Attendance_{_storageService.SelectedUnitName.Replace(' ', '_')}_{eventListModel.EventDisplay.Replace(' ', '_')}.csv");
+            return File(ms, "application/vnd.ms-excel", $"Attendance_{unitName.Replace(' ', '_')}_{eventListModel.EventDisplay.Replace(' ', '_')}.csv");
         }
 
     }
