@@ -210,6 +210,14 @@ namespace Topo.Services
                 DateTime? awardedDate = member.status == "awarded" ? member.status_updated : null;
                 if (member.answers == null)
                 {
+                    if (member.imported != null)
+                    {
+                        DateTime importedDateAwarded = new DateTime();
+                        bool goodImportedDateAwarded = DateTime.TryParse(member.imported.date_awarded, out importedDateAwarded);
+                        if (goodImportedDateAwarded)
+                            awardedDate = importedDateAwarded;
+                    }
+                        
                     var worksheetAnswers = _dbContext.OASWorksheetAnswers
                         .Where(wa => wa.MemberId == member.member_id)
                         .ToList();
