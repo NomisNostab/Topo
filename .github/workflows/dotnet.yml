@@ -25,9 +25,9 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal
     - name: Publish Win-x64
-      run: dotnet publish Topo/Topo.csproj -c Release -p:PublishProfile=FolderProfile -o ..\output\win-x64 -p:Version=${{ steps.generate_version.outputs.version }} -p:FileVersion=${{ steps.generate_version.outputs.version }}
+      run: dotnet publish Topo/Topo.csproj -c Release -p:PublishProfile=FolderProfile -o ../output/win-x64 -p:Version=${{ steps.generate_version.outputs.version }} -p:FileVersion=${{ steps.generate_version.outputs.version }}
     - name: Publish Osx-x64
-      run: dotnet publish Topo/Topo.csproj -c Release -p:PublishProfile=FolderProfileOsx -o ..\output\osx-x64 -p:Version=${{ steps.generate_version.outputs.version }} -p:FileVersion=${{ steps.generate_version.outputs.version }}    
+      run: dotnet publish Topo/Topo.csproj -c Release -p:PublishProfile=FolderProfileOsx -o ../output/osx-x64 -p:Version=${{ steps.generate_version.outputs.version }} -p:FileVersion=${{ steps.generate_version.outputs.version }}    
     - name: Archive Win-x64 Publish Folder
       uses: thedoctor0/zip-release@master
       with:
