@@ -205,67 +205,83 @@ namespace Topo.Services
             }
             _dbContext.SaveChanges();
 
-            foreach (var member in getUnitAchievementsResultsModel.results)
+            foreach (var memberAchievement in getUnitAchievementsResultsModel.results)
             {
-                DateTime? awardedDate = member.status == "awarded" ? member.status_updated : null;
-                if (member.answers == null)
+                var verifiedAnswers = memberAchievement.answers.Where(a => a.Key.EndsWith("_verifiedDate")) ?? new Dictionary<string, string>();
+                // In progress
+                if (memberAchievement.status == "draft_review")
                 {
-                    if (member.imported != null)
-                    {
-                        DateTime importedDateAwarded = new DateTime();
-                        bool goodImportedDateAwarded = DateTime.TryParse(member.imported.date_awarded, out importedDateAwarded);
-                        if (goodImportedDateAwarded)
-                            awardedDate = importedDateAwarded;
-                    }
-                        
-                    var worksheetAnswers = _dbContext.OASWorksheetAnswers
-                        .Where(wa => wa.MemberId == member.member_id)
-                        .ToList();
-                    foreach (var worksheetAnswer in worksheetAnswers)
-                    {
-                        if (worksheetAnswer != null)
-                            worksheetAnswer.MemberAnswer = awardedDate;
-                    }
-                }
-                else
-                {
-
-                    var verifiedAnswers = member.answers.Where(a => a.Key.EndsWith("_verifiedDate"));
                     if (verifiedAnswers.Any())
                     {
                         foreach (var answer in verifiedAnswers)
                         {
                             var worksheetAnswer = _dbContext.OASWorksheetAnswers
                                 .Where(wa => wa.InputId == answer.Key.Replace("_verifiedDate", ""))
-                                .Where(wa => wa.MemberId == member.member_id)
+                                .Where(wa => wa.MemberId == memberAchievement.member_id)
                                 .FirstOrDefault();
                             if (worksheetAnswer != null)
                                 try
                                 {
-                                    worksheetAnswer.MemberAnswer = awardedDate ?? DateTime.Parse(answer.Value, CultureInfo.InvariantCulture);
+                                    worksheetAnswer.MemberAnswer = ConvertAnswerDate(answer.Value);
                                 }
                                 catch (Exception ex)
                                 {
-
+                                    worksheetAnswer.MemberAnswer = memberAchievement.status_updated;
                                 }
                         }
                     }
-                    else
+                }
+
+                // Awarded
+                if (memberAchievement.status == "awarded")
+                {
+                    // Imported
+                    if (memberAchievement.imported != null)
                     {
-                        foreach (var answer in member.answers)
+                        // Conver string date from yyyy-mm-dd format
+                        var importedDate = DateTime.ParseExact(memberAchievement.imported.date_awarded, "yyyy-MM-dd", CultureInfo.InvariantCulture); 
+                        // Get all answers
+                        var worksheetAnswers = _dbContext.OASWorksheetAnswers
+                            .Where(wa => wa.MemberId == memberAchievement.member_id)
+                            .ToList();
+                        // Set answer date for each answer
+                        foreach (var worksheetAnswer in worksheetAnswers)
+                        {
+                            if (worksheetAnswer != null)
+                                worksheetAnswer.MemberAnswer = importedDate;
+                        }
+                    }
+                    // No answers
+                    if (memberAchievement.answers == null || !verifiedAnswers.Any())
+                    {
+                        // Get all answers
+                        var worksheetAnswers = _dbContext.OASWorksheetAnswers
+                            .Where(wa => wa.MemberId == memberAchievement.member_id)
+                            .ToList();
+                        // Set answer date for each answer
+                        foreach (var worksheetAnswer in worksheetAnswers)
+                        {
+                            if (worksheetAnswer != null)
+                                worksheetAnswer.MemberAnswer = memberAchievement.status_updated;
+                        }
+                    }
+                    // Answers
+                    if (verifiedAnswers.Any())
+                    {
+                        foreach (var answer in verifiedAnswers)
                         {
                             var worksheetAnswer = _dbContext.OASWorksheetAnswers
-                                .Where(wa => wa.InputId == answer.Key)
-                                .Where(wa => wa.MemberId == member.member_id)
+                                .Where(wa => wa.InputId == answer.Key.Replace("_verifiedDate", ""))
+                                .Where(wa => wa.MemberId == memberAchievement.member_id)
                                 .FirstOrDefault();
                             if (worksheetAnswer != null)
                                 try
                                 {
-                                    worksheetAnswer.MemberAnswer = awardedDate;
+                                    worksheetAnswer.MemberAnswer = ConvertAnswerDate(answer.Value);
                                 }
                                 catch (Exception ex)
                                 {
-
+                                    worksheetAnswer.MemberAnswer = memberAchievement.status_updated;
                                 }
                         }
                     }
@@ -291,6 +307,24 @@ namespace Topo.Services
             report.RegisterData(sortedAnswers, "OASWorksheets");
 
             return report;
+        }
+
+        private DateTime ConvertAnswerDate(string answerValue)
+        {
+            // Question answer dates seem to be either AU or US format. WTF!
+            // "south_magnetic_find_electronic_means_compass_west_directions_e7e4fc_verifiedDate": "18/11/2020",
+            // "least_activities_improved_bushcraft_learnt_from_enjoyed_talked_a5973d_verifiedDate": "11/18/2020",
+            DateTime answerDate;
+            try
+            {
+                answerDate = DateTime.ParseExact(answerValue, "dd/MM/yyyy", CultureInfo.InvariantCulture); // Date in AU format
+                return answerDate;
+            }
+            catch
+            {
+                answerDate = DateTime.ParseExact(answerValue, "MM/dd/yyyy", CultureInfo.InvariantCulture); // Date in UA format
+                return answerDate;
+            }
         }
     }
 }

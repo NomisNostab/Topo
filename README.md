@@ -1,11 +1,17 @@
 # Topo
 Topo is a helper application to assist scout leaders in getting meaningful reports out of the Scouts Australia Terrain applicatiom.
 ## Installation
-Download the latest Topo.zip file from the [releases](https://github.com/NomisNostab/Topo/releases) page.
+### Windows
+Download the latest Topo-win.zip file from the [releases](https://github.com/NomisNostab/Topo/releases) page.
 
 Create a folder in your Documents folder called Topo.
 
-Unzip the Topo.zip file to the Documents/Topo folder.
+Unzip the Topo-win.zip file to the Documents/Topo folder.
+### OSX
+Download the latest Topo-osx.zip file from the [releases](https://github.com/NomisNostab/Topo/releases) page.
+
+Unzip to your desired location
+
 ## Running the Server App
 To run the app server, double click the Topo.exe file.
 This will open a terminal window similar to

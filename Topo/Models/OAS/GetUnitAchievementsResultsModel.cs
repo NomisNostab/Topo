@@ -5,12 +5,6 @@
         public Result[] results { get; set; }
     }
 
-
-    public class Rootobject
-    {
-        public Result[] results { get; set; }
-    }
-
     public class Result
     {
         public string id { get; set; }
