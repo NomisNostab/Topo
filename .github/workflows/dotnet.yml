@@ -33,13 +33,13 @@ jobs:
       with:
         type: zip
         filename: '/home/runner/work/Topo/topo-win.zip'
-        directory: /home/runner/work/Topo/output/osx-x64/
+        directory: /home/runner/work/Topo/output/win-x64/
     - name: Archive Osx-x64 Publish Folder
       uses: thedoctor0/zip-release@master
       with:
         type: zip
         filename: '/home/runner/work/Topo/topo-osx.zip'
-        directory: /home/runner/work/Topo/output/win-x64/
+        directory: /home/runner/work/Topo/output/osx-x64/
     - name: Create Release
       uses: actions/create-release@v1
       id: create_release
@@ -47,6 +47,7 @@ jobs:
         draft: true
         prerelease: false
         release_name: v${{ steps.generate_version.outputs.version }}
+        tag_name: v${{ steps.generate_version.outputs.version }}
       env:
         GITHUB_TOKEN: ${{ github.token }}
     - name: Upload Win-x64 to Release
