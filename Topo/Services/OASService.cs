@@ -207,7 +207,9 @@ namespace Topo.Services
 
             foreach (var memberAchievement in getUnitAchievementsResultsModel.results)
             {
-                var verifiedAnswers = memberAchievement.answers.Where(a => a.Key.EndsWith("_verifiedDate")) ?? new Dictionary<string, string>();
+                var verifiedAnswers = new List<KeyValuePair<string, string>>();
+                if (memberAchievement.answers != null)
+                    verifiedAnswers = memberAchievement.answers.Where(a => a.Key.EndsWith("_verifiedDate")).ToList();
                 // In progress
                 if (memberAchievement.status == "draft_review")
                 {
