@@ -24,13 +24,15 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal
-    - name: Publish
-      run: dotnet publish Topo/Topo.csproj -c Release -o release -p:PublishProfile=FolderProfile -p:Version=${{ steps.generate_version.outputs.version }} -p:FileVersion=${{ steps.generate_version.outputs.version }}
+    - name: Publish Win
+      run: dotnet publish Topo/Topo.csproj -c Release -p:PublishSingleFile=true -o ..\output\win-x64 -r win-x64 --self-contained true -p:Version=${{ steps.generate_version.outputs.version }} -p:FileVersion=${{ steps.generate_version.outputs.version }}
+    - name: Publish Osx
+      run: dotnet publish Topo/Topo.csproj -c Release -p:PublishSingleFile=true -o ..\output\osx-x64 -r osx-x64 --self-contained true -p:Version=${{ steps.generate_version.outputs.version }} -p:FileVersion=${{ steps.generate_version.outputs.version }}    
     - name: Archive Publish Folder
       uses: thedoctor0/zip-release@master
       with:
         type: zip
-        filename: '/home/runner/work/Topo/Topo/topo.zip'
+        filename: '/home/runner/work/Topo/topo-win.zip'
         directory: /home/runner/work/Topo/Topo/release/
     - name: Create Release
       uses: actions/create-release@v1
