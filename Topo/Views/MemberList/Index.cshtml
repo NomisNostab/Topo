@@ -37,6 +37,9 @@
             <div class="col">
                 <strong>@Html.DisplayNameFor(model => model.Members.FirstOrDefault().patrol_duty)</strong>
             </div>
+            <div class="col">
+                <strong>@Html.DisplayNameFor(model => model.Members.FirstOrDefault().unit_council)</strong>
+            </div>
         </div>
         @foreach (var item in Model?.Members)
         {
@@ -55,6 +58,9 @@
                 </div>
                 <div class="col">
                     @Html.DisplayFor(model => item.patrol_duty)
+                </div>
+                <div class="col align-content-center">
+                    @Html.DisplayFor(model => item.unit_council)
                 </div>
             </div>
         }

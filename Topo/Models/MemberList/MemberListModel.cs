@@ -14,6 +14,7 @@ namespace Topo.Models.MemberList
         public string last_name { get; set; }
         public string status { get; set; }
         public string date_of_birth { get; set; }
+        [Display(Name = "Unit Council")]
         public bool unit_council { get; set; }
         [Display(Name = "Patrol")]
         public string patrol_name { get; set; }
