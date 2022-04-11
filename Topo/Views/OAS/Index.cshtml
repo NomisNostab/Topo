@@ -9,7 +9,7 @@
     <div class="mt-3 mb-3 row">
         <label class="col-sm-2 col-form-label">Please select a Unit:</label>
         <div class="col-sm-2 ">
-            @Html.DropDownListFor(m => m.SelectedUnitId, Model.Units, "Select Unit", new { @class ="form-select" })
+            @Html.DropDownListFor(m => m.SelectedUnitId, Model.Units, "Select Unit", new { @class ="form-select", onchange = "this.form.submit();" })
             <span asp-validation-for="SelectedUnitId" class="text-danger"></span>
         </div>
     </div>
