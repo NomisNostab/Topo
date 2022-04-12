@@ -57,7 +57,7 @@ namespace Topo.Controllers
             {
                 _storageService.SelectedUnitId = memberListViewModel.SelectedUnitId;
                 if (_storageService.Units != null)
-                    _storageService.SelectedUnitName = _storageService.Units.Where(u => u.Value == memberListViewModel.SelectedUnitId)?.SingleOrDefault()?.Text;
+                    _storageService.SelectedUnitName = _storageService.Units.Where(u => u.Value == memberListViewModel.SelectedUnitId)?.FirstOrDefault()?.Text;
                 model = await SetUpViewModel();
             }
             else

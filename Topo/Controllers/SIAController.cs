@@ -26,31 +26,34 @@ namespace Topo.Controllers
             ViewBag.Unit = _storageService.SelectedUnitName;
         }
 
-        // GET: SIAController
-        public async Task<ActionResult> Index()
+        private SIAIndexViewModel SetModel()
         {
             SIAIndexViewModel model = new SIAIndexViewModel();
             model.Units = new List<SelectListItem>();
             if (_storageService.Units != null)
                 model.Units = _storageService.Units;
+            return model;
+        }
+
+        // GET: SIAController
+        public ActionResult Index()
+        {
+            var model = SetModel();
             SetViewBag();
             return View(model);
         }
 
         [HttpPost]
-        public async Task<ActionResult> Index(SIAIndexViewModel siaIndexViewModel)
+        public ActionResult Index(SIAIndexViewModel siaIndexViewModel)
         {
-            var model = new SIAIndexViewModel();
+            var model = SetModel();
             if (ModelState.IsValid)
             {
                 _storageService.SelectedUnitId = siaIndexViewModel.SelectedUnitId;
                 if (_storageService.Units != null)
-                    _storageService.SelectedUnitName = _storageService.Units.Where(u => u.Value == siaIndexViewModel.SelectedUnitId)?.SingleOrDefault()?.Text;
+                    _storageService.SelectedUnitName = _storageService.Units.Where(u => u.Value == siaIndexViewModel.SelectedUnitId)?.FirstOrDefault()?.Text;
                 model.SelectedUnitId = _storageService.SelectedUnitId;
                 model.SelectedUnitName = _storageService.SelectedUnitName;
-                model.Units = new List<SelectListItem>();
-                if (_storageService.Units != null)
-                    model.Units = _storageService.Units;
             }
             SetViewBag();
             return View(model);
@@ -77,8 +80,9 @@ namespace Topo.Controllers
             }
             else
             {
+                var model = SetModel();
                 SetViewBag();
-                return View();
+                return View(model);
             }
         }
     }

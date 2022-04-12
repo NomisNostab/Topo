@@ -50,7 +50,7 @@ namespace Topo.Controllers
             if (ModelState.IsValid)
             {
                 var calendarTitle = _storageService.Calendars.FirstOrDefault(c => c.Value == eventViewModel.SelectedCalendar).Text;
-                var selectedUnit = _storageService.Units.Where(u => u.Text == calendarTitle)?.SingleOrDefault();
+                var selectedUnit = _storageService.Units.Where(u => u.Text == calendarTitle)?.FirstOrDefault();
                 _storageService.SelectedUnitName = selectedUnit.Text;
                 _storageService.SelectedUnitId = selectedUnit.Value;
                 await _eventService.SetCalendar(eventViewModel.SelectedCalendar);

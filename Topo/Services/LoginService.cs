@@ -50,7 +50,7 @@ namespace Topo.Services
 
         public List<SelectListItem>? GetUnits()
         {
-            return _storageService.GetProfilesResult?.profiles?.Select(p => p.unit).Distinct().Select(u => new SelectListItem { Text = u?.name, Value = u?.id }).ToList();
+            return _storageService.GetProfilesResult?.profiles?.Select(p => p.unit).Select(u => new SelectListItem { Text = u?.name, Value = u?.id }).ToList();
         }
 
 
