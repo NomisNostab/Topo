@@ -78,7 +78,6 @@ namespace Topo.Services
             report.RegisterData(unitSiaProjects, "SIAProjects");
 
             return report;
-
         }
     }
 }
