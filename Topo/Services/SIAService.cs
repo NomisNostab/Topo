@@ -14,14 +14,16 @@ namespace Topo.Services
         private readonly StorageService _storageService;
         private readonly IMemberListService _memberListService;
         private readonly ITerrainAPIService _terrainAPIService;
+        private readonly ILogger<ISIAService> _logger;
 
         public SIAService(IMemberListService memberListService,
-            ITerrainAPIService terrainAPIService, 
-            StorageService storageService)
+            ITerrainAPIService terrainAPIService,
+            StorageService storageService, ILogger<ISIAService> logger)
         {
             _memberListService = memberListService;
             _terrainAPIService = terrainAPIService;
             _storageService = storageService;
+            _logger = logger;
         }
         public async Task<Report> GenerateSIAReport()
         {
@@ -33,19 +35,36 @@ namespace Topo.Services
             var sortedMemberList = members.Where(m => m.isAdultLeader == 0).OrderBy(m => m.first_name).ThenBy(m => m.last_name).ToList();
             foreach (var member in sortedMemberList)
             {
-                var siaResultModel = await _terrainAPIService.GetSIAResultsForMember(member.id);
-                var memberSiaProjects = siaResultModel.results.Where(r => r.section == unit)
-                    .Select(r => new SIAProjectListModel
-                    {
+                try
+                {
+                    var siaResultModel = await _terrainAPIService.GetSIAResultsForMember(member.id);
+                    var memberSiaProjects = siaResultModel.results.Where(r => r.section == unit)
+                        .Select(r => new SIAProjectListModel
+                        {
+                            memberName = $"{member.first_name} {member.last_name}",
+                            area = myTI.ToTitleCase(r.answers.special_interest_area_selection.Replace("sia_", "").Replace("_", " ")),
+                            projectName = r.answers.project_name,
+                            status = myTI.ToTitleCase(r.status.Replace("_", " ")),
+                            statusUpdated = r.status_updated
+                        })
+                        .ToList();
+                    if (memberSiaProjects != null && memberSiaProjects.Count > 0)
+                        unitSiaProjects = unitSiaProjects.Concat(memberSiaProjects).ToList();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"GenerateSIAReport: Exception: {ex.Message}");
+                    _logger.LogError($"GenerateSIAReport: Member: {member.first_name} {member.last_name} {member.id}");
+                    _logger.LogError(ex, "GenerateSIAReport:");
+                    unitSiaProjects.Add(new SIAProjectListModel
+                    { 
                         memberName = $"{member.first_name} {member.last_name}",
-                        area = myTI.ToTitleCase(r.answers.special_interest_area_selection.Replace("sia_", "").Replace("_", " ")),
-                        projectName = r.answers.project_name,
-                        status = myTI.ToTitleCase(r.status.Replace("_", " ")),
-                        statusUpdated = r.status_updated
-                    })
-                    .ToList();
-                if (memberSiaProjects.Count > 0)
-                    unitSiaProjects = unitSiaProjects.Concat(memberSiaProjects).ToList();
+                        area = "Error",
+                        projectName = "Error",
+                        status = "Error",
+                        statusUpdated = DateTime.Now
+                    });
+                }
             }
 
             var groupName = _storageService.GroupName;
