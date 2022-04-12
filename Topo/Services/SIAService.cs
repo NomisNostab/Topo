@@ -48,7 +48,7 @@ namespace Topo.Services
                             statusUpdated = r.status_updated
                         })
                         .ToList();
-                    if (memberSiaProjects.Count > 0)
+                    if (memberSiaProjects != null && memberSiaProjects.Count > 0)
                         unitSiaProjects = unitSiaProjects.Concat(memberSiaProjects).ToList();
                 }
                 catch (Exception ex)
@@ -56,6 +56,14 @@ namespace Topo.Services
                     _logger.LogError($"GenerateSIAReport: Exception: {ex.Message}");
                     _logger.LogError($"GenerateSIAReport: Member: {member.first_name} {member.last_name} {member.id}");
                     _logger.LogError(ex, "GenerateSIAReport:");
+                    unitSiaProjects.Add(new SIAProjectListModel
+                    { 
+                        memberName = $"{member.first_name} {member.last_name}",
+                        area = "Error",
+                        projectName = "Error",
+                        status = "Error",
+                        statusUpdated = DateTime.Now
+                    });
                 }
             }
 
