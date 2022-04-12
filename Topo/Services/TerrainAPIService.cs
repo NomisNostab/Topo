@@ -37,14 +37,17 @@ namespace Topo.Services
         private readonly string templatesAddress = "https://templates.terrain.scouts.com.au/";
         private readonly string achievementsAddress = "https://achievements.terrain.scouts.com.au/";
         private readonly string clientId = "6v98tbc09aqfvh52fml3usas3c";
+        private readonly ILogger<TerrainAPIService> _logger;
 
         public TerrainAPIService(StorageService storageService,
             TopoDBContext topoDBContext,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            ILogger<TerrainAPIService> logger)
         {
             _storageService = storageService;
             _dbContext = topoDBContext;
             _httpClientFactory = httpClientFactory;
+            _logger = logger;
         }
 
         public async Task<AuthenticationResultModel?> LoginAsync(string? branch, string? username, string? password)
@@ -60,14 +63,14 @@ namespace Topo.Services
             initiateAuth.AuthParameters.PASSWORD = password;
             var content = JsonConvert.SerializeObject(initiateAuth);
             var result = await SendRequest(HttpMethod.Post, cognitoAddress, content, "AWSCognitoIdentityProviderService.InitiateAuth");
-            var authenticationSuccessResult = JsonConvert.DeserializeObject<AuthenticationSuccessResultModel>(result);
+            var authenticationSuccessResult = DeserializeObject<AuthenticationSuccessResultModel>(result);
             if (authenticationSuccessResult?.AuthenticationResult != null)
             {
                 authenticationResultModel.AuthenticationSuccessResultModel = authenticationSuccessResult;
             }
             else
             {
-                var authenticationErrorResultModel = JsonConvert.DeserializeObject<AuthenticationErrorResultModel>(result);
+                var authenticationErrorResultModel = DeserializeObject<AuthenticationErrorResultModel>(result);
                 authenticationResultModel.AuthenticationErrorResultModel = authenticationErrorResultModel;
             }
 
@@ -79,7 +82,7 @@ namespace Topo.Services
             AccessTokenModel accessToken = new AccessTokenModel() { AccessToken = _storageService.AuthenticationResult?.AccessToken };
             var content = JsonConvert.SerializeObject(accessToken);
             var result = await SendRequest(HttpMethod.Post, cognitoAddress, content, "AWSCognitoIdentityProviderService.GetUser");
-            var getUserResultModel = JsonConvert.DeserializeObject<GetUserResultModel>(result);
+            var getUserResultModel = DeserializeObject<GetUserResultModel>(result);
 
             return getUserResultModel;
         }
@@ -97,7 +100,7 @@ namespace Topo.Services
                 initiateAuth.AuthParameters.DEVICE_KEY = null;
                 var content = JsonConvert.SerializeObject(initiateAuth);
                 var result = await SendRequest(HttpMethod.Post, cognitoAddress, content, "AWSCognitoIdentityProviderService.InitiateAuth");
-                var authenticationResult = JsonConvert.DeserializeObject<AuthenticationSuccessResultModel>(result);
+                var authenticationResult = DeserializeObject<AuthenticationSuccessResultModel>(result);
                 if (_storageService != null && _storageService.AuthenticationResult != null)
                 {
                     _storageService.AuthenticationResult.AccessToken = authenticationResult?.AuthenticationResult?.AccessToken;
@@ -137,7 +140,7 @@ namespace Topo.Services
                 var response = await httpClient.SendAsync(httpRequest);
                 var responseContent = response.Content.ReadAsStringAsync();
                 var result = responseContent.Result;
-                getProfilesResultModel = JsonConvert.DeserializeObject<GetProfilesResultModel>(result);
+                getProfilesResultModel = DeserializeObject<GetProfilesResultModel>(result);
                 return getProfilesResultModel;
             }
         }
@@ -148,7 +151,7 @@ namespace Topo.Services
 
             string requestUri = $"{membersAddress}units/{_storageService.SelectedUnitId}/members";
             var result = await SendRequest(HttpMethod.Get, requestUri);
-            var getMembersResultModel = JsonConvert.DeserializeObject<GetMembersResultModel>(result);
+            var getMembersResultModel = DeserializeObject<GetMembersResultModel>(result);
 
             return getMembersResultModel;
         }
@@ -161,7 +164,7 @@ namespace Topo.Services
             var toDateString = toDate.ToString("s");
             string requestUri = $"{eventsAddress}members/{userId}/events?start_datetime={fromDateString}&end_datetime={toDateString}";
             var result = await SendRequest(HttpMethod.Get, requestUri);
-            var getEventsResultModel = JsonConvert.DeserializeObject<GetEventsResultModel>(result);
+            var getEventsResultModel = DeserializeObject<GetEventsResultModel>(result);
 
             return getEventsResultModel;
         }
@@ -172,7 +175,7 @@ namespace Topo.Services
 
             string requestUri = $"{eventsAddress}events/{eventId}";
             var result = await SendRequest(HttpMethod.Get, requestUri);
-            var getEventResultModel = JsonConvert.DeserializeObject<GetEventResultModel>(result);
+            var getEventResultModel = DeserializeObject<GetEventResultModel>(result);
 
             return getEventResultModel;
         }
@@ -183,7 +186,7 @@ namespace Topo.Services
 
             string requestUri = $"{eventsAddress}members/{userId}/calendars";
             var result = await SendRequest(HttpMethod.Get, requestUri);
-            var getCalendarsResultModel = JsonConvert.DeserializeObject<GetCalendarsResultModel>(result);
+            var getCalendarsResultModel = DeserializeObject<GetCalendarsResultModel>(result);
 
             return getCalendarsResultModel;
         }
@@ -203,7 +206,7 @@ namespace Topo.Services
 
             string requestUri = $"{templatesAddress}oas/{stream}/tree.json";
             var result = await SendRequest(HttpMethod.Get, requestUri);
-            var getOASTreeResultsModel = JsonConvert.DeserializeObject<GetOASTreeResultsModel>(result);
+            var getOASTreeResultsModel = DeserializeObject<GetOASTreeResultsModel>(result);
 
             return getOASTreeResultsModel;
         }
@@ -229,7 +232,7 @@ namespace Topo.Services
                 responseContentResult = responseContentResult.Replace(fileUploader, "");
                 fileUploaderStart = responseContentResult.IndexOf("\"file_uploader\":", fileUploaderStart);
             }
-            var getUnitAchievementsResultsModel = JsonConvert.DeserializeObject<GetUnitAchievementsResultsModel>(responseContentResult);
+            var getUnitAchievementsResultsModel = DeserializeObject<GetUnitAchievementsResultsModel>(responseContentResult);
 
             return getUnitAchievementsResultsModel ?? new GetUnitAchievementsResultsModel();
         }
@@ -240,7 +243,7 @@ namespace Topo.Services
 
             string requestUri = $"{templatesAddress}{stream}/latest.json";
             var result = await SendRequest(HttpMethod.Get, requestUri);
-            var getOASTemplateResultModel = JsonConvert.DeserializeObject<GetOASTemplateResultModel>(result);
+            var getOASTemplateResultModel = DeserializeObject<GetOASTemplateResultModel>(result);
 
             return getOASTemplateResultModel;
         }
@@ -251,12 +254,12 @@ namespace Topo.Services
 
             string requestUri = $"{achievementsAddress}members/{memberId}/achievements?type=special_interest_area";
             var result = await SendRequest(HttpMethod.Get, requestUri);
-            var getSIAResultsModel = JsonConvert.DeserializeObject<GetSIAResultsModel>(result);
+            var getSIAResultsModel = DeserializeObject<GetSIAResultsModel>(result);
 
             return getSIAResultsModel ?? new GetSIAResultsModel();
         }
 
-        public async Task<string> SendRequest(HttpMethod httpMethod, string requestUri, string content = "", string xAmzTargetHeader = "")
+        private async Task<string> SendRequest(HttpMethod httpMethod, string requestUri, string content = "", string xAmzTargetHeader = "")
         {
             var httpClient = _httpClientFactory.CreateClient();
             HttpRequestMessage httpRequest = new HttpRequestMessage(httpMethod, requestUri);
@@ -271,7 +274,24 @@ namespace Topo.Services
             var response = await httpClient.SendAsync(httpRequest);
             var responseContent = response.Content.ReadAsStringAsync();
             var result = responseContent.Result;
+            _logger.LogInformation($"Request: {requestUri}");
+            _logger.LogInformation($"Response: {result}");
             return result;
+        }
+
+        private T DeserializeObject<T>(string result)
+        {
+            try
+            {
+                return JsonConvert.DeserializeObject<T>(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error deserialising: {typeof(T)}");
+                _logger.LogError($"String being processed: {result}");
+                _logger.LogError($"Exception message: {ex.Message}");
+            }
+            return JsonConvert.DeserializeObject<T>("");
         }
     }
 }
