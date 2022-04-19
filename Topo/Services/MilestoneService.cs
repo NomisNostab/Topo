@@ -31,32 +31,35 @@ namespace Topo.Services
             foreach (var result in getGroupLifeResultModel.Result.results)
             {
                 var milestone1 = result.milestones.Where(m => m.milestone == 1).FirstOrDefault();
+                var milestone1Awarded = result.milestone.milestone > 1 || (milestone1?.awarded ?? false);
                 var milestone2 = result.milestones.Where(m => m.milestone == 2).FirstOrDefault();
+                var milestone2Awarded = result.milestone.milestone > 2 || (milestone2?.awarded ?? false);
                 var milestone3 = result.milestones.Where(m => m.milestone == 3).FirstOrDefault();
+                var milestone3Awarded = milestone3?.awarded ?? false; 
                 unitMilestoneSummary.Add(
                     new MilestoneSummaryListModel
                     {
                         memberName = result.name,
                         currentLevel = $"Milestone {result.milestone.milestone}",
                         percentComplete = CalculateMilestonePercentComplete(result.milestone),
-                        milestone1ParticipateCommunity = milestone1?.awarded ?? false ? 6 : milestone1?.participates.Where(p => p.challenge_area == "community").FirstOrDefault()?.total ?? 0,
-                        milestone1ParticipateOutdoors = milestone1?.awarded ?? false ? 6 : milestone1?.participates.Where(p => p.challenge_area == "outdoors").FirstOrDefault()?.total ?? 0,
-                        milestone1ParticipateCreative = milestone1?.awarded ?? false ? 6 : milestone1?.participates.Where(p => p.challenge_area == "creative").FirstOrDefault()?.total ?? 0,
-                        milestone1ParticipatePersonalGrowth = milestone1?.awarded ?? false ? 6 : milestone1?.participates.Where(p => p.challenge_area == "personal_growth").FirstOrDefault()?.total ?? 0,
-                        milestone1Assist = milestone1?.awarded ?? false ? 2 : milestone1?.total_assists ?? 0,
-                        milestone1Lead = milestone1?.awarded ?? false ? 1 : milestone1?.total_leads ?? 0,
-                        milestone2ParticipateCommunity = milestone2?.awarded ?? false ? 5 : milestone2?.participates.Where(p => p.challenge_area == "community").FirstOrDefault()?.total ?? 0,
-                        milestone2ParticipateOutdoors = milestone2?.awarded ?? false ? 5 : milestone2?.participates.Where(p => p.challenge_area == "outdoors").FirstOrDefault()?.total ?? 0,
-                        milestone2ParticipateCreative = milestone2?.awarded ?? false ? 5 : milestone2?.participates.Where(p => p.challenge_area == "creative").FirstOrDefault()?.total ?? 0,
-                        milestone2ParticipatePersonalGrowth = milestone2?.awarded ?? false ? 5 : milestone2?.participates.Where(p => p.challenge_area == "personal_growth").FirstOrDefault()?.total ?? 0,
-                        milestone2Assist = milestone2?.awarded ?? false ? 3 : milestone2?.total_assists ?? 0,
-                        milestone2Lead = milestone2?.awarded ?? false ? 2 : milestone2?.total_leads ?? 0,
-                        milestone3ParticipateCommunity = milestone3?.awarded ?? false ? 4 : milestone3?.participates.Where(p => p.challenge_area == "community").FirstOrDefault()?.total ?? 0,
-                        milestone3ParticipateOutdoors = milestone3?.awarded ?? false ? 4 : milestone3?.participates.Where(p => p.challenge_area == "outdoors").FirstOrDefault()?.total ?? 0,
-                        milestone3ParticipateCreative = milestone3?.awarded ?? false ? 4 : milestone3?.participates.Where(p => p.challenge_area == "creative").FirstOrDefault()?.total ?? 0,
-                        milestone3ParticipatePersonalGrowth = milestone3?.awarded ?? false ? 4 : milestone3?.participates.Where(p => p.challenge_area == "personal_growth").FirstOrDefault()?.total ?? 0,
-                        milestone3Assist = milestone3?.awarded ?? false ? 4 : milestone3?.total_assists ?? 0,
-                        milestone3Lead = milestone3?.awarded ?? false ? 4 : milestone3?.total_leads ?? 0
+                        milestone1ParticipateCommunity = milestone1Awarded ? 6 : milestone1?.participates.Where(p => p.challenge_area == "community").FirstOrDefault()?.total ?? 0,
+                        milestone1ParticipateOutdoors = milestone1Awarded ? 6 : milestone1?.participates.Where(p => p.challenge_area == "outdoors").FirstOrDefault()?.total ?? 0,
+                        milestone1ParticipateCreative = milestone1Awarded ? 6 : milestone1?.participates.Where(p => p.challenge_area == "creative").FirstOrDefault()?.total ?? 0,
+                        milestone1ParticipatePersonalGrowth = milestone1Awarded ? 6 : milestone1?.participates.Where(p => p.challenge_area == "personal_growth").FirstOrDefault()?.total ?? 0,
+                        milestone1Assist = milestone1Awarded ? 2 : milestone1?.total_assists ?? 0,
+                        milestone1Lead = milestone1Awarded ? 1 : milestone1?.total_leads ?? 0,
+                        milestone2ParticipateCommunity = milestone2Awarded ? 5 : milestone2?.participates.Where(p => p.challenge_area == "community").FirstOrDefault()?.total ?? 0,
+                        milestone2ParticipateOutdoors = milestone2Awarded ? 5 : milestone2?.participates.Where(p => p.challenge_area == "outdoors").FirstOrDefault()?.total ?? 0,
+                        milestone2ParticipateCreative = milestone2Awarded ? 5 : milestone2?.participates.Where(p => p.challenge_area == "creative").FirstOrDefault()?.total ?? 0,
+                        milestone2ParticipatePersonalGrowth = milestone2Awarded ? 5 : milestone2?.participates.Where(p => p.challenge_area == "personal_growth").FirstOrDefault()?.total ?? 0,
+                        milestone2Assist = milestone2Awarded ? 3 : milestone2?.total_assists ?? 0,
+                        milestone2Lead = milestone2Awarded ? 2 : milestone2?.total_leads ?? 0,
+                        milestone3ParticipateCommunity = milestone3Awarded ? 4 : milestone3?.participates.Where(p => p.challenge_area == "community").FirstOrDefault()?.total ?? 0,
+                        milestone3ParticipateOutdoors = milestone3Awarded ? 4 : milestone3?.participates.Where(p => p.challenge_area == "outdoors").FirstOrDefault()?.total ?? 0,
+                        milestone3ParticipateCreative = milestone3Awarded ? 4 : milestone3?.participates.Where(p => p.challenge_area == "creative").FirstOrDefault()?.total ?? 0,
+                        milestone3ParticipatePersonalGrowth = milestone3Awarded ? 4 : milestone3?.participates.Where(p => p.challenge_area == "personal_growth").FirstOrDefault()?.total ?? 0,
+                        milestone3Assist = milestone3Awarded ? 4 : milestone3?.total_assists ?? 0,
+                        milestone3Lead = milestone3Awarded ? 4 : milestone3?.total_leads ?? 0
                     }
                     );
             }
