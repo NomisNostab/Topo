@@ -20,6 +20,8 @@ This will open a terminal window similar to
 
 When you are finished you can either type Ctrl+c in the window or close the window.
 
+If you get an error when using the reporting app, run the app server by right clicking on the Topo.exe file and select Run as Administrator.
+
 ## Using the Reporting App
 To access the Reporting application, ctrl-click on http://localhost:5000 to open in your browser.
 You could also open a browser and put http://localhost:5000 into the address bar.
