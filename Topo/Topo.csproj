@@ -35,6 +35,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Update="Reports\MilestoneSummary.frx">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Update="Reports\OASWorksheet.frx">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>

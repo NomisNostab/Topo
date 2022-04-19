@@ -20,6 +20,8 @@ This will open a terminal window similar to
 
 When you are finished you can either type Ctrl+c in the window or close the window.
 
+If you get an error when using the reporting app, run the app server by right clicking on the Topo.exe file and select Run as Administrator.
+
 ## Using the Reporting App
 To access the Reporting application, ctrl-click on http://localhost:5000 to open in your browser.
 You could also open a browser and put http://localhost:5000 into the address bar.
@@ -75,3 +77,12 @@ The SIA Report shows for the selected Unit the status of each SIA project undert
 Select the Unit and click Generate SIA Report to download the report.
 
 ![TopoSiaReport](https://user-images.githubusercontent.com/65288066/162438257-c96780b4-5dc4-4f10-9e63-03725d4ae40b.png)
+
+### Milestone Report
+The Milestone Report shows for the selected Unit the current milestone progress for all members of the Unit.
+
+![TopoMilestone](https://user-images.githubusercontent.com/65288066/163992833-2a30689e-7138-4f96-9b5b-1c2bbe024fbf.png)
+
+Select the Unit and click Generate Milestone Report to download the report.
+
+![TopoMilestoneReport](https://user-images.githubusercontent.com/65288066/163993182-fb13d04e-f247-4271-9720-eb26ff37006d.png)

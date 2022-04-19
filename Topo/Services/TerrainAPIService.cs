@@ -6,6 +6,7 @@ using Topo.Models.Login;
 using Topo.Models.MemberList;
 using Topo.Models.OAS;
 using Topo.Models.SIA;
+using Topo.Models.Milestone;
 
 namespace Topo.Services
 {
@@ -25,6 +26,7 @@ namespace Topo.Services
         public Task<GetUnitAchievementsResultsModel> GetUnitAchievements(string unit, string stream, string branch, int stage);
         public Task<GetOASTemplateResultModel?> GetOASTemplateAsync(string stream);
         public Task<GetSIAResultsModel> GetSIAResultsForMember(string memberId);
+        public Task<GetGroupLifeResultModel> GetGroupLifeForUnit(string unitId);
     }
     public class TerrainAPIService : ITerrainAPIService
     {
@@ -36,6 +38,7 @@ namespace Topo.Services
         private readonly string eventsAddress = "https://events.terrain.scouts.com.au/";
         private readonly string templatesAddress = "https://templates.terrain.scouts.com.au/";
         private readonly string achievementsAddress = "https://achievements.terrain.scouts.com.au/";
+        private readonly string metricsAddress = "https://metrics.terrain.scouts.com.au/";
         private readonly string clientId = "6v98tbc09aqfvh52fml3usas3c";
         private readonly ILogger<TerrainAPIService> _logger;
 
@@ -63,14 +66,14 @@ namespace Topo.Services
             initiateAuth.AuthParameters.PASSWORD = password;
             var content = JsonConvert.SerializeObject(initiateAuth);
             var result = await SendRequest(HttpMethod.Post, cognitoAddress, content, "AWSCognitoIdentityProviderService.InitiateAuth");
-            var authenticationSuccessResult = DeserializeObject<AuthenticationSuccessResultModel>(result);
+            var authenticationSuccessResult = JsonConvert.DeserializeObject<AuthenticationSuccessResultModel>(result);
             if (authenticationSuccessResult?.AuthenticationResult != null)
             {
                 authenticationResultModel.AuthenticationSuccessResultModel = authenticationSuccessResult;
             }
             else
             {
-                var authenticationErrorResultModel = DeserializeObject<AuthenticationErrorResultModel>(result);
+                var authenticationErrorResultModel = JsonConvert.DeserializeObject<AuthenticationErrorResultModel>(result);
                 authenticationResultModel.AuthenticationErrorResultModel = authenticationErrorResultModel;
             }
 
@@ -82,7 +85,7 @@ namespace Topo.Services
             AccessTokenModel accessToken = new AccessTokenModel() { AccessToken = _storageService.AuthenticationResult?.AccessToken };
             var content = JsonConvert.SerializeObject(accessToken);
             var result = await SendRequest(HttpMethod.Post, cognitoAddress, content, "AWSCognitoIdentityProviderService.GetUser");
-            var getUserResultModel = DeserializeObject<GetUserResultModel>(result);
+            var getUserResultModel = JsonConvert.DeserializeObject<GetUserResultModel>(result);
 
             return getUserResultModel;
         }
@@ -100,7 +103,7 @@ namespace Topo.Services
                 initiateAuth.AuthParameters.DEVICE_KEY = null;
                 var content = JsonConvert.SerializeObject(initiateAuth);
                 var result = await SendRequest(HttpMethod.Post, cognitoAddress, content, "AWSCognitoIdentityProviderService.InitiateAuth");
-                var authenticationResult = DeserializeObject<AuthenticationSuccessResultModel>(result);
+                var authenticationResult = JsonConvert.DeserializeObject<AuthenticationSuccessResultModel>(result);
                 if (_storageService != null && _storageService.AuthenticationResult != null)
                 {
                     _storageService.AuthenticationResult.AccessToken = authenticationResult?.AuthenticationResult?.AccessToken;
@@ -259,6 +262,17 @@ namespace Topo.Services
             return getSIAResultsModel ?? new GetSIAResultsModel();
         }
 
+        public async Task<GetGroupLifeResultModel> GetGroupLifeForUnit(string unitId)
+        {
+            await RefreshTokenAsync();
+
+            var requestUri = $"{metricsAddress}units/{unitId}/members?limit=999";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var getGroupLifeResultModel = DeserializeObject<GetGroupLifeResultModel>(result);
+
+            return getGroupLifeResultModel ?? new GetGroupLifeResultModel();
+        }
+
         private async Task<string> SendRequest(HttpMethod httpMethod, string requestUri, string content = "", string xAmzTargetHeader = "")
         {
             var httpClient = _httpClientFactory.CreateClient();
@@ -274,8 +288,11 @@ namespace Topo.Services
             var response = await httpClient.SendAsync(httpRequest);
             var responseContent = response.Content.ReadAsStringAsync();
             var result = responseContent.Result;
-            _logger.LogInformation($"Request: {requestUri}");
-            _logger.LogInformation($"Response: {result}");
+            if (string.IsNullOrEmpty(xAmzTargetHeader)) // Dont log authorisation requests
+            {
+                _logger.LogInformation($"Request: {requestUri}");
+                _logger.LogInformation($"Response: {result}");
+            }
             return result;
         }
 
