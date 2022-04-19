@@ -1,0 +1,26 @@
+﻿@model Topo.Models.Milestone.MilestoneIndexViewModel
+
+@{
+    ViewData["Title"] = "Milestone Report Page";
+}
+
+<form class="row g-3" asp-action="Index">
+
+    <div class="mt-3 mb-3 row">
+        <label class="col-sm-3 col-form-label">Please select a Unit to view:</label>
+        <div class="col-sm-2 ">
+            @Html.DropDownListFor(m => m.SelectedUnitId, Model.Units, "Select Unit", new { @class ="form-select", onchange = "this.form.submit();" })
+            <span asp-validation-for="SelectedUnitId" class="text-danger"></span>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.SelectedUnitId) )
+    {
+        <div class="mt-3 mb-3 row">
+            <div class="col-sm-12">
+                @Html.ActionLink("Generate Milestone Report", "MilestoneReport", "Milestone", new { selectedUnitId = Model.SelectedUnitId }, new { @class = "btn btn-primary" })
+            </div>
+        </div>
+    }
+
+</form>
