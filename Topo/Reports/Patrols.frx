@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Report ScriptLanguage="CSharp" ReportInfo.Created="02/19/2022 09:11:06" ReportInfo.Modified="04/11/2022 20:36:32" ReportInfo.CreatorVersion="2022.1.0.0">
+<Report ScriptLanguage="CSharp" ReportInfo.Created="02/19/2022 09:11:06" ReportInfo.Modified="04/20/2022 22:02:35" ReportInfo.CreatorVersion="2022.1.0.0">
   <Dictionary>
     <BusinessObjectDataSource Name="Members" ReferenceName="Members" DataType="null" Enabled="true">
       <Column Name="id" DataType="System.String"/>
@@ -12,6 +12,7 @@
       <Column Name="patrol_name" DataType="System.String"/>
       <Column Name="patrol_duty" DataType="System.String"/>
       <Column Name="patrol_order" DataType="System.Int32"/>
+      <Column Name="isAdultLeader" DataType="System.Boolean" BindableControl="CheckBox"/>
     </BusinessObjectDataSource>
     <Parameter Name="ReportDate" DataType="System.String"/>
     <Parameter Name="GroupName" DataType="System.String"/>
@@ -25,9 +26,9 @@
       <TextObject Name="Text16" Left="75.6" Width="567" Height="28.35" Text="[GroupName]" HorzAlign="Center" Font="Arial, 16pt, style=Bold"/>
     </ReportTitleBand>
     <PageHeaderBand Name="PageHeader1" Top="89.05" Width="718.2"/>
-    <GroupHeaderBand Name="GroupHeader1" Top="93.05" Width="359.1" Height="37.8" KeepWithData="true" Condition="[Members.patrol_name]">
+    <GroupHeaderBand Name="GroupHeader1" Top="93.05" Width="359.1" Height="37.8" KeepChild="true" KeepWithData="true" RepeatOnEveryPage="true" Condition="[Members.patrol_name]" KeepTogether="true">
       <TextObject Name="Text12" Left="18.9" Width="330.75" Height="28.35" Text="[Members.patrol_name]" Font="Arial, 14pt, style=Bold"/>
-      <DataBand Name="Data1" Top="134.85" Width="359.1" Height="18.9" DataSource="Members">
+      <DataBand Name="Data1" Top="134.85" Width="359.1" Height="18.9" KeepChild="true" DataSource="Members" KeepTogether="true" KeepDetail="true">
         <TableObject Name="Table1" Left="18.9" Width="330.75" Height="18.9" Border.Lines="All">
           <TableColumn Name="Column1" Width="103.95"/>
           <TableColumn Name="Column2" Width="122.85"/>
@@ -72,6 +73,7 @@
         <TextObject Name="Text17" Left="18.9" Width="330.75" Height="28.35" Text="Unit Council" Font="Arial, 14pt, style=Bold"/>
       </DataHeaderBand>
       <Sort>
+        <Sort Expression="[Members.isAdultLeader]"/>
         <Sort Expression="[Members.first_name]"/>
         <Sort Expression="[Members.last_name]"/>
       </Sort>

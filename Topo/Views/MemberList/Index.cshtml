@@ -13,7 +13,6 @@
             <span asp-validation-for="SelectedUnitId" class="text-danger"></span>
         </div>
     </div>
-
     @if (!string.IsNullOrEmpty(Model.SelectedUnitId) && Model.Members != null)
     {
         <div class="mb-3 row">
@@ -66,8 +65,14 @@
         }
         <div class="mt-3 mb-3 row">
             <div class="col-sm-12">
-                @Html.ActionLink("Generate Patrol list", "PatrolList", "MemberList", null, new { @class = "btn btn-primary" }) &nbsp;
-                @Html.ActionLink("Generate Patrol sheets", "PatrolSheet", "MemberList", null, new { @class = "btn btn-primary" })
+                <button type="submit" name="button" value="PatrolList" class="btn btn-primary btn-sm">Generate Patrol list</button> &nbsp;
+                @Html.DisplayNameFor(model => model.IncludeLeaders) &nbsp;
+                @Html.CheckBoxFor(model => model.IncludeLeaders, new { id = "includeLeadersCheckBoxId" })
+            </div>
+        </div>
+        <div class="mt-3 mb-3 row">
+            <div class="col-sm-12">
+                <button type="submit" name="button" value="PatrolSheet" class="btn btn-primary btn-sm">Generate Patrol sheets</button> &nbsp;
             </div>
         </div>
     }

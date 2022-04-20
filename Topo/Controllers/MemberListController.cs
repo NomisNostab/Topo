@@ -28,7 +28,6 @@ namespace Topo.Controllers
         public async Task<ActionResult> Index()
         {
             MemberListViewModel model = await SetUpViewModel();
-            SetViewBag();
             return View(model);
         }
 
@@ -46,45 +45,49 @@ namespace Topo.Controllers
             }
             if (_storageService.SelectedUnitName != null)
                 model.SelectedUnitName = _storageService.SelectedUnitName;
+            SetViewBag();
             return model;
         }
 
         [HttpPost]
-        public async Task<ActionResult> Index(MemberListViewModel memberListViewModel)
+        public async Task<ActionResult> Index(MemberListViewModel memberListViewModel, string button)
         {
             var model = new MemberListViewModel();
+            ModelState.Remove("button");
             if (ModelState.IsValid)
             {
                 _storageService.SelectedUnitId = memberListViewModel.SelectedUnitId;
                 if (_storageService.Units != null)
                     _storageService.SelectedUnitName = _storageService.Units.Where(u => u.Value == memberListViewModel.SelectedUnitId)?.FirstOrDefault()?.Text;
                 model = await SetUpViewModel();
+                if (!string.IsNullOrEmpty(button))
+                {
+                    switch (button)
+                    {
+                        case "PatrolList":
+                            return await GeneratePatrolReport("Patrols", "Patrol_List", memberListViewModel.IncludeLeaders);
+                        case "PatrolSheet":
+                            return await GeneratePatrolReport("PatrolSheets", "Patrol_Sheets");
+                    }
+                }
             }
             else
             {
                 model = await SetUpViewModel();
             }
-            SetViewBag();
             return View(model);
         }
 
-
-        public async Task<ActionResult> PatrolList()
-        {
-            return await GeneratePatrolReport("Patrols", "Patrol_List");
-        }
-
-        public async Task<ActionResult> PatrolSheet()
-        {
-            return await GeneratePatrolReport("PatrolSheets", "Patrol_Sheets");
-        }
-
-        private async Task<ActionResult> GeneratePatrolReport(string reportDefinitionName, string reportDownloadName)
+        private async Task<ActionResult> GeneratePatrolReport(string reportDefinitionName, string reportDownloadName, bool includeLeaders = false)
         {
             var model = await _memberListService.GetMembersAsync();
             var groupName = _storageService.GroupName;
             var unitName = _storageService.SelectedUnitName ?? "";
-            var sortedPatrolList = model.Where(m => m.isAdultLeader == 0).OrderBy(m => m.patrol_name).ToList();
+            var sortedPatrolList = new List<MemberListModel>();
+            if (includeLeaders)
+                sortedPatrolList = model.OrderBy(m => m.patrol_name).ToList();
+            else
+                sortedPatrolList = model.Where(m => m.isAdultLeader == 0).OrderBy(m => m.patrol_name).ToList();
             var patrolListReport = new Report();
             var directory = Directory.GetCurrentDirectory();
             patrolListReport.Load($@"{directory}\Reports\{reportDefinitionName}.frx");
