@@ -12,6 +12,7 @@
       <Column Name="patrol_name" DataType="System.String"/>
       <Column Name="patrol_duty" DataType="System.String"/>
       <Column Name="patrol_order" DataType="System.Int32"/>
+	  <Column Name="isAdultLeader" DataType="System.Boolean" BindableControl="CheckBox"/>
     </BusinessObjectDataSource>
     <Parameter Name="ReportDate" DataType="System.String"/>
     <Parameter Name="UnitName" DataType="System.String"/>

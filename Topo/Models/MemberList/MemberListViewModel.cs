@@ -11,5 +11,8 @@ namespace Topo.Models.MemberList
         public IEnumerable<SelectListItem>? Units { get; set; }
         public List<MemberListModel>? Members { get; set; }
 
+        [Display(Name = "Include Leaders")]
+        public bool IncludeLeaders { get; set; } = false;
+
     }
 }
