@@ -90,7 +90,7 @@ namespace Topo.Controllers
                 sortedPatrolList = model.Where(m => m.isAdultLeader == 0).OrderBy(m => m.patrol_name).ToList();
             var patrolListReport = new Report();
             var directory = Directory.GetCurrentDirectory();
-            patrolListReport.Load($@"{directory}\Reports\{reportDefinitionName}.frx");
+            patrolListReport.Load($@"{directory}/Reports/{reportDefinitionName}.frx");
             patrolListReport.SetParameterValue("GroupName", groupName);
             patrolListReport.SetParameterValue("UnitName", unitName);
             patrolListReport.SetParameterValue("ReportDate", DateTime.Now.ToShortDateString());

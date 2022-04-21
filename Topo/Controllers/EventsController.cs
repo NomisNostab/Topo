@@ -75,7 +75,7 @@ namespace Topo.Controllers
             var model = await _memberListService.GetMembersAsync();
             var signInSheetReport = new Report();
             var directory = Directory.GetCurrentDirectory();
-            signInSheetReport.Load($@"{directory}\Reports\SignInSheet.frx");
+            signInSheetReport.Load($@"{directory}/Reports/SignInSheet.frx");
             signInSheetReport.SetParameterValue("GroupName", groupName);
             signInSheetReport.SetParameterValue("UnitName", unitName);
             signInSheetReport.SetParameterValue("Event", selectedEvent);
