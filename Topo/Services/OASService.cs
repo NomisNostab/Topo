@@ -302,7 +302,7 @@ namespace Topo.Services
             var unitName = _storageService.SelectedUnitName ?? "";
             var report = new Report();
             var directory = Directory.GetCurrentDirectory();
-            report.Load($@"{directory}\Reports\OASWorksheet.frx");
+            report.Load($@"{directory}/Reports/OASWorksheet.frx");
             report.SetParameterValue("GroupName", groupName);
             report.SetParameterValue("UnitName", unitName);
             report.SetParameterValue("OASStage", templateTitle);
