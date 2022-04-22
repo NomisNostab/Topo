@@ -157,7 +157,8 @@
             <TableCell Name="Cell3" Border.Lines="All" Fill.Color="Gainsboro" Text="[MilestoneSummary.percentComplete]%" HorzAlign="Center" Font="Arial, 10pt"/>
             <TableCell Name="Cell4" Border.Lines="All" Text="[MilestoneSummary.milestone1ParticipateCommunity] / 6" HorzAlign="Center" Font="Arial, 10pt">
               <Highlight>
-                <Condition Expression="Value == 0" Fill.Color="236, 82, 82" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
+				<Condition Expression="Value == -1" Fill.Color="Gainsboro" TextFill.Color="Gainsboro" Font="Arial, 10pt" ApplyFill="true" Text="N/A"/>
+				<Condition Expression="Value == 0" Fill.Color="236, 82, 82" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 1" Fill.Color="241, 129, 57" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 2" Fill.Color="248, 194, 23" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 3" Fill.Color="253, 238, 0" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
@@ -168,7 +169,8 @@
             </TableCell>
             <TableCell Name="Cell5" Border.Lines="All" Text="[MilestoneSummary.milestone1ParticipateOutdoors] / 6" HorzAlign="Center" Font="Arial, 10pt">
               <Highlight>
-                <Condition Expression="Value == 0" Fill.Color="236, 82, 82" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
+        		<Condition Expression="Value == -1" Fill.Color="Gainsboro" TextFill.Color="Gainsboro" Font="Arial, 10pt" ApplyFill="true" Text="N/A"/>
+				<Condition Expression="Value == 0" Fill.Color="236, 82, 82" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 1" Fill.Color="241, 129, 57" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 2" Fill.Color="248, 194, 23" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 3" Fill.Color="253, 238, 0" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
@@ -179,7 +181,8 @@
             </TableCell>
             <TableCell Name="Cell6" Border.Lines="All" Text="[MilestoneSummary.milestone1ParticipateCreative] / 6" HorzAlign="Center" Font="Arial, 10pt">
               <Highlight>
-                <Condition Expression="Value == 0" Fill.Color="236, 82, 82" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
+				<Condition Expression="Value == -1" Fill.Color="Gainsboro" TextFill.Color="Gainsboro" Font="Arial, 10pt" ApplyFill="true" Text="N/A"/>
+				<Condition Expression="Value == 0" Fill.Color="236, 82, 82" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 1" Fill.Color="241, 129, 57" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 2" Fill.Color="248, 194, 23" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 3" Fill.Color="253, 238, 0" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
@@ -190,7 +193,8 @@
             </TableCell>
             <TableCell Name="Cell7" Border.Lines="All" Text="[MilestoneSummary.milestone1ParticipatePersonalGrowth] / 6" HorzAlign="Center" Font="Arial, 10pt">
               <Highlight>
-                <Condition Expression="Value == 0" Fill.Color="236, 82, 82" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
+				<Condition Expression="Value == -1" Fill.Color="Gainsboro" TextFill.Color="Gainsboro" Font="Arial, 10pt" ApplyFill="true" Text="N/A"/>
+				<Condition Expression="Value == 0" Fill.Color="236, 82, 82" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 1" Fill.Color="241, 129, 57" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 2" Fill.Color="248, 194, 23" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 3" Fill.Color="253, 238, 0" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
@@ -201,20 +205,23 @@
             </TableCell>
             <TableCell Name="Cell44" Border.Lines="All" Text="[MilestoneSummary.milestone1Assist] / 2" HorzAlign="Center" Font="Arial, 10pt">
               <Highlight>
-                <Condition Expression="Value == 0" Fill.Color="236, 82, 82" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
+				<Condition Expression="Value == -1" Fill.Color="Gainsboro" TextFill.Color="Gainsboro" Font="Arial, 10pt" ApplyFill="true" Text="N/A"/>
+				<Condition Expression="Value == 0" Fill.Color="236, 82, 82" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 1" Fill.Color="253, 238, 0" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 2" Fill.Color="156, 242, 80" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
               </Highlight>
             </TableCell>
             <TableCell Name="Cell45" Border.Lines="All" Border.RightLine.Width="2" Text="[MilestoneSummary.milestone1Lead] / 1" HorzAlign="Center" Font="Arial, 10pt">
               <Highlight>
-                <Condition Expression="Value == 0" Fill.Color="236, 82, 82" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
+				<Condition Expression="Value == -1" Fill.Color="Gainsboro" TextFill.Color="Gainsboro" Font="Arial, 10pt" ApplyFill="true" Text="N/A"/>
+				<Condition Expression="Value == 0" Fill.Color="236, 82, 82" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 1" Fill.Color="156, 242, 80" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
               </Highlight>
             </TableCell>
             <TableCell Name="Cell67" Border.Lines="All" Text="[MilestoneSummary.milestone2ParticipateCommunity] / 5" HorzAlign="Center" Font="Arial, 10pt">
               <Highlight>
-                <Condition Expression="Value == 0" Fill.Color="236, 82, 82" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
+				<Condition Expression="Value == -1" Fill.Color="Gainsboro" TextFill.Color="Gainsboro" Font="Arial, 10pt" ApplyFill="true" Text="N/A"/>
+				<Condition Expression="Value == 0" Fill.Color="236, 82, 82" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 1" Fill.Color="241, 131, 57" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 2" Fill.Color="248, 189, 26" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 3" Fill.Color="221, 239, 26" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
@@ -224,7 +231,8 @@
             </TableCell>
             <TableCell Name="Cell68" Border.Lines="All" Text="[MilestoneSummary.milestone2ParticipateOutdoors] / 5" HorzAlign="Center" Font="Arial, 10pt">
               <Highlight>
-                <Condition Expression="Value == 0" Fill.Color="236, 82, 82" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
+				<Condition Expression="Value == -1" Fill.Color="Gainsboro" TextFill.Color="Gainsboro" Font="Arial, 10pt" ApplyFill="true" Text="N/A"/>
+				<Condition Expression="Value == 0" Fill.Color="236, 82, 82" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 1" Fill.Color="241, 131, 57" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 2" Fill.Color="248, 189, 26" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 3" Fill.Color="221, 239, 26" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
@@ -234,7 +242,8 @@
             </TableCell>
             <TableCell Name="Cell69" Border.Lines="All" Text="[MilestoneSummary.milestone2ParticipateCreative] / 5" HorzAlign="Center" Font="Arial, 10pt">
               <Highlight>
-                <Condition Expression="Value == 0" Fill.Color="236, 82, 82" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
+				<Condition Expression="Value == -1" Fill.Color="Gainsboro" TextFill.Color="Gainsboro" Font="Arial, 10pt" ApplyFill="true" Text="N/A"/>
+				<Condition Expression="Value == 0" Fill.Color="236, 82, 82" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 1" Fill.Color="241, 131, 57" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 2" Fill.Color="248, 189, 26" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 3" Fill.Color="221, 239, 26" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
@@ -244,7 +253,8 @@
             </TableCell>
             <TableCell Name="Cell70" Border.Lines="All" Text="[MilestoneSummary.milestone2ParticipatePersonalGrowth] / 5" HorzAlign="Center" Font="Arial, 10pt">
               <Highlight>
-                <Condition Expression="Value == 0" Fill.Color="236, 82, 82" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
+				<Condition Expression="Value == -1" Fill.Color="Gainsboro" TextFill.Color="Gainsboro" Font="Arial, 10pt" ApplyFill="true" Text="N/A"/>
+				<Condition Expression="Value == 0" Fill.Color="236, 82, 82" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 1" Fill.Color="241, 131, 57" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 2" Fill.Color="248, 189, 26" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 3" Fill.Color="221, 239, 26" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
@@ -254,7 +264,8 @@
             </TableCell>
             <TableCell Name="Cell71" Border.Lines="All" Text="[MilestoneSummary.milestone2Assist] / 3" HorzAlign="Center" Font="Arial, 10pt">
               <Highlight>
-                <Condition Expression="Value == 0" Fill.Color="236, 82, 82" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
+				<Condition Expression="Value == -1" Fill.Color="Gainsboro" TextFill.Color="Gainsboro" Font="Arial, 10pt" ApplyFill="true" Text="N/A"/>
+				<Condition Expression="Value == 0" Fill.Color="236, 82, 82" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 1" Fill.Color="246, 176, 33" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 2" Fill.Color="216, 240, 30" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 3" Fill.Color="156, 242, 80" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
@@ -262,7 +273,8 @@
             </TableCell>
             <TableCell Name="Cell72" Border.Lines="All" Border.RightLine.Width="2" Text="[MilestoneSummary.milestone2Lead] / 2" HorzAlign="Center" Font="Arial, 10pt">
               <Highlight>
-                <Condition Expression="Value == 0" Fill.Color="236, 82, 82" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
+				<Condition Expression="Value == -1" Fill.Color="Gainsboro" TextFill.Color="Gainsboro" Font="Arial, 10pt" ApplyFill="true" Text="N/A"/>
+				<Condition Expression="Value == 0" Fill.Color="236, 82, 82" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 1" Fill.Color="253, 238, 0" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 2" Fill.Color="156, 242, 80" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
               </Highlight>
