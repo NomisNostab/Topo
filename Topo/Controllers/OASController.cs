@@ -52,6 +52,7 @@ namespace Topo.Controllers
             model.Streams = _oasService.GetOASStreamList();
             if (model.Stages == null)
                 model.Stages = new List<SelectListItem>();
+            SetViewBag();
             return model;
         }
 
@@ -60,15 +61,15 @@ namespace Topo.Controllers
         public ActionResult Index()
         {
             var model = SetUpViewModel();
-            SetViewBag();
             return View(model);
         }
 
 
         [HttpPost]
-        public async Task<ActionResult> Index(OASIndexViewModel oasIndexViewModel)
+        public async Task<ActionResult> Index(OASIndexViewModel oasIndexViewModel, string button)
         {
             var model = new OASIndexViewModel();
+            ModelState.Remove("button");
             if (oasIndexViewModel.SelectedStream != null && oasIndexViewModel.SelectedStage != null && !oasIndexViewModel.SelectedStage.Contains(oasIndexViewModel.SelectedStream))
                 ModelState.AddModelError("SelectedStage", "Select new stage");
 
@@ -81,6 +82,10 @@ namespace Topo.Controllers
                 model.Stages = _oasService.GetOASStageListItems(_storageService.OASStageList);
                 model.SelectedStream = oasIndexViewModel.SelectedStream;
                 model.SelectedStage = oasIndexViewModel.SelectedStage;
+                if (button != null)
+                {
+                    return await OASReport(oasIndexViewModel.SelectedUnitId, oasIndexViewModel.SelectedStage, oasIndexViewModel.HideCompletedMembers);
+                }
             }
             else
             {
@@ -94,13 +99,12 @@ namespace Topo.Controllers
                     model.SelectedStage = "";
                 }
             }
-            SetViewBag();
             return View(model);
         }
 
-        public async Task<ActionResult> OASReport(string selectedUnitId, string selectedStageTemplate)
+        private async Task<ActionResult> OASReport(string selectedUnitId, string selectedStageTemplate, bool hideCompletedMembers)
         {
-            var report = await _oasService.GenerateOASWorksheet(selectedUnitId, selectedStageTemplate);
+            var report = await _oasService.GenerateOASWorksheet(selectedUnitId, selectedStageTemplate, hideCompletedMembers);
             if (report.Prepare())
             {
                 // Set PDF export props

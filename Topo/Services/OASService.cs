@@ -14,7 +14,7 @@ namespace Topo.Services
         public List<SelectListItem> GetOASStageListItems(List<OASStageListModel> oasStageListModels);
         public Task<GetUnitAchievementsResultsModel> GetUnitAchievements(string unit, string stream, string branch, int stage);
         public Task<List<OASTemplate>> GetOASTemplate(string templateName);
-        public Task<Report> GenerateOASWorksheet(string selectedUnitId, string selectedStageTemplate);
+        public Task<Report> GenerateOASWorksheet(string selectedUnitId, string selectedStageTemplate, bool hideCompletedMembers);
     }
     public class OASService : IOASService
     {
@@ -173,7 +173,7 @@ namespace Topo.Services
             return 4;
         }
 
-        public async Task<Report> GenerateOASWorksheet(string selectedUnitId, string selectedStageTemplate)
+        public async Task<Report> GenerateOASWorksheet(string selectedUnitId, string selectedStageTemplate, bool hideCompletedMembers)
         {
             var selectedStage = _storageService.OASStageList.Where(s => s.TemplateLink == selectedStageTemplate).SingleOrDefault();
             var getUnitAchievementsResultsModel = await GetUnitAchievements(selectedUnitId, selectedStage.Stream.ToLower(), selectedStage.Branch, selectedStage.Stage);
@@ -182,6 +182,8 @@ namespace Topo.Services
             var templateList = await GetOASTemplate(selectedStageTemplate.Replace("/latest.json", ""));
 
             var templateTitle = templateList.Count > 0 ? templateList[0].TemplateTitle : "";
+            if (hideCompletedMembers)
+                templateTitle += " (in progress)";
 
             _dbContext.OASWorksheetAnswers.RemoveRange(_dbContext.OASWorksheetAnswers);
 
@@ -237,6 +239,14 @@ namespace Topo.Services
                 // Awarded
                 if (memberAchievement.status == "awarded")
                 {
+                    if (hideCompletedMembers)
+                    {
+                        var worksheetAnswers = _dbContext.OASWorksheetAnswers
+                            .Where(wa => wa.MemberId == memberAchievement.member_id);
+                        _dbContext.OASWorksheetAnswers.RemoveRange(worksheetAnswers);
+                        continue;
+                    }
+
                     // Imported
                     if (memberAchievement.imported != null)
                     {
