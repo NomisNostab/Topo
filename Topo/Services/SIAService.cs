@@ -27,8 +27,11 @@ namespace Topo.Services
         }
         public async Task<Report> GenerateSIAReport()
         {
-
-            var unit = _storageService.SelectedUnitName.ToLower().Replace(" unit", "");
+            var unitName = _storageService.SelectedUnitName ?? "";
+            var unit = _storageService.GetProfilesResult.profiles.FirstOrDefault(u => u.unit.name == unitName);
+            if (unit == null)
+                throw new IndexOutOfRangeException($"No unit found with name {unitName}. You may not have permissions to this section");
+            var section = unit.unit.section;
             TextInfo myTI = new CultureInfo("en-US", false).TextInfo;
             var unitSiaProjects = new List<SIAProjectListModel>();
             var members = await _memberListService.GetMembersAsync();
@@ -38,7 +41,7 @@ namespace Topo.Services
                 try
                 {
                     var siaResultModel = await _terrainAPIService.GetSIAResultsForMember(member.id);
-                    var memberSiaProjects = siaResultModel.results.Where(r => r.section == unit)
+                    var memberSiaProjects = siaResultModel.results.Where(r => r.section == section)
                         .Select(r => new SIAProjectListModel
                         {
                             memberName = $"{member.first_name} {member.last_name}",
@@ -68,7 +71,6 @@ namespace Topo.Services
             }
 
             var groupName = _storageService.GroupName;
-            var unitName = _storageService.SelectedUnitName ?? "";
             var report = new Report();
             var directory = Directory.GetCurrentDirectory();
             report.Load(@$"{directory}/Reports/SIAProjectReport.frx");

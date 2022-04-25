@@ -49,7 +49,7 @@
         public int milestone { get; set; }
         public bool awarded { get; set; }
         public Participate[] participates { get; set; } = new Participate[0];
-        public DateTime status_updated { get; set; }
+        public DateTime? status_updated { get; set; }
         public int total_assists { get; set; }
         public int total_leads { get; set; }
     }
