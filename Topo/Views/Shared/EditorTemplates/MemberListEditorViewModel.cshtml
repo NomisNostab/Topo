@@ -1,0 +1,32 @@
+﻿@model Topo.Models.MemberList.MemberListEditorViewModel
+
+<div class="row">
+    <div class="col">
+        @Html.EditorFor(model => model.selected, new { htmlAttributes = new { @class = "logbookSelect" } })
+        @Html.HiddenFor(model => model.id)
+    </div>
+    <div class="col">
+        @Html.DisplayFor(model => model.first_name)
+        @Html.HiddenFor(model => model.first_name)
+    </div>
+    <div class="col">
+        @Html.DisplayFor(model => model.last_name)
+        @Html.HiddenFor(model => model.last_name)
+    </div>
+    <div class="col">
+        @Html.DisplayFor(model => model.member_number)
+        @Html.HiddenFor(model => model.member_number)
+    </div>
+    <div class="col">
+        @Html.DisplayFor(model => model.patrol_name)
+        @Html.HiddenFor(model => model.patrol_name)
+    </div>
+    <div class="col">
+        @Html.DisplayFor(model => model.patrol_duty)
+        @Html.HiddenFor(model => model.patrol_duty)
+    </div>
+    <div class="col align-content-center">
+        @Html.DisplayFor(model => model.unit_council)
+        @Html.HiddenFor(model => model.unit_council)
+    </div>
+</div>
