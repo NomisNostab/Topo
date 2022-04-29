@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FastReport.Export.PdfSimple;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Topo.Models.Logbook;
 using Topo.Models.MemberList;
@@ -10,12 +11,14 @@ namespace Topo.Controllers
     {
         private readonly StorageService _storageService;
         private readonly IMemberListService _memberListService;
+        private ILogbookService _logbookService;
 
         public LogbookController(StorageService storageService,
-            IMemberListService memberListService)
+            IMemberListService memberListService, ILogbookService logbookService)
         {
             _storageService = storageService;
             _memberListService = memberListService;
+            _logbookService = logbookService;
         }
 
         private async Task<LogbookListViewModel> SetUpViewModel()
@@ -70,6 +73,11 @@ namespace Topo.Controllers
             ModelState.Remove("button");
             if (ModelState.IsValid)
             {
+                if (_storageService.SelectedUnitId != logbookListViewModel.SelectedUnitId)
+                {
+                    _storageService.SelectedUnitId = logbookListViewModel.SelectedUnitId;
+                    return RedirectToAction("Index", "Logbook");
+                }
                 _storageService.SelectedUnitId = logbookListViewModel.SelectedUnitId;
                 if (_storageService.Units != null)
                     _storageService.SelectedUnitName = _storageService.Units.Where(u => u.Value == logbookListViewModel.SelectedUnitId)?.FirstOrDefault()?.Text;
@@ -77,6 +85,36 @@ namespace Topo.Controllers
                 if (!string.IsNullOrEmpty(button))
                 {
                     var selectedMembers = logbookListViewModel.getSelectedMembers();
+                    if (selectedMembers != null)
+                    {
+                        var memberKVP = new List<KeyValuePair<string, string>>();
+                        foreach (var member in selectedMembers)
+                        {
+                            var memberName = logbookListViewModel.Members.Where(m => m.id == member).Select(m => m.first_name + " " + m.last_name).FirstOrDefault();
+                            memberKVP.Add(new KeyValuePair<string, string>(member, memberName ?? ""));
+                        }
+                        var report = await _logbookService.GenerateLogbookReport(memberKVP);
+                        if (report.Prepare())
+                        {
+                            // Set PDF export props
+                            PDFSimpleExport pdfExport = new PDFSimpleExport();
+                            pdfExport.ShowProgress = false;
+
+                            MemoryStream strm = new MemoryStream();
+                            report.Report.Export(pdfExport, strm);
+                            report.Dispose();
+                            pdfExport.Dispose();
+                            strm.Position = 0;
+
+                            // return stream in browser
+                            var unitName = _storageService.SelectedUnitName ?? "";
+                            return File(strm, "application/pdf", $"Logbook_Report_{unitName.Replace(' ', '_')}.pdf");
+                        }
+                        else
+                        {
+                            return View(model);
+                        }
+                    }
                 }
             }
             else
