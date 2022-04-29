@@ -48,8 +48,11 @@ namespace Topo.Controllers
                     model.Members.Add(editorViewModel);
                 }
             }
-            if (_storageService.SelectedUnitName != null)
-                model.SelectedUnitName = _storageService.SelectedUnitName;
+            if (_storageService.Units != null)
+            {
+                _storageService.SelectedUnitName = _storageService.Units.Where(u => u.Value == _storageService.SelectedUnitId)?.FirstOrDefault()?.Text;
+                model.SelectedUnitName = _storageService.SelectedUnitName ?? "";
+            }
             SetViewBag();
             return model;
         }
@@ -79,8 +82,6 @@ namespace Topo.Controllers
                     return RedirectToAction("Index", "Logbook");
                 }
                 _storageService.SelectedUnitId = logbookListViewModel.SelectedUnitId;
-                if (_storageService.Units != null)
-                    _storageService.SelectedUnitName = _storageService.Units.Where(u => u.Value == logbookListViewModel.SelectedUnitId)?.FirstOrDefault()?.Text;
                 model = await SetUpViewModel();
                 if (!string.IsNullOrEmpty(button))
                 {

@@ -37,6 +37,10 @@ namespace Topo.Controllers
             var calendars = await _eventService.GetCalendars();
             _storageService.Calendars = calendars.Select(e => new SelectListItem { Text = e.Title, Value = e.Id }).ToList();
             viewModel.Calendars = _storageService.Calendars;
+            if (!string.IsNullOrEmpty(_storageService.SelectedUnitName))
+            {
+                viewModel.SelectedCalendar = _storageService.Calendars.Where(c => c.Text == _storageService.SelectedUnitName).FirstOrDefault()?.Value ?? "";
+            }
 
             SetViewBag();
             return View(viewModel);
