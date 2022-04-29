@@ -39,7 +39,8 @@ namespace Topo.Services
                         patrol_name = m.patrol == null ? "" : m.patrol.name,
                         patrol_duty = m.patrol == null ? "" : GetPatrolDuty(m.unit.duty, m.patrol.duty),
                         patrol_order = m.patrol == null ? 3 : GetPatrolOrder(m.unit.duty, m.patrol.duty),
-                        isAdultLeader = m.unit.duty == "adult_leader" ? 1 : 0
+                        isAdultLeader = m.unit.duty == "adult_leader" ? 1 : 0,
+                        status = m.status
                     })
                     .ToList();
             }

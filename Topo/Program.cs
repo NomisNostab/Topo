@@ -22,6 +22,7 @@ builder.Services.AddScoped<IOASService, OASService>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<ISIAService, SIAService>();
 builder.Services.AddScoped<IMilestoneService, MilestoneService>();
+builder.Services.AddScoped<ILogbookService, LogbookService>();
 builder.Services.AddSqlite<Topo.Data.TopoDBContext>($@"Data Source={path}\Topo.db");
 builder.Services.AddHttpClient();
 

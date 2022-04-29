@@ -120,11 +120,4 @@ namespace Topo.Controllers
     }
 }
 
-//Build report template for model
-//report1.Dictionary.RegisterBusinessObject(
-//        new List<MemberListModel>(),
-//        "Members",
-//        2,
-//        true
-//    );
-//report1.Save(@"C:\Users\simon\Documents\SignInSheet2.frx");
+
