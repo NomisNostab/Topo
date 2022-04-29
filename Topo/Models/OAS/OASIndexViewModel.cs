@@ -18,5 +18,8 @@ namespace Topo.Models.OAS
         [Display(Name = "Stage")]
         public string SelectedStage { get; set; } = string.Empty;
 
+        [Display(Name = "Hide Completed Members")]
+        public bool HideCompletedMembers { get; set; }
+
     }
 }
