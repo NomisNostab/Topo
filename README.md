@@ -86,3 +86,12 @@ The Milestone Report shows for the selected Unit the current milestone progress 
 Select the Unit and click Generate Milestone Report to download the report.
 
 ![TopoMilestoneReport](https://user-images.githubusercontent.com/65288066/163993182-fb13d04e-f247-4271-9720-eb26ff37006d.png)
+
+### Logbook Report
+The Logbook Report shows for the selected Unit and members the complete logbook history and a total for the KMs hiked and nights camped.
+
+![TopoLogbook](https://user-images.githubusercontent.com/65288066/165905076-79723a0c-f139-4b44-b549-8e7873f789dd.png)
+
+Select the Unit, select the member(s) or use Select All and click Generate Logbook report to download the report.
+
+![TopoLogbookReport](https://user-images.githubusercontent.com/65288066/165905298-0b00ed9e-c36d-4590-994b-ffff7e1b04ed.png)
