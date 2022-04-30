@@ -17,6 +17,20 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Content Remove="NLog.config" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Remove="C:\Users\simon\.nuget\packages\nlog.config\4.7.15\contentFiles\any\any\NLog.config" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="NLog.config">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="FastReport.OpenSource" Version="2022.1.14" />
 		<PackageReference Include="FastReport.OpenSource.Export.PdfSimple" Version="2022.1.14" />
 		<PackageReference Include="FastReport.OpenSource.Web" Version="2022.1.14" />
@@ -32,6 +46,8 @@
 		</PackageReference>
 		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.2" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+		<PackageReference Include="NLog" Version="4.7.15" />
+		<PackageReference Include="NLog.Web.AspNetCore" Version="4.14.0" />
 	</ItemGroup>
 
 	<ItemGroup>
