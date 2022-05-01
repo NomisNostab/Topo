@@ -12,13 +12,15 @@ namespace Topo.Controllers
         private readonly StorageService _storageService;
         private readonly IMemberListService _memberListService;
         private ILogbookService _logbookService;
+        private ILogger<LogbookController> _logger;
 
         public LogbookController(StorageService storageService,
-            IMemberListService memberListService, ILogbookService logbookService)
+            IMemberListService memberListService, ILogbookService logbookService, ILogger<LogbookController> logger)
         {
             _storageService = storageService;
             _memberListService = memberListService;
             _logbookService = logbookService;
+            _logger = logger;
         }
 
         private async Task<LogbookListViewModel> SetUpViewModel()
@@ -71,6 +73,7 @@ namespace Topo.Controllers
         {
             var model = new LogbookListViewModel();
             ModelState.Remove("button");
+            _logger.LogInformation($"ModelState.IsValid: {ModelState.IsValid}");
             if (ModelState.IsValid)
             {
                 if (_storageService.SelectedUnitId != logbookListViewModel.SelectedUnitId)
@@ -82,17 +85,31 @@ namespace Topo.Controllers
                 if (_storageService.Units != null)
                     _storageService.SelectedUnitName = _storageService.Units.Where(u => u.Value == logbookListViewModel.SelectedUnitId)?.FirstOrDefault()?.Text;
                 model = await SetUpViewModel();
+                _logger.LogInformation($"button: {button}");
                 if (!string.IsNullOrEmpty(button))
                 {
                     var selectedMembers = logbookListViewModel.getSelectedMembers();
+                    if(selectedMembers == null)
+                    {
+                        _logger.LogInformation("selectedMembers: null");
+                        selectedMembers = new List<string>();
+                    }
+                    if (selectedMembers.Count() == 0)
+                    {
+                        _logger.LogInformation("selectedMembers.Count: 0");
+                        _logger.LogInformation($"logbookListViewModel.Members.Count: {logbookListViewModel.Members.Count()}");
+                        selectedMembers = logbookListViewModel.Members.Select(m => m.id).ToList();
+                    }
                     if (selectedMembers != null)
                     {
+                        _logger.LogInformation($"selectedMembers.Count: {selectedMembers.Count()}");
                         var memberKVP = new List<KeyValuePair<string, string>>();
                         foreach (var member in selectedMembers)
                         {
                             var memberName = logbookListViewModel.Members.Where(m => m.id == member).Select(m => m.first_name + " " + m.last_name).FirstOrDefault();
                             memberKVP.Add(new KeyValuePair<string, string>(member, memberName ?? ""));
                         }
+                        _logger.LogInformation($"memberKVP.Count: {memberKVP.Count()}");
                         var report = await _logbookService.GenerateLogbookReport(memberKVP);
                         if (report.Prepare())
                         {
