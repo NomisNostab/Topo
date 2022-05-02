@@ -74,6 +74,17 @@ namespace Topo.Controllers
             var model = new LogbookListViewModel();
             ModelState.Remove("button");
             _logger.LogInformation($"ModelState.IsValid: {ModelState.IsValid}");
+            var buttonValue = string.IsNullOrEmpty(button) ? "Null" : button;
+            _logger.LogInformation($"button: {buttonValue}");
+            _logger.LogInformation($"logbookListViewModel.SelectedUnitId: {logbookListViewModel.SelectedUnitId}");
+            _logger.LogInformation($"logbookListViewModel.Members.Count: {logbookListViewModel.Members.Count()}");
+            foreach (var modelState in ModelState.Values)
+            {
+                foreach (var error in modelState.Errors)
+                {
+                    _logger.LogInformation($"ModelState Error: {error.ErrorMessage}");
+                }
+            }
             if (ModelState.IsValid)
             {
                 if (_storageService.SelectedUnitId != logbookListViewModel.SelectedUnitId)
@@ -84,7 +95,6 @@ namespace Topo.Controllers
                 _storageService.SelectedUnitId = logbookListViewModel.SelectedUnitId;
                 if (_storageService.Units != null)
                     _storageService.SelectedUnitName = _storageService.Units.Where(u => u.Value == logbookListViewModel.SelectedUnitId)?.FirstOrDefault()?.Text;
-                model = await SetUpViewModel();
                 _logger.LogInformation($"button: {button}");
                 if (!string.IsNullOrEmpty(button))
                 {
@@ -123,21 +133,15 @@ namespace Topo.Controllers
                             pdfExport.Dispose();
                             strm.Position = 0;
 
+                            SetViewBag();
                             // return stream in browser
                             var unitName = _storageService.SelectedUnitName ?? "";
                             return File(strm, "application/pdf", $"Logbook_Report_{unitName.Replace(' ', '_')}.pdf");
                         }
-                        else
-                        {
-                            return View(model);
-                        }
                     }
                 }
             }
-            else
-            {
-                model = await SetUpViewModel();
-            }
+            model = await SetUpViewModel();
             return View(model);
         }
 
