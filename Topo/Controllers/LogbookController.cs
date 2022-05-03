@@ -74,12 +74,13 @@ namespace Topo.Controllers
         [HttpPost]
         public async Task<ActionResult> Index(LogbookListViewModel logbookListViewModel, string button)
         {
-            var model = new LogbookListViewModel();
             if (string.IsNullOrEmpty(logbookListViewModel.SelectedUnitId) || _storageService.SelectedUnitId != logbookListViewModel.SelectedUnitId)
             {
                 _storageService.SelectedUnitId = logbookListViewModel.SelectedUnitId;
                 return RedirectToAction("Index", "Logbook");
             }
+
+            var model = new LogbookListViewModel();
             if (!string.IsNullOrEmpty(logbookListViewModel.SelectedUnitId))
             {
                 _storageService.SelectedUnitId = logbookListViewModel.SelectedUnitId;
@@ -91,6 +92,7 @@ namespace Topo.Controllers
                         _logger.LogInformation("selectedMembers: null");
                         selectedMembers = new List<string>();
                     }
+                    // No members selected, default to all
                     if (selectedMembers.Count() == 0)
                     {
                         selectedMembers = logbookListViewModel.Members.Select(m => m.id).ToList();

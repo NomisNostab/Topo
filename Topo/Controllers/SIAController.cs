@@ -12,12 +12,14 @@ namespace Topo.Controllers
         private readonly StorageService _storageService;
         private readonly IMemberListService _memberListService;
         private readonly ISIAService _SIAService;
+        private readonly ILogger<SIAController> _logger;
 
-        public SIAController(StorageService storageService, IMemberListService memberListService, ISIAService sIAService)
+        public SIAController(StorageService storageService, IMemberListService memberListService, ISIAService sIAService, ILogger<SIAController> logger)
         {
             _storageService = storageService;
             _memberListService = memberListService;
             _SIAService = sIAService;
+            _logger = logger;
         }
 
         private void SetViewBag()
@@ -45,7 +47,7 @@ namespace Topo.Controllers
                         first_name = member.first_name,
                         last_name = member.last_name,
                         member_number = member.member_number,
-                        patrol_name = member.patrol_name,
+                        patrol_name = string.IsNullOrEmpty(member.patrol_name) ? "-" : member.patrol_name,
                         patrol_duty = string.IsNullOrEmpty(member.patrol_duty) ? "-" : member.patrol_duty,
                         unit_council = member.unit_council,
                         selected = false
@@ -72,28 +74,39 @@ namespace Topo.Controllers
         [HttpPost]
         public async Task<ActionResult> Index(SIAIndexViewModel siaIndexViewModel, string button)
         {
-            var model = new SIAIndexViewModel();
-            ModelState.Remove("button");
-            if (ModelState.IsValid)
+            if (string.IsNullOrEmpty(siaIndexViewModel.SelectedUnitId) || _storageService.SelectedUnitId != siaIndexViewModel.SelectedUnitId)
             {
-                if (_storageService.SelectedUnitId != siaIndexViewModel.SelectedUnitId)
-                {
-                    _storageService.SelectedUnitId = siaIndexViewModel.SelectedUnitId;
-                    return RedirectToAction("Index", "SIA");
-                }
                 _storageService.SelectedUnitId = siaIndexViewModel.SelectedUnitId;
-                model = await SetUpViewModel();
+                return RedirectToAction("Index", "SIA");
+            }
+
+            var model = new SIAIndexViewModel();
+            if (!string.IsNullOrEmpty(siaIndexViewModel.SelectedUnitId))
+            {
+                _storageService.SelectedUnitId = siaIndexViewModel.SelectedUnitId;
                 if (!string.IsNullOrEmpty(button))
                 {
                     var selectedMembers = siaIndexViewModel.getSelectedMembers();
+                    if (selectedMembers == null)
+                    {
+                        _logger.LogInformation("selectedMembers: null");
+                        selectedMembers = new List<string>();
+                    }
+                    // No members selected, default to all
+                    if (selectedMembers.Count() == 0)
+                    {
+                        selectedMembers = siaIndexViewModel.Members.Select(m => m.id).ToList();
+                    }
                     if (selectedMembers != null)
                     {
+                        _logger.LogInformation($"selectedMembers.Count: {selectedMembers.Count()}");
                         var memberKVP = new List<KeyValuePair<string, string>>();
                         foreach (var member in selectedMembers)
                         {
                             var memberName = siaIndexViewModel.Members.Where(m => m.id == member).Select(m => m.first_name + " " + m.last_name).FirstOrDefault();
                             memberKVP.Add(new KeyValuePair<string, string>(member, memberName ?? ""));
                         }
+                        _logger.LogInformation($"memberKVP.Count: {memberKVP.Count()}");
                         var report = await _SIAService.GenerateSIAReport(memberKVP);
                         if (report.Prepare())
                         {
@@ -111,42 +124,12 @@ namespace Topo.Controllers
                             var unitName = _storageService.SelectedUnitName ?? "";
                             return File(strm, "application/pdf", $"SIA_Projects_{unitName.Replace(' ', '_')}.pdf");
                         }
-                        else
-                        {
-                            return View(model);
-                        }
                     }
                 }
             }
             model = await SetUpViewModel();
             return View(model);
         }
-
-        //public async Task<ActionResult> SIAReport()
-        //{
-        //    var report = await _SIAService.GenerateSIAReport();
-        //    if (report.Prepare())
-        //    {
-        //        // Set PDF export props
-        //        PDFSimpleExport pdfExport = new PDFSimpleExport();
-        //        pdfExport.ShowProgress = false;
-
-        //        MemoryStream strm = new MemoryStream();
-        //        report.Report.Export(pdfExport, strm);
-        //        report.Dispose();
-        //        pdfExport.Dispose();
-        //        strm.Position = 0;
-
-        //        // return stream in browser
-        //        var unitName = _storageService.SelectedUnitName ?? "";
-        //        return File(strm, "application/pdf", $"SIA_Projects_{unitName.Replace(' ', '_')}.pdf");
-        //    }
-        //    else
-        //    {
-        //        var model = await SetUpViewModel();
-        //        SetViewBag();
-        //        return View(model);
-        //    }
-        //}
     }
 }
+
