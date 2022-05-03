@@ -18,7 +18,7 @@ namespace Topo.Services
         public Task<GetUserResultModel?> GetUserAsync();
         public Task<GetProfilesResultModel> GetProfilesAsync();
         public Task RefreshTokenAsync();
-        public Task<GetMembersResultModel?> GetMembersAsync();
+        public Task<GetMembersResultModel?> GetMembersAsync(string selectedUnitId);
         public Task<GetEventsResultModel?> GetEventsAsync(string userId, DateTime fromDate, DateTime toDate);
         public Task<GetEventResultModel?> GetEventAsync(string eventId);
         public Task<GetCalendarsResultModel?> GetCalendarsAsync(string userId);
@@ -154,11 +154,11 @@ namespace Topo.Services
             }
         }
 
-        public async Task<GetMembersResultModel?> GetMembersAsync()
+        public async Task<GetMembersResultModel?> GetMembersAsync(string selectedUnitId)
         {
             await RefreshTokenAsync();
 
-            string requestUri = $"{membersAddress}units/{_storageService.SelectedUnitId}/members";
+            string requestUri = $"{membersAddress}units/{selectedUnitId}/members";
             var result = await SendRequest(HttpMethod.Get, requestUri);
             var getMembersResultModel = DeserializeObject<GetMembersResultModel>(result);
 
