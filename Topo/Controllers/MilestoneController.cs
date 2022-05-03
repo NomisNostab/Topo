@@ -31,6 +31,12 @@ namespace Topo.Controllers
             model.Units = new List<SelectListItem>();
             if (_storageService.Units != null)
                 model.Units = _storageService.Units;
+            if (_storageService.Units != null && _storageService.SelectedUnitId != null)
+            {
+                _storageService.SelectedUnitName = _storageService.Units.Where(u => u.Value == _storageService.SelectedUnitId)?.FirstOrDefault()?.Text;
+                model.SelectedUnitId = _storageService.SelectedUnitId;
+                model.SelectedUnitName = _storageService.SelectedUnitName ?? string.Empty;
+            }
             return model;
         }
 
@@ -44,16 +50,16 @@ namespace Topo.Controllers
         }
 
         [HttpPost]
-        public ActionResult Index(MilestoneIndexViewModel MilestoneIndexViewModel)
+        public ActionResult Index(MilestoneIndexViewModel milestoneIndexViewModel)
         {
             var model = SetModel();
             if (ModelState.IsValid)
             {
-                _storageService.SelectedUnitId = MilestoneIndexViewModel.SelectedUnitId;
+                _storageService.SelectedUnitId = milestoneIndexViewModel.SelectedUnitId;
                 if (_storageService.Units != null)
-                    _storageService.SelectedUnitName = _storageService.Units.Where(u => u.Value == MilestoneIndexViewModel.SelectedUnitId)?.FirstOrDefault()?.Text;
+                    _storageService.SelectedUnitName = _storageService.Units.Where(u => u.Value == _storageService.SelectedUnitId)?.FirstOrDefault()?.Text;
                 model.SelectedUnitId = _storageService.SelectedUnitId;
-                model.SelectedUnitName = _storageService.SelectedUnitName;
+                model.SelectedUnitName = _storageService.SelectedUnitName ?? "";
             }
             SetViewBag();
             return View(model);

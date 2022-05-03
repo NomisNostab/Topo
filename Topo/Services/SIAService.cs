@@ -6,7 +6,7 @@ namespace Topo.Services
 {
     public interface ISIAService
     {
-        public Task<Report> GenerateSIAReport();
+        public Task<Report> GenerateSIAReport(List<KeyValuePair<string, string>> selectedMembers);
     }
 
     public class SIAService : ISIAService
@@ -25,7 +25,7 @@ namespace Topo.Services
             _storageService = storageService;
             _logger = logger;
         }
-        public async Task<Report> GenerateSIAReport()
+        public async Task<Report> GenerateSIAReport(List<KeyValuePair<string, string>> selectedMembers)
         {
             var unitName = _storageService.SelectedUnitName ?? "";
             var unit = _storageService.GetProfilesResult.profiles.FirstOrDefault(u => u.unit.name == unitName);
@@ -34,17 +34,15 @@ namespace Topo.Services
             var section = unit.unit.section;
             TextInfo myTI = new CultureInfo("en-US", false).TextInfo;
             var unitSiaProjects = new List<SIAProjectListModel>();
-            var members = await _memberListService.GetMembersAsync();
-            var sortedMemberList = members.Where(m => m.isAdultLeader == 0).OrderBy(m => m.first_name).ThenBy(m => m.last_name).ToList();
-            foreach (var member in sortedMemberList)
+            foreach (var member in selectedMembers)
             {
                 try
                 {
-                    var siaResultModel = await _terrainAPIService.GetSIAResultsForMember(member.id);
+                    var siaResultModel = await _terrainAPIService.GetSIAResultsForMember(member.Key);
                     var memberSiaProjects = siaResultModel.results.Where(r => r.section == section)
                         .Select(r => new SIAProjectListModel
                         {
-                            memberName = $"{member.first_name} {member.last_name}",
+                            memberName = member.Value,
                             area = myTI.ToTitleCase(r.answers.special_interest_area_selection.Replace("sia_", "").Replace("_", " ")),
                             projectName = r.answers.project_name,
                             status = myTI.ToTitleCase(r.status.Replace("_", " ")),
@@ -57,11 +55,11 @@ namespace Topo.Services
                 catch (Exception ex)
                 {
                     _logger.LogError($"GenerateSIAReport: Exception: {ex.Message}");
-                    _logger.LogError($"GenerateSIAReport: Member: {member.first_name} {member.last_name} {member.id}");
+                    _logger.LogError($"GenerateSIAReport: Member: {member.Value} {member.Key}");
                     _logger.LogError(ex, "GenerateSIAReport:");
                     unitSiaProjects.Add(new SIAProjectListModel
                     { 
-                        memberName = $"{member.first_name} {member.last_name}",
+                        memberName = $"{member.Value}",
                         area = "Error",
                         projectName = "Error",
                         status = "Error",
