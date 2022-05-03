@@ -50,8 +50,11 @@ namespace Topo.Controllers
                     model.Members.Add(editorViewModel);
                 }
             }
-            if (_storageService.SelectedUnitName != null)
-                model.SelectedUnitName = _storageService.SelectedUnitName;
+            if (_storageService.Units != null)
+            {
+                _storageService.SelectedUnitName = _storageService.Units.Where(u => u.Value == _storageService.SelectedUnitId)?.FirstOrDefault()?.Text;
+                model.SelectedUnitName = _storageService.SelectedUnitName ?? "";
+            }
             SetViewBag();
             return model;
         }
@@ -71,17 +74,16 @@ namespace Topo.Controllers
         [HttpPost]
         public async Task<ActionResult> Index(LogbookListViewModel logbookListViewModel, string button)
         {
-            var model = new LogbookListViewModel();
             if (string.IsNullOrEmpty(logbookListViewModel.SelectedUnitId) || _storageService.SelectedUnitId != logbookListViewModel.SelectedUnitId)
             {
                 _storageService.SelectedUnitId = logbookListViewModel.SelectedUnitId;
                 return RedirectToAction("Index", "Logbook");
             }
+
+            var model = new LogbookListViewModel();
             if (!string.IsNullOrEmpty(logbookListViewModel.SelectedUnitId))
             {
                 _storageService.SelectedUnitId = logbookListViewModel.SelectedUnitId;
-                if (_storageService.Units != null)
-                    _storageService.SelectedUnitName = _storageService.Units.Where(u => u.Value == logbookListViewModel.SelectedUnitId)?.FirstOrDefault()?.Text;
                 if (!string.IsNullOrEmpty(button))
                 {
                     var selectedMembers = logbookListViewModel.getSelectedMembers();
@@ -90,6 +92,7 @@ namespace Topo.Controllers
                         _logger.LogInformation("selectedMembers: null");
                         selectedMembers = new List<string>();
                     }
+                    // No members selected, default to all
                     if (selectedMembers.Count() == 0)
                     {
                         selectedMembers = logbookListViewModel.Members.Select(m => m.id).ToList();
