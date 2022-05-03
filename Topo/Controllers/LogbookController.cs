@@ -42,7 +42,7 @@ namespace Topo.Controllers
                         first_name = member.first_name,
                         last_name = member.last_name,
                         member_number = member.member_number,
-                        patrol_name = member.patrol_name,
+                        patrol_name = string.IsNullOrEmpty(member.patrol_name) ? "-" : member.patrol_name,
                         patrol_duty = string.IsNullOrEmpty(member.patrol_duty) ? "-" : member.patrol_duty,
                         unit_council = member.unit_council,
                         selected = false
@@ -72,30 +72,16 @@ namespace Topo.Controllers
         public async Task<ActionResult> Index(LogbookListViewModel logbookListViewModel, string button)
         {
             var model = new LogbookListViewModel();
-            ModelState.Remove("button");
-            _logger.LogInformation($"ModelState.IsValid: {ModelState.IsValid}");
-            var buttonValue = string.IsNullOrEmpty(button) ? "Null" : button;
-            _logger.LogInformation($"button: {buttonValue}");
-            _logger.LogInformation($"logbookListViewModel.SelectedUnitId: {logbookListViewModel.SelectedUnitId}");
-            _logger.LogInformation($"logbookListViewModel.Members.Count: {logbookListViewModel.Members.Count()}");
-            foreach (var modelState in ModelState.Values)
+            if (string.IsNullOrEmpty(logbookListViewModel.SelectedUnitId) || _storageService.SelectedUnitId != logbookListViewModel.SelectedUnitId)
             {
-                foreach (var error in modelState.Errors)
-                {
-                    _logger.LogInformation($"ModelState Error: {error.ErrorMessage}");
-                }
+                _storageService.SelectedUnitId = logbookListViewModel.SelectedUnitId;
+                return RedirectToAction("Index", "Logbook");
             }
-            if (ModelState.IsValid)
+            if (!string.IsNullOrEmpty(logbookListViewModel.SelectedUnitId))
             {
-                if (_storageService.SelectedUnitId != logbookListViewModel.SelectedUnitId)
-                {
-                    _storageService.SelectedUnitId = logbookListViewModel.SelectedUnitId;
-                    return RedirectToAction("Index", "Logbook");
-                }
                 _storageService.SelectedUnitId = logbookListViewModel.SelectedUnitId;
                 if (_storageService.Units != null)
                     _storageService.SelectedUnitName = _storageService.Units.Where(u => u.Value == logbookListViewModel.SelectedUnitId)?.FirstOrDefault()?.Text;
-                _logger.LogInformation($"button: {button}");
                 if (!string.IsNullOrEmpty(button))
                 {
                     var selectedMembers = logbookListViewModel.getSelectedMembers();
@@ -106,8 +92,6 @@ namespace Topo.Controllers
                     }
                     if (selectedMembers.Count() == 0)
                     {
-                        _logger.LogInformation("selectedMembers.Count: 0");
-                        _logger.LogInformation($"logbookListViewModel.Members.Count: {logbookListViewModel.Members.Count()}");
                         selectedMembers = logbookListViewModel.Members.Select(m => m.id).ToList();
                     }
                     if (selectedMembers != null)
