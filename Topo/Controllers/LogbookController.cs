@@ -12,13 +12,15 @@ namespace Topo.Controllers
         private readonly StorageService _storageService;
         private readonly IMemberListService _memberListService;
         private ILogbookService _logbookService;
+        private ILogger<LogbookController> _logger;
 
         public LogbookController(StorageService storageService,
-            IMemberListService memberListService, ILogbookService logbookService)
+            IMemberListService memberListService, ILogbookService logbookService, ILogger<LogbookController> logger)
         {
             _storageService = storageService;
             _memberListService = memberListService;
             _logbookService = logbookService;
+            _logger = logger;
         }
 
         private async Task<LogbookListViewModel> SetUpViewModel()
@@ -40,7 +42,7 @@ namespace Topo.Controllers
                         first_name = member.first_name,
                         last_name = member.last_name,
                         member_number = member.member_number,
-                        patrol_name = member.patrol_name,
+                        patrol_name = string.IsNullOrEmpty(member.patrol_name) ? "-" : member.patrol_name,
                         patrol_duty = string.IsNullOrEmpty(member.patrol_duty) ? "-" : member.patrol_duty,
                         unit_council = member.unit_council,
                         selected = false
@@ -48,8 +50,11 @@ namespace Topo.Controllers
                     model.Members.Add(editorViewModel);
                 }
             }
-            if (_storageService.SelectedUnitName != null)
-                model.SelectedUnitName = _storageService.SelectedUnitName;
+            if (_storageService.Units != null)
+            {
+                _storageService.SelectedUnitName = _storageService.Units.Where(u => u.Value == _storageService.SelectedUnitId)?.FirstOrDefault()?.Text;
+                model.SelectedUnitName = _storageService.SelectedUnitName ?? "";
+            }
             SetViewBag();
             return model;
         }
@@ -69,30 +74,39 @@ namespace Topo.Controllers
         [HttpPost]
         public async Task<ActionResult> Index(LogbookListViewModel logbookListViewModel, string button)
         {
-            var model = new LogbookListViewModel();
-            ModelState.Remove("button");
-            if (ModelState.IsValid)
+            if (string.IsNullOrEmpty(logbookListViewModel.SelectedUnitId) || _storageService.SelectedUnitId != logbookListViewModel.SelectedUnitId)
             {
-                if (_storageService.SelectedUnitId != logbookListViewModel.SelectedUnitId)
-                {
-                    _storageService.SelectedUnitId = logbookListViewModel.SelectedUnitId;
-                    return RedirectToAction("Index", "Logbook");
-                }
                 _storageService.SelectedUnitId = logbookListViewModel.SelectedUnitId;
-                if (_storageService.Units != null)
-                    _storageService.SelectedUnitName = _storageService.Units.Where(u => u.Value == logbookListViewModel.SelectedUnitId)?.FirstOrDefault()?.Text;
-                model = await SetUpViewModel();
+                return RedirectToAction("Index", "Logbook");
+            }
+
+            var model = new LogbookListViewModel();
+            if (!string.IsNullOrEmpty(logbookListViewModel.SelectedUnitId))
+            {
+                _storageService.SelectedUnitId = logbookListViewModel.SelectedUnitId;
                 if (!string.IsNullOrEmpty(button))
                 {
                     var selectedMembers = logbookListViewModel.getSelectedMembers();
+                    if(selectedMembers == null)
+                    {
+                        _logger.LogInformation("selectedMembers: null");
+                        selectedMembers = new List<string>();
+                    }
+                    // No members selected, default to all
+                    if (selectedMembers.Count() == 0)
+                    {
+                        selectedMembers = logbookListViewModel.Members.Select(m => m.id).ToList();
+                    }
                     if (selectedMembers != null)
                     {
+                        _logger.LogInformation($"selectedMembers.Count: {selectedMembers.Count()}");
                         var memberKVP = new List<KeyValuePair<string, string>>();
                         foreach (var member in selectedMembers)
                         {
                             var memberName = logbookListViewModel.Members.Where(m => m.id == member).Select(m => m.first_name + " " + m.last_name).FirstOrDefault();
                             memberKVP.Add(new KeyValuePair<string, string>(member, memberName ?? ""));
                         }
+                        _logger.LogInformation($"memberKVP.Count: {memberKVP.Count()}");
                         var report = await _logbookService.GenerateLogbookReport(memberKVP);
                         if (report.Prepare())
                         {
@@ -106,21 +120,15 @@ namespace Topo.Controllers
                             pdfExport.Dispose();
                             strm.Position = 0;
 
+                            SetViewBag();
                             // return stream in browser
                             var unitName = _storageService.SelectedUnitName ?? "";
                             return File(strm, "application/pdf", $"Logbook_Report_{unitName.Replace(' ', '_')}.pdf");
                         }
-                        else
-                        {
-                            return View(model);
-                        }
                     }
                 }
             }
-            else
-            {
-                model = await SetUpViewModel();
-            }
+            model = await SetUpViewModel();
             return View(model);
         }
 
