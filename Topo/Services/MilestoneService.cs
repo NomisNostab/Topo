@@ -6,6 +6,7 @@ namespace Topo.Services
     public interface IMilestoneService
     {
         Task<Report> GenerateMilestoneReport(string selectedUnitId);
+        Task<List<MilestoneSummaryListModel>> GetMilestoneSummaries(string selectedUnitId);
     }
     public class MilestoneService : IMilestoneService
     {
@@ -26,9 +27,26 @@ namespace Topo.Services
 
         public async Task<Report> GenerateMilestoneReport(string selectedUnitId)
         {
+            var unitMilestoneSummary = await GetMilestoneSummaries(selectedUnitId);
+            var groupName = _storageService.GroupName;
+            var unitName = _storageService.SelectedUnitName ?? "";
+            var report = new Report();
+            var directory = Directory.GetCurrentDirectory();
+            report.Load(@$"{directory}/Reports/Milestone.frx");
+            report.SetParameterValue("GroupName", groupName);
+            report.SetParameterValue("UnitName", unitName);
+            report.SetParameterValue("ReportDate", DateTime.Now.ToShortDateString());
+            report.RegisterData(unitMilestoneSummary, "MilestoneSummary");
+
+            return report;
+
+        }
+
+        public async Task<List<MilestoneSummaryListModel>> GetMilestoneSummaries(string selectedUnitId)
+        {
             var unitMilestoneSummary = new List<MilestoneSummaryListModel>();
-            var getGroupLifeResultModel = _terrainAPIService.GetGroupLifeForUnit(selectedUnitId);
-            foreach (var result in getGroupLifeResultModel.Result.results)
+            var getGroupLifeResultModel = await _terrainAPIService.GetGroupLifeForUnit(selectedUnitId);
+            foreach (var result in getGroupLifeResultModel.results)
             {
                 var milestone1 = result.milestones.Where(m => m.milestone == 1).FirstOrDefault();
                 var milestone1Awarded = result.milestone.milestone > 1 && (milestone1?.awarded ?? false);
@@ -37,7 +55,7 @@ namespace Topo.Services
                 var milestone2Awarded = result.milestone.milestone > 2 && (milestone2?.awarded ?? false);
                 var milestone2Skipped = result.milestone.milestone > 2 && !(milestone2?.awarded ?? false);
                 var milestone3 = result.milestones.Where(m => m.milestone == 3).FirstOrDefault();
-                var milestone3Awarded = milestone3?.awarded ?? false; 
+                var milestone3Awarded = milestone3?.awarded ?? false;
                 unitMilestoneSummary.Add(
                     new MilestoneSummaryListModel
                     {
@@ -62,22 +80,9 @@ namespace Topo.Services
                         milestone3ParticipatePersonalGrowth = milestone3Awarded ? 4 : milestone3?.participates.Where(p => p.challenge_area == "personal_growth").FirstOrDefault()?.total ?? 0,
                         milestone3Assist = milestone3Awarded ? 4 : milestone3?.total_assists ?? 0,
                         milestone3Lead = milestone3Awarded ? 4 : milestone3?.total_leads ?? 0
-                    }
-                    );
+                    });
             }
-
-            var groupName = _storageService.GroupName;
-            var unitName = _storageService.SelectedUnitName ?? "";
-            var report = new Report();
-            var directory = Directory.GetCurrentDirectory();
-            report.Load(@$"{directory}/Reports/Milestone.frx");
-            report.SetParameterValue("GroupName", groupName);
-            report.SetParameterValue("UnitName", unitName);
-            report.SetParameterValue("ReportDate", DateTime.Now.ToShortDateString());
-            report.RegisterData(unitMilestoneSummary, "MilestoneSummary");
-
-            return report;
-
+            return unitMilestoneSummary;
         }
 
         private int CalculateMilestonePercentComplete(Milestone milestone)
