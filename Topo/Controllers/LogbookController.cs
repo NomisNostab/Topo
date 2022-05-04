@@ -23,7 +23,7 @@ namespace Topo.Controllers
             _logger = logger;
         }
 
-        private async Task<LogbookListViewModel> SetUpViewModel()
+        private async Task<LogbookListViewModel> SetUpViewModel(bool includeLeaders = false)
         {
             var model = new LogbookListViewModel();
             model.Units = new List<SelectListItem>();
@@ -33,7 +33,7 @@ namespace Topo.Controllers
             {
                 model.SelectedUnitId = _storageService.SelectedUnitId;
                 var allMembers = await _memberListService.GetMembersAsync();
-                var members = allMembers.Where(m => m.isAdultLeader == 0).OrderBy(m => m.first_name).ThenBy(m => m.last_name).ToList();
+                var members = allMembers.Where(m => includeLeaders || m.isAdultLeader == 0).OrderBy(m => m.first_name).ThenBy(m => m.last_name).ToList();
                 foreach (var member in members)
                 {
                     var editorViewModel = new MemberListEditorViewModel
@@ -128,7 +128,7 @@ namespace Topo.Controllers
                     }
                 }
             }
-            model = await SetUpViewModel();
+            model = await SetUpViewModel(logbookListViewModel.IncludeLeaders);
             return View(model);
         }
 

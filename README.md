@@ -63,18 +63,18 @@ The OAS Report shows for a given unit, stream and stage what each I Statement a 
 
 This can be handy when planning events around OAS streams.
 
-![TopoOAS](https://user-images.githubusercontent.com/65288066/161261366-2f0a592d-75c0-44b9-a343-7d18d59eddec.png)
+![TopoOAS](https://user-images.githubusercontent.com/65288066/166455113-1829a455-a9eb-4c7c-ab29-4b92a0e9b4b4.png)
 
-Select the Unit, Stream, Stage and click Generate OAS Report to download the report.
+Select the Unit, Stream, Stage and click Generate OAS Report to download the report. Use the Hide completed members option to only show in progress members in the report.
 
 ![TopoOASReport](https://user-images.githubusercontent.com/65288066/161261855-99dc0f97-115c-45ee-8564-f03f7dbe4451.png)
 
 ### SIA Report
-The SIA Report shows for the selected Unit the status of each SIA project undertaken by all the members of the Unit.
+The SIA Report shows for the selected Unit and members the status of each SIA project undertaken by all the members of the Unit.
 
-![TopoSIA](https://user-images.githubusercontent.com/65288066/162437825-e990677d-714e-4260-8a60-45dd479f2f9c.png)
+![TopoSIA](https://user-images.githubusercontent.com/65288066/166454635-69d03784-c3dc-47b9-92e1-10475a9db995.png)
 
-Select the Unit and click Generate SIA Report to download the report.
+Select the Unit, select the member(s) or use Select All and click Generate SIA Report to download the report.
 
 ![TopoSiaReport](https://user-images.githubusercontent.com/65288066/162438257-c96780b4-5dc4-4f10-9e63-03725d4ae40b.png)
 
@@ -85,4 +85,14 @@ The Milestone Report shows for the selected Unit the current milestone progress 
 
 Select the Unit and click Generate Milestone Report to download the report.
 
-![TopoMilestoneReport](https://user-images.githubusercontent.com/65288066/163993182-fb13d04e-f247-4271-9720-eb26ff37006d.png)
+![TopoMilestoneReport](https://user-images.githubusercontent.com/65288066/166454006-7c9a58e7-37d4-4497-9ed6-8fd1b2cb432c.png)
+
+
+### Logbook Report
+The Logbook Report shows for the selected Unit and members the complete logbook history and a total for the KMs hiked and nights camped.
+
+![TopoLogbook](https://user-images.githubusercontent.com/65288066/165905076-79723a0c-f139-4b44-b549-8e7873f789dd.png)
+
+Select the Unit, select the member(s) or use Select All and click Generate Logbook report to download the report.
+
+![TopoLogbookReport](https://user-images.githubusercontent.com/65288066/165905298-0b00ed9e-c36d-4590-994b-ffff7e1b04ed.png)
