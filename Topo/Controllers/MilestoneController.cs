@@ -1,6 +1,8 @@
 ﻿using FastReport.Export.PdfSimple;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Reflection;
+using System.Text;
 using Topo.Models.Milestone;
 using Topo.Services;
 
@@ -10,13 +12,13 @@ namespace Topo.Controllers
     {
         private readonly StorageService _storageService;
         private readonly IMemberListService _memberListService;
-        private readonly IMilestoneService _MilestoneService;
+        private readonly IMilestoneService _milestoneService;
 
-        public MilestoneController(StorageService storageService, IMemberListService memberListService, IMilestoneService MilestoneService)
+        public MilestoneController(StorageService storageService, IMemberListService memberListService, IMilestoneService milestoneService)
         {
             _storageService = storageService;
             _memberListService = memberListService;
-            _MilestoneService = MilestoneService;
+            _milestoneService = milestoneService;
         }
 
         private void SetViewBag()
@@ -67,7 +69,7 @@ namespace Topo.Controllers
 
         public async Task<ActionResult> MilestoneReport(string selectedUnitId)
         {
-            var report = await _MilestoneService.GenerateMilestoneReport(selectedUnitId);
+            var report = await _milestoneService.GenerateMilestoneReport(selectedUnitId);
             if (report.Prepare())
             {
                 // Set PDF export props
@@ -91,6 +93,34 @@ namespace Topo.Controllers
                 return View(model);
             }
         }
+
+        public async Task<ActionResult> MilestoneCSV(string selectedUnitId)
+        {
+            var groupName = _storageService.GroupName;
+            var unitName = _storageService.SelectedUnitName ?? "";
+
+            var milestoneSummaries = await _milestoneService.GetMilestoneSummaries(selectedUnitId);
+
+            MemoryStream ms = new MemoryStream();
+            // Encoding.UTF8 produces stream with BOM, new UTF8Encoding(false) - without BOM
+            using (StreamWriter sw = new StreamWriter(ms, new UTF8Encoding(false), 8192, true))
+            {
+                sw.WriteLine(groupName);
+                sw.WriteLine(unitName);
+                sw.WriteLine("Milestones");
+                sw.WriteLine();
+                PropertyInfo[] properties = typeof(MilestoneSummaryListModel).GetProperties();
+                sw.WriteLine(string.Join(",", properties.Select(x => x.Name)));
+
+                foreach (var member in milestoneSummaries.OrderBy(m => m.currentLevel).ThenBy(m => m.memberName))
+                {
+                    sw.WriteLine(string.Join(",", properties.Select(prop => prop.GetValue(member))));
+                }
+            }
+            ms.Position = 0;
+            return File(ms, "application/vnd.ms-excel", $"Milestone_Report_{unitName.Replace(' ', '_')}.csv");
+        }
+
     }
 }
 
