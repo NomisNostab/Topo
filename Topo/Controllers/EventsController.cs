@@ -47,10 +47,14 @@ namespace Topo.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Index([Bind("SelectedCalendar, SelectedEvent, CalendarSearchDate")] EventsListViewModel eventViewModel)
+        public async Task<IActionResult> Index([Bind("SelectedCalendar, SelectedEvent, CalendarSearchFromDate, CalendarSearchToDate")] EventsListViewModel eventViewModel)
         {
             var viewModel = new EventsListViewModel();
             viewModel.Events = new List<EventListModel>();
+            if (eventViewModel.CalendarSearchFromDate != null && eventViewModel.CalendarSearchToDate != null && eventViewModel.CalendarSearchFromDate > eventViewModel.CalendarSearchToDate)
+            {
+                ModelState.AddModelError("CalendarSearchToDate", "The to date must be after the from date");
+            }
             if (ModelState.IsValid)
             {
                 var calendarTitle = _storageService.Calendars.FirstOrDefault(c => c.Value == eventViewModel.SelectedCalendar).Text;
@@ -58,13 +62,13 @@ namespace Topo.Controllers
                 _storageService.SelectedUnitName = selectedUnit.Text;
                 _storageService.SelectedUnitId = selectedUnit.Value;
                 await _eventService.SetCalendar(eventViewModel.SelectedCalendar);
-                var events = await _eventService.GetEventsForDates(eventViewModel.CalendarSearchDate.AddMonths(-1), eventViewModel.CalendarSearchDate.AddMonths(1));
+                var events = await _eventService.GetEventsForDates(eventViewModel.CalendarSearchFromDate, eventViewModel.CalendarSearchToDate);
                 viewModel.Events = events;
                 _storageService.Events = events.Select(e => new SelectListItem { Text = e.EventDisplay, Value = e.Id }).ToList();
             }
             viewModel.Calendars = _storageService.Calendars;
             viewModel.SelectedCalendar = eventViewModel.SelectedCalendar;
-            viewModel.CalendarSearchDate = eventViewModel.CalendarSearchDate;
+            viewModel.CalendarSearchFromDate = eventViewModel.CalendarSearchFromDate;
 
             SetViewBag();
             return View(viewModel);

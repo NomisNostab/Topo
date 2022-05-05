@@ -14,10 +14,15 @@
         </div>
     </div>
     <div class="mt-3 mb-3 row">
-        <label class="col-sm-2 col-form-label"> @Html.DisplayNameFor(m => m.CalendarSearchDate)</label>
+        <label class="col-sm-2 col-form-label"> @Html.DisplayNameFor(m => m.CalendarSearchFromDate)</label>
         <div class="col-sm-2">
-            @Html.EditorFor(m => m.CalendarSearchDate, new { htmlAttributes = new { @class = "form-control" } })
-            <span asp-validation-for="CalendarSearchDate" class="text-danger"></span>
+            @Html.EditorFor(m => m.CalendarSearchFromDate, new { htmlAttributes = new { @class = "form-control" } })
+            <span asp-validation-for="CalendarSearchFromDate" class="text-danger"></span>
+        </div>
+        <label class="col-sm-2 col-form-label"> @Html.DisplayNameFor(m => m.CalendarSearchToDate)</label>
+        <div class="col-sm-2">
+            @Html.EditorFor(m => m.CalendarSearchToDate, new { htmlAttributes = new { @class = "form-control" } })
+            <span asp-validation-for="CalendarSearchToDate" class="text-danger"></span>
         </div>
     </div>
     <div class="mb-3 row">
