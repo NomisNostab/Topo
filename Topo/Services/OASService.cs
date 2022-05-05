@@ -15,6 +15,7 @@ namespace Topo.Services
         public Task<GetUnitAchievementsResultsModel> GetUnitAchievements(string unit, string stream, string branch, int stage);
         public Task<List<OASTemplate>> GetOASTemplate(string templateName);
         public Task<Report> GenerateOASWorksheet(string selectedUnitId, string selectedStageTemplate, bool hideCompletedMembers);
+        public Task<List<OASWorksheetAnswers>> GenerateOASWorksheetCSV(string selectedUnitId, string selectedStageTemplate, bool hideCompletedMembers);
     }
     public class OASService : IOASService
     {
@@ -175,15 +176,38 @@ namespace Topo.Services
 
         public async Task<Report> GenerateOASWorksheet(string selectedUnitId, string selectedStageTemplate, bool hideCompletedMembers)
         {
-            var selectedStage = _storageService.OASStageList.Where(s => s.TemplateLink == selectedStageTemplate).SingleOrDefault();
-            var getUnitAchievementsResultsModel = await GetUnitAchievements(selectedUnitId, selectedStage.Stream.ToLower(), selectedStage.Branch, selectedStage.Stage);
-            var members = await _memberListService.GetMembersAsync();
-            var sortedMemberList = members.Where(m => m.isAdultLeader == 0).OrderBy(m => m.first_name).ThenBy(m => m.last_name).ToList();
             var templateList = await GetOASTemplate(selectedStageTemplate.Replace("/latest.json", ""));
 
             var templateTitle = templateList.Count > 0 ? templateList[0].TemplateTitle : "";
             if (hideCompletedMembers)
                 templateTitle += " (in progress)";
+            var sortedAnswers = await GenerateOASWorksheetAnswers(selectedUnitId, selectedStageTemplate, hideCompletedMembers, templateList);
+            var groupName = _storageService.GroupName;
+            var unitName = _storageService.SelectedUnitName ?? "";
+            var report = new Report();
+            var directory = Directory.GetCurrentDirectory();
+            report.Load($@"{directory}/Reports/OASWorksheet.frx");
+            report.SetParameterValue("GroupName", groupName);
+            report.SetParameterValue("UnitName", unitName);
+            report.SetParameterValue("OASStage", templateTitle);
+            report.RegisterData(sortedAnswers, "OASWorksheets");
+
+            return report;
+        }
+
+        public async Task<List<OASWorksheetAnswers>> GenerateOASWorksheetCSV(string selectedUnitId, string selectedStageTemplate, bool hideCompletedMembers)
+        {
+            var templateList = await GetOASTemplate(selectedStageTemplate.Replace("/latest.json", ""));
+            var sortedAnswers = await GenerateOASWorksheetAnswers(selectedUnitId, selectedStageTemplate, hideCompletedMembers, templateList);
+            return sortedAnswers;
+        }
+
+        private async Task<List<OASWorksheetAnswers>> GenerateOASWorksheetAnswers(string selectedUnitId, string selectedStageTemplate, bool hideCompletedMembers, List<OASTemplate> templateList)
+        {
+            var selectedStage = _storageService.OASStageList.Where(s => s.TemplateLink == selectedStageTemplate).SingleOrDefault();
+            var getUnitAchievementsResultsModel = await GetUnitAchievements(selectedUnitId, selectedStage.Stream.ToLower(), selectedStage.Branch, selectedStage.Stage);
+            var members = await _memberListService.GetMembersAsync();
+            var sortedMemberList = members.Where(m => m.isAdultLeader == 0).OrderBy(m => m.first_name).ThenBy(m => m.last_name).ToList();
 
             _dbContext.OASWorksheetAnswers.RemoveRange(_dbContext.OASWorksheetAnswers);
 
@@ -251,7 +275,7 @@ namespace Topo.Services
                     if (memberAchievement.imported != null)
                     {
                         // Conver string date from yyyy-mm-dd format
-                        var importedDate = DateTime.ParseExact(memberAchievement.imported.date_awarded, "yyyy-MM-dd", CultureInfo.InvariantCulture); 
+                        var importedDate = DateTime.ParseExact(memberAchievement.imported.date_awarded, "yyyy-MM-dd", CultureInfo.InvariantCulture);
                         // Get all answers
                         var worksheetAnswers = _dbContext.OASWorksheetAnswers
                             .Where(wa => wa.MemberId == memberAchievement.member_id)
@@ -308,19 +332,8 @@ namespace Topo.Services
 
             _dbContext.OASWorksheetAnswers.RemoveRange(_dbContext.OASWorksheetAnswers);
 
-            var groupName = _storageService.GroupName;
-            var unitName = _storageService.SelectedUnitName ?? "";
-            var report = new Report();
-            var directory = Directory.GetCurrentDirectory();
-            report.Load($@"{directory}/Reports/OASWorksheet.frx");
-            report.SetParameterValue("GroupName", groupName);
-            report.SetParameterValue("UnitName", unitName);
-            report.SetParameterValue("OASStage", templateTitle);
-            report.RegisterData(sortedAnswers, "OASWorksheets");
-
-            return report;
+            return sortedAnswers;
         }
-
         private DateTime ConvertAnswerDate(string answerValue)
         {
             // Question answer dates seem to be either AU or US format. WTF!
