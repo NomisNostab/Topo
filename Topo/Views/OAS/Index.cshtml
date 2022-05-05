@@ -33,6 +33,9 @@
             <div class="col-sm-2">
                 <button type="submit" name="button" value="OASReport" class="btn btn-primary">Generate OAS Report</button> &nbsp;
             </div>
+            <div class="col-sm-2">
+                <button type="submit" name="button" value="OASCSV" class="btn btn-success">Generate OAS CSV</button> &nbsp;
+            </div>
             <div class="col-sm-3">
                 @Html.DisplayNameFor(model => model.HideCompletedMembers) &nbsp;
                 @Html.CheckBoxFor(model => model.HideCompletedMembers, new { id = "hideCompletedMembersCheckBoxId" })

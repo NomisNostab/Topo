@@ -12,6 +12,7 @@ using System.Drawing;
 using Topo.Data;
 using Topo.Data.Models;
 using System.Globalization;
+using System.Text;
 
 namespace Topo.Controllers
 {
@@ -82,9 +83,13 @@ namespace Topo.Controllers
                 model.Stages = _oasService.GetOASStageListItems(_storageService.OASStageList);
                 model.SelectedStream = oasIndexViewModel.SelectedStream;
                 model.SelectedStage = oasIndexViewModel.SelectedStage;
-                if (button != null)
+                if (button == "OASReport")
                 {
                     return await OASReport(oasIndexViewModel.SelectedUnitId, oasIndexViewModel.SelectedStage, oasIndexViewModel.HideCompletedMembers);
+                }
+                if (button == "OASCSV")
+                {
+                    return await OASCSV(oasIndexViewModel.SelectedUnitId, oasIndexViewModel.SelectedStage, oasIndexViewModel.HideCompletedMembers);
                 }
             }
             else
@@ -124,6 +129,39 @@ namespace Topo.Controllers
                 return File(strm, "application/pdf", fileName);
             }
             return null;
+        }
+
+        private async Task<ActionResult> OASCSV(string selectedUnitId, string selectedStageTemplate, bool hideCompletedMembers)
+        {
+            var groupName = _storageService.GroupName;
+            var unitName = _storageService.SelectedUnitName ?? "";
+            var templateName = selectedStageTemplate.Replace("/latest.json", "").Replace('/', '_');
+
+            var worksheetAnswers = await _oasService.GenerateOASWorksheetCSV(selectedUnitId, selectedStageTemplate, hideCompletedMembers);
+            var groupedAnswers = worksheetAnswers.GroupBy(wa => wa.MemberName).ToList();
+            var quote = '"';
+            MemoryStream ms = new MemoryStream();
+            // Encoding.UTF8 produces stream with BOM, new UTF8Encoding(false) - without BOM
+            using (StreamWriter sw = new StreamWriter(ms, new UTF8Encoding(false), 8192, true))
+            {
+                sw.WriteLine(groupName);
+                sw.WriteLine(unitName);
+                sw.WriteLine($"{templateName.Replace('_', ' ').ToUpper()}");
+                sw.Write(",");
+                sw.WriteLine(string.Join(",", groupedAnswers.FirstOrDefault().Select(a => a.InputTitle)));
+                sw.Write("Scout,");
+                sw.WriteLine(string.Join(",", groupedAnswers.FirstOrDefault().Select(a => quote + a.InputLabel + quote)));
+
+                foreach (var groupedAnswer in groupedAnswers.OrderBy(ga => ga.Key))
+                {
+                    var member = groupedAnswer.Key;
+                    var answerCount = groupedAnswer.Count();
+                    sw.Write($"{member},");
+                    sw.WriteLine(string.Join(", ", groupedAnswer.OrderBy(ga => ga.InputTitleSortIndex).ThenBy(ga => ga.InputSortIndex).Select(a => a.MemberAnswer)));
+                }
+            }
+            ms.Position = 0;
+            return File(ms, "application/vnd.ms-excel", $"OAS_Worksheet_{unitName.Replace(' ', '_')}_{templateName}.csv");
         }
 
     }
