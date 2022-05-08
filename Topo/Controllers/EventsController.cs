@@ -41,13 +41,15 @@ namespace Topo.Controllers
             {
                 viewModel.SelectedCalendar = _storageService.Calendars.Where(c => c.Text == _storageService.SelectedUnitName).FirstOrDefault()?.Value ?? "";
             }
+            viewModel.CalendarSearchFromDate = DateTime.Now;
+            viewModel.CalendarSearchToDate = DateTime.Now.AddMonths(4);
 
             SetViewBag();
             return View(viewModel);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Index([Bind("SelectedCalendar, SelectedEvent, CalendarSearchFromDate, CalendarSearchToDate")] EventsListViewModel eventViewModel)
+        public async Task<IActionResult> Index([Bind("SelectedCalendar, SelectedEvent, CalendarSearchFromDate, CalendarSearchToDate")] EventsListViewModel eventViewModel, string button)
         {
             var viewModel = new EventsListViewModel();
             viewModel.Events = new List<EventListModel>();
@@ -55,12 +57,17 @@ namespace Topo.Controllers
             {
                 ModelState.AddModelError("CalendarSearchToDate", "The to date must be after the from date");
             }
+            ModelState.Remove("button");
             if (ModelState.IsValid)
             {
                 var calendarTitle = _storageService.Calendars.FirstOrDefault(c => c.Value == eventViewModel.SelectedCalendar).Text;
                 var selectedUnit = _storageService.Units.Where(u => u.Text == calendarTitle)?.FirstOrDefault();
                 _storageService.SelectedUnitName = selectedUnit.Text;
                 _storageService.SelectedUnitId = selectedUnit.Value;
+                if (button == "AttendanceReport")
+                {
+                    return await AttendanceReport(eventViewModel.CalendarSearchFromDate, eventViewModel.CalendarSearchToDate, eventViewModel.SelectedCalendar);
+                }
                 await _eventService.SetCalendar(eventViewModel.SelectedCalendar);
                 var events = await _eventService.GetEventsForDates(eventViewModel.CalendarSearchFromDate, eventViewModel.CalendarSearchToDate);
                 viewModel.Events = events;
@@ -138,5 +145,70 @@ namespace Topo.Controllers
             return File(ms, "application/vnd.ms-excel", $"Attendance_{unitName.Replace(' ', '_')}_{eventListModel.EventDisplay.Replace(' ', '_')}.csv");
         }
 
+        private async Task<ActionResult> AttendanceReport(DateTime fromDate, DateTime toDate, string selectedCalendar )
+        {
+            var attendanceReportData = await _eventService.GenerateAttendanceReportData(fromDate, toDate, selectedCalendar);
+
+            var groupName = _storageService.GroupName;
+            var unitName = _storageService.SelectedUnitName ?? "";
+            var report = new Report();
+            var directory = Directory.GetCurrentDirectory();
+            report.Load($@"{directory}/Reports/Attendance.frx");
+            report.SetParameterValue("GroupName", groupName);
+            report.SetParameterValue("UnitName", unitName);
+            report.SetParameterValue("FromDate", fromDate.ToShortDateString());
+            report.SetParameterValue("ToDate", toDate.ToShortDateString());
+            report.SetParameterValue("TotalEvents", attendanceReportData.attendanceReportChallengeAreaSummaries.FirstOrDefault()?.TotalEvents ?? 0);
+            report.SetParameterValue("CommunityEvents", attendanceReportData.attendanceReportChallengeAreaSummaries.Where(c => c.ChallengeArea == "Community").FirstOrDefault()?.EventCount ?? 0);
+            report.SetParameterValue("CreativeEvents", attendanceReportData.attendanceReportChallengeAreaSummaries.Where(c => c.ChallengeArea == "Creative").FirstOrDefault()?.EventCount ?? 0);
+            report.SetParameterValue("OutdoorsEvents", attendanceReportData.attendanceReportChallengeAreaSummaries.Where(c => c.ChallengeArea == "Outdoors").FirstOrDefault()?.EventCount ?? 0);
+            report.SetParameterValue("PersonalGrowthEvents", attendanceReportData.attendanceReportChallengeAreaSummaries.Where(c => c.ChallengeArea == "Personal Growth").FirstOrDefault()?.EventCount ?? 0);
+            report.RegisterData(attendanceReportData.attendanceReportItems.ToList(), "MemberAttendance");
+
+
+            if (report.Prepare())
+            {
+                // Set PDF export props
+                PDFSimpleExport pdfExport = new PDFSimpleExport();
+                pdfExport.ShowProgress = false;
+
+                MemoryStream strm = new MemoryStream();
+                report.Report.Export(pdfExport, strm);
+                report.Dispose();
+                pdfExport.Dispose();
+                strm.Position = 0;
+
+                // return stream in browser
+                return File(strm, "application/pdf", $"Attendance_{unitName.Replace(' ', '_')}.pdf");
+            }
+            else
+            {
+                SetViewBag();
+                return View();
+            }
+        }
     }
 }
+
+////Build report template for model
+//var reportDS = new Report();
+//var directoryDS = Directory.GetCurrentDirectory();
+//reportDS.Dictionary.RegisterBusinessObject(
+//        new List<AttendanceReportItemModel>(),
+//        "MemberAttendance",
+//        2,
+//        true
+//    );
+//reportDS.Dictionary.RegisterBusinessObject(
+//        new List<AttendanceReportMemberSummaryModel>(),
+//        "MemberSummaries",
+//        2,
+//        true
+//    );
+//reportDS.Dictionary.RegisterBusinessObject(
+//        new List<AttendanceReportChallengeAreaSummaryModel>(),
+//        "ChallengeSummaries",
+//        2,
+//        true
+//    );
+//reportDS.Save(@$"{directoryDS}/Reports/AttendanceSummary.frx");

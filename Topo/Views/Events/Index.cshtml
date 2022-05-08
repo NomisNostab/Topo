@@ -29,37 +29,50 @@
         <div class="col-sm-2">
         </div>
         <div class="col-sm-2">
-            <button type="submit" class="btn btn-primary" title="Shows events one month either side of the selected date">Show Unit Calendar</button>
+            <button type="submit" class="btn btn-primary" title="Shows events for the selected date range">Show Unit Calendar</button>
         </div>
     </div>
 
     @if (Model.Events != null)
     {
         <div class="row">
-            <div class="col">
-                <strong>@Html.DisplayNameFor(model => model.Events.FirstOrDefault().EventName)</strong>
-            </div>
-            <div class="col">
+            <div class="col-md-1">
                 <strong>@Html.DisplayNameFor(model => model.Events.FirstOrDefault().EventDate)</strong>
             </div>
-            <div class="col">
+            <div class="col-md-4">
+                <strong>@Html.DisplayNameFor(model => model.Events.FirstOrDefault().EventName)</strong>
+            </div>
+            <div class="col-md-2">
+                <strong>@Html.DisplayNameFor(model => model.Events.FirstOrDefault().ChallengeArea)</strong>
+            </div>
+            <div class="col-md-4">
             </div>
         </div>
         @foreach (var item in Model?.Events)
         {
             <div class="row">
-                <div class="col">
-                    @Html.DisplayFor(model => item.EventName)
-                </div>
-                <div class="col">
+                <div class="col-md-1">
                     @Html.DisplayFor(model => item.EventDate)
                 </div>
-                <div class="col">
+                <div class="col-md-4">
+                    @Html.HiddenFor(model => item.Id)
+                    @Html.DisplayFor(model => item.EventName)
+                </div>
+                <div class="col-md-2">
+                    @Html.DisplayFor(model => item.ChallengeArea)
+                </div>
+                <div class="col-md-4">
                     @Html.ActionLink("Generate Sign In Sheet", "SignInSheet", "Events", new { eventId = item.Id }) |
                     @Html.ActionLink("Download Attendance", "AttendanceList", "Events", new { eventId = item.Id })
                 </div>
             </div>
         }
+        <div class="mt-3 mb-3 row">
+            <div class="col-sm-3">
+                <button type="submit" name="button" value="AttendanceReport" class="btn btn-primary">Generate Attendance report</button>
+            </div>
+        </div>
+
     }
 
 

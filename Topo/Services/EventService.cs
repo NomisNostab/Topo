@@ -1,4 +1,6 @@
-﻿using Topo.Models.Events;
+﻿using FastReport;
+using System.Globalization;
+using Topo.Models.Events;
 
 namespace Topo.Services
 {
@@ -8,17 +10,20 @@ namespace Topo.Services
         public Task SetCalendar(string calendarId);
         public Task<List<EventListModel>> GetEventsForDates(DateTime fromDate, DateTime toDate);
         public Task<EventListModel> GetAttendanceForEvent(string eventId);
+        public Task<AttendanceReportModel> GenerateAttendanceReportData(DateTime fromDate, DateTime toDate, string selectedCalendar);
     }
 
     public class EventService : IEventService
     {
         private readonly StorageService _storageService;
         private readonly ITerrainAPIService _terrainAPIService;
+        private readonly IMemberListService _memberListService;
 
-        public EventService(StorageService storageService, ITerrainAPIService terrainAPIService)
+        public EventService(StorageService storageService, ITerrainAPIService terrainAPIService, IMemberListService memberListService)
         {
             _storageService = storageService;
             _terrainAPIService = terrainAPIService;
+            _memberListService = memberListService;
         }
 
         public async Task<List<CalendarListModel>> GetCalendars()
@@ -50,6 +55,7 @@ namespace Topo.Services
 
         public async Task<List<EventListModel>> GetEventsForDates(DateTime fromDate, DateTime toDate)
         {
+            TextInfo myTI = new CultureInfo("en-US", false).TextInfo;
             var getEventsResultModel = await _terrainAPIService.GetEventsAsync(GetUser(), fromDate, toDate);
             if (getEventsResultModel != null && getEventsResultModel.results != null)
             {
@@ -58,7 +64,8 @@ namespace Topo.Services
                     Id = e.id,
                     EventName = e.title,
                     StartDateTime = e.start_datetime,
-                    EndDateTime = e.end_datetime
+                    EndDateTime = e.end_datetime,
+                    ChallengeArea = myTI.ToTitleCase(e.challenge_area.Replace("_", " "))
                 })
                     .ToList();
                 return events;
@@ -81,6 +88,75 @@ namespace Topo.Services
             return new EventListModel();
         }
 
+
+        public async Task<AttendanceReportModel> GenerateAttendanceReportData(DateTime fromDate, DateTime toDate, string selectedCalendar)
+        {
+            var attendanceReport =  new AttendanceReportModel();
+            var attendanceReportItems = new List<AttendanceReportItemModel>();
+            await SetCalendar(selectedCalendar);
+            var members = await _memberListService.GetMembersAsync();
+            //
+            var programEvents = await GetEventsForDates(fromDate, toDate);
+            foreach (var programEvent in programEvents.OrderBy(pe => pe.StartDateTime))
+            {
+                var eventListModel = await GetAttendanceForEvent(programEvent.Id);
+                programEvent.attendees = eventListModel.attendees;
+                foreach (var member in members)
+                {
+                    var attended = programEvent.attendees.Any(a => a.id == member.id);
+                    attendanceReportItems.Add(new AttendanceReportItemModel
+                    {
+                        MemberId = member.id,
+                        MemberName = $"{member.first_name} {member.last_name}",
+                        EventName = programEvent.EventDisplay,
+                        EventChallengeArea = programEvent.ChallengeArea,
+                        EventStartDate = programEvent.StartDateTime,
+                        Attended = attended ? 1 : 0,
+                        IsAdultMember = member.isAdultLeader
+                    }) ;
+                }
+            }
+            attendanceReport.attendanceReportItems = attendanceReportItems;
+
+            var memberSummaries = new List<AttendanceReportMemberSummaryModel>();
+            var attendanceReportItemsGroupedByMember = attendanceReportItems.GroupBy(a => a.MemberId);
+            foreach (var memberAttendance in attendanceReportItemsGroupedByMember)
+            {
+                var attendedCount = memberAttendance.Where(ma => ma.EventStartDate <= DateTime.Now).Sum(ma => ma.Attended);
+                var totalEvents = memberAttendance.Where(ma => ma.EventStartDate <= DateTime.Now).Count();
+                memberSummaries.Add(new AttendanceReportMemberSummaryModel
+                {
+                    MemberId = memberAttendance.Key,
+                    MemberName = memberAttendance.FirstOrDefault()?.MemberName ?? "",
+                    IsAdultMember = memberAttendance.FirstOrDefault()?.IsAdultMember ?? 0,
+                    AttendanceCount = attendedCount,
+                    TotalEvents = totalEvents
+                });
+            }
+
+            foreach (var attendanceItem in attendanceReportItems)
+            {
+                var attendanceCount = memberSummaries.Where(ms => ms.MemberId == attendanceItem.MemberId).FirstOrDefault()?.AttendanceCount ?? 0;
+                var totalEvents = memberSummaries.Where(ms => ms.MemberId == attendanceItem.MemberId).FirstOrDefault()?.TotalEvents ?? 0;
+                var attendanceRate = (decimal)attendanceCount / totalEvents * 100m;
+                attendanceItem.MemberNameAndRate = $"{attendanceItem.MemberName} ({Math.Round(attendanceRate, 0)}%)";
+            }
+
+            var challengeAreaSummaries = new List<AttendanceReportChallengeAreaSummaryModel>();
+            var programEventsGroupedByChallengeArea = programEvents.GroupBy(a => a.ChallengeArea);
+            foreach (var challengeArea in programEventsGroupedByChallengeArea)
+            {
+                challengeAreaSummaries.Add(new AttendanceReportChallengeAreaSummaryModel
+                {
+                    ChallengeArea = challengeArea.Key,
+                    EventCount = challengeArea.Count(),
+                    TotalEvents = programEvents.Count()
+                });
+            }
+            attendanceReport.attendanceReportChallengeAreaSummaries = challengeAreaSummaries;
+
+            return attendanceReport;
+        }
         private string GetUser()
         {
             var userId = "";
@@ -92,3 +168,4 @@ namespace Topo.Services
         }
     }
 }
+
