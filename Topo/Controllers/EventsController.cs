@@ -68,6 +68,10 @@ namespace Topo.Controllers
                 {
                     return await AttendanceReport(eventViewModel.CalendarSearchFromDate, eventViewModel.CalendarSearchToDate, eventViewModel.SelectedCalendar);
                 }
+                if (button == "AttendanceCSV")
+                {
+                    return await AttendanceCSV(eventViewModel.CalendarSearchFromDate, eventViewModel.CalendarSearchToDate, eventViewModel.SelectedCalendar);
+                }
                 await _eventService.SetCalendar(eventViewModel.SelectedCalendar);
                 var events = await _eventService.GetEventsForDates(eventViewModel.CalendarSearchFromDate, eventViewModel.CalendarSearchToDate);
                 viewModel.Events = events;
@@ -145,7 +149,7 @@ namespace Topo.Controllers
             return File(ms, "application/vnd.ms-excel", $"Attendance_{unitName.Replace(' ', '_')}_{eventListModel.EventDisplay.Replace(' ', '_')}.csv");
         }
 
-        private async Task<ActionResult> AttendanceReport(DateTime fromDate, DateTime toDate, string selectedCalendar )
+        private async Task<ActionResult> AttendanceReport(DateTime fromDate, DateTime toDate, string selectedCalendar)
         {
             var attendanceReportData = await _eventService.GenerateAttendanceReportData(fromDate, toDate, selectedCalendar);
 
@@ -187,6 +191,41 @@ namespace Topo.Controllers
                 return View();
             }
         }
+
+        private async Task<ActionResult> AttendanceCSV(DateTime fromDate, DateTime toDate, string selectedCalendar)
+        {
+
+            var attendanceReportData = await _eventService.GenerateAttendanceReportData(fromDate, toDate, selectedCalendar);
+
+            var groupName = _storageService.GroupName;
+            var unitName = _storageService.SelectedUnitName ?? "";
+            var groupedAttendances = attendanceReportData.attendanceReportItems.GroupBy(wa => $"{wa.IsAdultMember} {wa.MemberName}").ToList();
+            var quote = '"';
+            MemoryStream ms = new MemoryStream();
+            // Encoding.UTF8 produces stream with BOM, new UTF8Encoding(false) - without BOM
+            using (StreamWriter sw = new StreamWriter(ms, new UTF8Encoding(false), 8192, true))
+            {
+                sw.WriteLine(groupName);
+                sw.WriteLine(unitName);
+                sw.WriteLine($"Attendance from {fromDate.ToShortDateString()} to {toDate.ToShortDateString()}");
+                sw.WriteLine();
+                sw.Write(",,");
+                sw.WriteLine(string.Join(",", groupedAttendances.FirstOrDefault().Select(a => a.EventChallengeArea)));
+                sw.Write("Adult/Youth,Scout,");
+                sw.WriteLine(string.Join(",", groupedAttendances.FirstOrDefault().Select(a => a.EventName)));
+
+                foreach (var groupedAttendance in groupedAttendances.OrderBy(ga => ga.Key))
+                {
+                    var member = groupedAttendance.FirstOrDefault()?.MemberName ?? "";
+                    var isAdult = groupedAttendance.FirstOrDefault()?.IsAdultMember ?? 0;
+                    sw.Write($"{isAdult},{member},");
+                    sw.WriteLine(string.Join(", ", groupedAttendance.OrderBy(ga => ga.EventStartDate).Select(a => a.Attended)));
+                }
+            }
+            ms.Position = 0;
+            return File(ms, "application/vnd.ms-excel", $"Attendance{unitName.Replace(' ', '_')}.csv");
+        }
+
     }
 }
 

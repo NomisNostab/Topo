@@ -33,7 +33,16 @@
         </div>
     </div>
 
-    @if (Model.Events != null)
+    @if (Model.Events != null && !Model.Events.Any())
+    {
+        <div class="row">
+            <div class="col-md-3">
+                No events found
+            </div>
+        </div>
+    }
+
+    @if (Model.Events != null && Model.Events.Any())
     {
         <div class="row">
             <div class="col-md-1">
@@ -69,7 +78,10 @@
         }
         <div class="mt-3 mb-3 row">
             <div class="col-sm-3">
-                <button type="submit" name="button" value="AttendanceReport" class="btn btn-primary">Generate Attendance report</button>
+                <button type="submit" name="button" value="AttendanceReport" class="btn btn-primary">Generate Attendance report</button> &nbsp;
+            </div>
+            <div class="col-sm-3">
+                <button type="submit" name="button" value="AttendanceCSV" class="btn btn-success">Generate Attendance csv</button>
             </div>
         </div>
 
