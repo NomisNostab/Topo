@@ -82,11 +82,4 @@ namespace Topo.Services
 }
 
 
-////Build report template for model
-//report.Dictionary.RegisterBusinessObject(
-//        new List<MemberLogbookReportViewModel>(),
-//        "MemberLogbooks",
-//        2,
-//        true
-//    );
-//report.Save(@$"{directory}/Reports/Logbook.frx");
+

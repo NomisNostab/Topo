@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report ScriptLanguage="CSharp" ReportInfo.Created="05/07/2022 22:53:00" ReportInfo.Modified="05/07/2022 22:53:00" ReportInfo.CreatorVersion="2022.1.14.0">
+  <Dictionary>
+    <BusinessObjectDataSource Name="MemberAttendance" ReferenceName="MemberAttendance" DataType="System.Collections.Generic.List`1[[Topo.Models.Events.AttendanceReportItemModel, Topo, Version=1.0.0.1, Culture=neutral, PublicKeyToken=null]]" Enabled="true">
+      <Column Name="MemberId" DataType="System.String"/>
+      <Column Name="MemberName" DataType="System.String"/>
+      <Column Name="EventName" DataType="System.String"/>
+      <Column Name="EventChallengeArea" DataType="System.String"/>
+      <Column Name="EventStartDate" DataType="System.DateTime"/>
+      <Column Name="Attended" DataType="System.Int32"/>
+      <Column Name="IsAdultMember" DataType="System.Int32"/>
+    </BusinessObjectDataSource>
+    <BusinessObjectDataSource Name="MemberSummaries" ReferenceName="MemberSummaries" DataType="System.Collections.Generic.List`1[[Topo.Models.Events.AttendanceReportMemberSummaryModel, Topo, Version=1.0.0.1, Culture=neutral, PublicKeyToken=null]]" Enabled="true">
+      <Column Name="MemberId" DataType="System.String"/>
+      <Column Name="MemberName" DataType="System.String"/>
+      <Column Name="IsAdultMember" DataType="System.Int32"/>
+      <Column Name="AttendanceCount" DataType="System.Int32"/>
+      <Column Name="TotalEvents" DataType="System.Int32"/>
+    </BusinessObjectDataSource>
+    <BusinessObjectDataSource Name="ChallengeSummaries" ReferenceName="ChallengeSummaries" DataType="System.Collections.Generic.List`1[[Topo.Models.Events.AttendanceReportChallengeAreaSummaryModel, Topo, Version=1.0.0.1, Culture=neutral, PublicKeyToken=null]]" Enabled="true">
+      <Column Name="ChallengeArea" DataType="System.String"/>
+      <Column Name="EventCount" DataType="System.Int32"/>
+      <Column Name="TotalEvents" DataType="System.Int32"/>
+    </BusinessObjectDataSource>
+  </Dictionary>
+</Report>

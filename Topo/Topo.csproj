@@ -51,6 +51,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Update="Reports\Attendance.frx">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Update="Reports\Logbook.frx">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
