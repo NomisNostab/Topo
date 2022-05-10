@@ -65,9 +65,9 @@ namespace Topo.Controllers
             ViewBag.Unit = _storageService.SelectedUnitName;
         }
 
-        public async Task<ActionResult> Index()
+        public async Task<ActionResult> Index(bool includeLeaders = false)
         {
-            var model = await SetUpViewModel();
+            var model = await SetUpViewModel(includeLeaders);
             return View(model);
         }
 
@@ -77,7 +77,7 @@ namespace Topo.Controllers
             if (string.IsNullOrEmpty(logbookListViewModel.SelectedUnitId) || _storageService.SelectedUnitId != logbookListViewModel.SelectedUnitId)
             {
                 _storageService.SelectedUnitId = logbookListViewModel.SelectedUnitId;
-                return RedirectToAction("Index", "Logbook");
+                return RedirectToAction("Index", "Logbook", new { includeLeaders = logbookListViewModel.IncludeLeaders });
             }
 
             var model = new LogbookListViewModel();
@@ -128,8 +128,7 @@ namespace Topo.Controllers
                     }
                 }
             }
-            model = await SetUpViewModel(logbookListViewModel.IncludeLeaders);
-            return View(model);
+            return RedirectToAction("Index", "Logbook", new { includeLeaders = logbookListViewModel.IncludeLeaders });
         }
 
     }
