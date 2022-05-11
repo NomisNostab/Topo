@@ -370,7 +370,7 @@
                 <Condition Expression="Value == 1" Fill.Color="244, 157, 43" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 2" Fill.Color="253, 238, 0" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 3" Fill.Color="206, 240, 38" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
-                <Condition Expression="Value == 4" Fill.Color="156, 242, 80" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
+                <Condition Expression="Value >= 4" Fill.Color="156, 242, 80" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
               </Highlight>
             </TableCell>
             <TableCell Name="Cell180" Border.Lines="All" Text="[MilestoneSummary.milestone3ParticipateOutdoors] / 4" HorzAlign="Center" VertAlign="Center" Font="Arial, 10pt">
@@ -379,7 +379,7 @@
                 <Condition Expression="Value == 1" Fill.Color="244, 157, 43" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 2" Fill.Color="253, 238, 0" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 3" Fill.Color="206, 240, 38" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
-                <Condition Expression="Value == 4" Fill.Color="156, 242, 80" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
+                <Condition Expression="Value >= 4" Fill.Color="156, 242, 80" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
               </Highlight>
             </TableCell>
             <TableCell Name="Cell181" Border.Lines="All" Text="[MilestoneSummary.milestone3ParticipateCreative] / 4" HorzAlign="Center" VertAlign="Center" Font="Arial, 10pt">
@@ -388,7 +388,7 @@
                 <Condition Expression="Value == 1" Fill.Color="244, 157, 43" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 2" Fill.Color="253, 238, 0" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 3" Fill.Color="206, 240, 38" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
-                <Condition Expression="Value == 4" Fill.Color="156, 242, 80" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
+                <Condition Expression="Value >= 4" Fill.Color="156, 242, 80" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
               </Highlight>
             </TableCell>
             <TableCell Name="Cell182" Border.Lines="All" Text="[MilestoneSummary.milestone3ParticipatePersonalGrowth] / 4" HorzAlign="Center" VertAlign="Center" Font="Arial, 10pt">
@@ -397,7 +397,7 @@
                 <Condition Expression="Value == 1" Fill.Color="244, 157, 43" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 2" Fill.Color="253, 238, 0" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 3" Fill.Color="206, 240, 38" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
-                <Condition Expression="Value == 4" Fill.Color="156, 242, 80" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
+                <Condition Expression="Value >= 4" Fill.Color="156, 242, 80" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
               </Highlight>
             </TableCell>
             <TableCell Name="Cell183" Border.Lines="All" Text="[MilestoneSummary.milestone3Assist] / 4" HorzAlign="Center" VertAlign="Center" Font="Arial, 10pt">
@@ -406,7 +406,7 @@
                 <Condition Expression="Value == 1" Fill.Color="244, 157, 43" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 2" Fill.Color="253, 238, 0" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 3" Fill.Color="206, 240, 38" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
-                <Condition Expression="Value == 4" Fill.Color="156, 242, 80" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
+                <Condition Expression="Value >= 4" Fill.Color="156, 242, 80" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
               </Highlight>
             </TableCell>
             <TableCell Name="Cell184" Border.Lines="All" Text="[MilestoneSummary.milestone3Lead] / 4" HorzAlign="Center" VertAlign="Center" Font="Arial, 10pt">
@@ -415,7 +415,7 @@
                 <Condition Expression="Value == 1" Fill.Color="244, 157, 43" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 2" Fill.Color="253, 238, 0" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
                 <Condition Expression="Value == 3" Fill.Color="206, 240, 38" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
-                <Condition Expression="Value == 4" Fill.Color="156, 242, 80" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
+                <Condition Expression="Value >= 4" Fill.Color="156, 242, 80" TextFill.Color="Black" Font="Arial, 10pt" ApplyFill="true"/>
               </Highlight>
             </TableCell>
           </TableRow>
