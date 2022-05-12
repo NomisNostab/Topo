@@ -91,9 +91,13 @@ namespace Topo.Services
             int target = 0;
             foreach (var participate in milestone.participates)
             {
-                participateTotal += participate.total;
+                participateTotal += milestone.milestone == 3
+                                    ? Math.Min(4, participate.total)
+                                    : participate.total;
             }
-            participateTotal += milestone.total_assists + milestone.total_leads;
+            participateTotal += milestone.milestone == 3
+                                ? Math.Min(4, milestone.total_assists) + Math.Min(4, milestone.total_leads)
+                                : milestone.total_assists + milestone.total_leads;
 
             switch (milestone.milestone)
             {
