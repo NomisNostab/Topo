@@ -30,6 +30,7 @@ try
     builder.Services.AddScoped<ISIAService, SIAService>();
     builder.Services.AddScoped<IMilestoneService, MilestoneService>();
     builder.Services.AddScoped<ILogbookService, LogbookService>();
+    builder.Services.AddScoped<IWallchartService, WallchartService>();
     builder.Services.AddSqlite<Topo.Data.TopoDBContext>($@"Data Source={path}\Topo.db");
 
     // NLog: Setup NLog for Dependency injection
