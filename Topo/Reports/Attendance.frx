@@ -5,7 +5,7 @@
       <Column Name="MemberId" DataType="System.String"/>
       <Column Name="MemberName" DataType="System.String"/>
       <Column Name="MemberNameAndRate" DataType="System.String"/>
-      <Column Name="EventName" DataType="System.String"/>
+      <Column Name="EventNameDisplay" DataType="System.String"/>
       <Column Name="EventChallengeArea" DataType="System.String"/>
       <Column Name="EventStartDate" DataType="System.DateTime"/>
       <Column Name="Attended" DataType="System.Int32"/>
@@ -30,7 +30,7 @@
     <DataBand Name="Data1" Top="116.93" Width="1512.38" Height="255.15">
       <MatrixObject Name="Matrix1" Top="28.35" Width="387.45" Height="226.8" FixedRows="1" FixedColumns="2" AutoSize="false" CellsSideBySide="true" DataSource="MemberAttendance">
         <MatrixColumns>
-          <Header Expression="[MemberAttendance.EventName]" Sort="None"/>
+          <Header Expression="[MemberAttendance.EventNameDisplay]" Sort="None"/>
         </MatrixColumns>
         <MatrixRows>
           <Header Expression="[MemberAttendance.IsAdultMember]"/>
@@ -46,7 +46,7 @@
         <TableRow Name="Row1" MinHeight="151.2" MaxHeight="151.2" Height="151.2">
           <TableCell Name="Cell1" Text="IsAdultMember" HorzAlign="Center" VertAlign="Center" Font="Arial, 10pt"/>
           <TableCell Name="Cell2" HorzAlign="Center" VertAlign="Bottom" Font="Arial, 10pt, style=Bold"/>
-          <TableCell Name="Cell5" Border.Lines="All" Text="[EventName]" VertAlign="Center" Angle="270" Font="Arial, 10pt, style=Bold">
+          <TableCell Name="Cell5" Border.Lines="All" Text="[EventNameDisplay]" VertAlign="Center" Angle="270" Font="Arial, 10pt, style=Bold">
             <Highlight>
               <Condition Expression="[MemberAttendance.EventChallengeArea] == &quot;Personal Growth&quot;" Fill.Color="Gold" Font="Arial, 10pt" ApplyFill="true" ApplyTextFill="false"/>
               <Condition Expression="[MemberAttendance.EventChallengeArea] == &quot;Community&quot;" Fill.Color="Gainsboro" Font="Arial, 10pt" ApplyFill="true" ApplyTextFill="false"/>

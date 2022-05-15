@@ -209,8 +209,10 @@ namespace Topo.Controllers
                 sw.WriteLine(unitName);
                 sw.WriteLine($"Attendance from {fromDate.ToShortDateString()} to {toDate.ToShortDateString()}");
                 sw.WriteLine();
-                sw.Write(",,");
+                sw.Write(",Challenge Area,");
                 sw.WriteLine(string.Join(",", groupedAttendances.FirstOrDefault().Select(a => a.EventChallengeArea)));
+                sw.Write(",Event Date,");
+                sw.WriteLine(string.Join(",", groupedAttendances.FirstOrDefault().Select(a => a.EventStartDate.ToShortDateString())));
                 sw.Write("Adult/Youth,Scout,");
                 sw.WriteLine(string.Join(",", groupedAttendances.FirstOrDefault().Select(a => a.EventName)));
 

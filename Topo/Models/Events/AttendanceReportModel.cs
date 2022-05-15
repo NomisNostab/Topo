@@ -13,6 +13,7 @@
         public string MemberName { get; set; } = string.Empty;
         public string MemberNameAndRate { get; set; } = string.Empty;
         public string EventName { get; set; } = string.Empty;
+        public string EventNameDisplay { get; set; } = string.Empty;
         public string EventChallengeArea { get; set; } = string.Empty;
         public DateTime EventStartDate { get; set; }
         public int Attended { get; set; } = 0;
