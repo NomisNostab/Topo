@@ -105,3 +105,14 @@ The Logbook Report shows for the selected Unit and members the complete logbook 
 Select the Unit, select the member(s) or use Select All and click Generate Logbook report to download the report.
 
 ![TopoLogbookReport](https://user-images.githubusercontent.com/65288066/165905298-0b00ed9e-c36d-4590-994b-ffff7e1b04ed.png)
+
+### Wallchart Report
+The Wallchart Report provides a report of the Group Life page for a Unit. There is also a csv downlod for Excel.
+
+![TopoWallchart](https://user-images.githubusercontent.com/65288066/168469491-43d9a400-1d6a-4742-b386-310b632a08c3.png)
+
+Select the Unit and click Generate Wallchart report to download the report. The report is designed for an A3 landscape page but will shrink to A4. Click Generate Wallchart csv to download the Excel csv file.
+
+![TopoWallchartReport](https://user-images.githubusercontent.com/65288066/168469614-8c9ce168-b98f-455e-9c83-692a9052b8b3.png)
+
+![TopoWallchartCSV](https://user-images.githubusercontent.com/65288066/168469623-4d5a01c6-92b9-4753-bb18-a6165716cab0.png)

@@ -51,6 +51,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="Services\WallchartService.cs">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Update="Reports\Attendance.frx">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
