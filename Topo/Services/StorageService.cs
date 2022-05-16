@@ -3,6 +3,7 @@ using Topo.Models.Login;
 using Topo.Models.Events;
 using Topo.Models.OAS;
 using Topo.Models.MemberList;
+using Topo.Models.Wallchart;
 
 namespace Topo.Services
 {
@@ -22,8 +23,8 @@ namespace Topo.Services
         public DateTime TokenExpiry { get; set; }
         public List<OASStageListModel> OASStageList { get; set; } = new List<OASStageListModel>();
         public string GroupName { get; set; } = "";
-        public string CachedMemberListUnitId { get; set; } = string.Empty;
-        public List<MemberListModel> CachedMemberList { get; set; } = new List<MemberListModel>();
+        public List<KeyValuePair<string, List<MemberListModel>>> CachedMembers { get; set; } = new List<KeyValuePair<string, List<MemberListModel>>>();
+        public List<KeyValuePair<string, List<WallchartItemModel>>> CachedWallchartItems { get; set; } = new List<KeyValuePair<string, List<WallchartItemModel>>>();
         public void ClearStorage()
         {
             IsAuthenticated = false;
@@ -39,8 +40,8 @@ namespace Topo.Services
             SelectedUnitId = null;
             GetCalendarsResult = null;
             TokenExpiry = DateTime.MinValue;
-            CachedMemberList = new List<MemberListModel>();
-            CachedMemberListUnitId = "";
+            CachedMembers = new List<KeyValuePair<string, List<MemberListModel>>>();
+            CachedWallchartItems = new List<KeyValuePair<string, List<WallchartItemModel>>>();
         }
     }
 }

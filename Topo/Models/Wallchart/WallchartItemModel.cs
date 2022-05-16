@@ -32,12 +32,12 @@
         public int OASAquaticsStage { get; set; }
         public int OASBoatingStage { get; set; }
         public int OASPaddlingStage { get; set; }
-        public string SIAAdventureSport { get; set; } = string.Empty;
-        public string SIAArtsLiterature { get; set; } = string.Empty;
-        public string SIAEnvironment { get; set; } = string.Empty;
-        public string SIAStemInnovation { get; set; } = string.Empty;
-        public string SIAGrowthDevelopment { get; set; } = string.Empty;
-        public string SIACreatingABetterWorld { get; set; } = string.Empty;
+        public int SIAAdventureSport { get; set; }
+        public int SIAArtsLiterature { get; set; }
+        public int SIAEnvironment { get; set; }
+        public int SIAStemInnovation { get; set; }
+        public int SIAGrowthDevelopment { get; set; }
+        public int SIACreatingABetterWorld { get; set; }
         public DateTime? LeadershipCourse { get; set; }
         public DateTime? AdventurousJourney { get; set; }
         public DateTime? PersonalReflection { get; set; }
