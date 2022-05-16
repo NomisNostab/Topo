@@ -104,7 +104,7 @@ namespace Topo.Services
                         wallchartItem.Milestone3Lead = milestone.total_leads;
                     }
                 }
-                foreach (var oas in result.oas.highest)
+                foreach (var oas in result.oas.highest.OrderBy(h => h.stream).ThenBy(h => h.stage))
                 {
                     switch (oas.stream)
                     {
