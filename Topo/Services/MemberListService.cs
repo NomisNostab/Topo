@@ -23,8 +23,9 @@ namespace Topo.Services
 
         public async Task<List<MemberListModel>> GetMembersAsync()
         {
-            if (_storageService.SelectedUnitId == _storageService.CachedMemberListUnitId)
-                return _storageService.CachedMemberList;
+            var cachedMembersList = _storageService.CachedMembers.Where(cm => cm.Key == _storageService.SelectedUnitId).FirstOrDefault().Value;
+            if (cachedMembersList != null)
+                return cachedMembersList;
 
             var getMembersResultModel = await _terrainAPIService.GetMembersAsync(_storageService.SelectedUnitId ?? "");
             var memberList = new List<MemberListModel>();
@@ -46,8 +47,7 @@ namespace Topo.Services
                         status = m.status
                     })
                     .ToList();
-                _storageService.CachedMemberList = memberList;
-                _storageService.CachedMemberListUnitId = _storageService.SelectedUnitId ?? "";
+                _storageService.CachedMembers.Add(new KeyValuePair<string, List<MemberListModel>>(_storageService.SelectedUnitId, memberList));
             }
             return memberList;
         }

@@ -41,6 +41,15 @@ namespace Topo.Services
 
         public async Task<List<WallchartItemModel>> GetWallchartItems(string selectedUnitId)
         {
+            var cachedWallchartItems = _storageService.CachedWallchartItems.Where(cm => cm.Key == selectedUnitId).FirstOrDefault().Value;
+            if (cachedWallchartItems != null)
+                return cachedWallchartItems;
+
+            var unit = _storageService.GetProfilesResult.profiles.FirstOrDefault(u => u.unit.id == selectedUnitId);
+            if (unit == null)
+                throw new IndexOutOfRangeException($"No unit found. You may not have permissions to this section");
+            var section = unit.unit.section;
+
             var wallchartItems = new List<WallchartItemModel>();
             var getGroupLifeResultModel = await _terrainAPIService.GetGroupLifeForUnit(selectedUnitId);
             foreach (var result in getGroupLifeResultModel.results)
@@ -137,27 +146,30 @@ namespace Topo.Services
                             break;
                     }
                 }
-                foreach (var sia in result.sia.completed_areas)
+                var siaResultModel = await _terrainAPIService.GetSIAResultsForMember(result.member_id);
+                var awardedSIAProjects = siaResultModel.results.Where(r => r.section == section && r.status == "awarded");
+                var awardedSIAProjectsByArea = awardedSIAProjects.GroupBy(p => p.answers.special_interest_area_selection);
+                foreach (var area in awardedSIAProjectsByArea)
                 {
-                    switch (sia)
+                    switch (area.Key)
                     {
                         case "sia_adventure_sport":
-                            wallchartItem.SIAAdventureSport = "Y";
+                            wallchartItem.SIAAdventureSport = area.Count();
                             break;
                         case "sia_art_literature":
-                            wallchartItem.SIAArtsLiterature = "Y";
+                            wallchartItem.SIAArtsLiterature = area.Count();
                             break;
                         case "sia_environment":
-                            wallchartItem.SIAEnvironment = "Y";
+                            wallchartItem.SIAEnvironment = area.Count();
                             break;
                         case "sia_stem_innovation":
-                            wallchartItem.SIAStemInnovation = "Y";
+                            wallchartItem.SIAStemInnovation = area.Count();
                             break;
                         case "sia_growth_development":
-                            wallchartItem.SIAGrowthDevelopment = "Y";
+                            wallchartItem.SIAGrowthDevelopment = area.Count();
                             break;
                         case "sia_better_world":
-                            wallchartItem.SIACreatingABetterWorld = "Y";
+                            wallchartItem.SIACreatingABetterWorld = area.Count();
                             break;
                     }
                 }
@@ -167,7 +179,7 @@ namespace Topo.Services
                 wallchartItem.PeakAward = Math.Round(result.peak_award.total / 100d, 2);
                 wallchartItems.Add(wallchartItem);
             }
-
+            _storageService.CachedWallchartItems.Add(new KeyValuePair<string, List<WallchartItemModel>>(selectedUnitId, wallchartItems));
             return wallchartItems;
         }
     }
