@@ -127,7 +127,7 @@ namespace Topo.Services
                             wallchartItem.OASCampingStage = oas.stage;
                             break;
                         case "alpine":
-                            wallchartItem.OASAquaticsStage = oas.stage;
+                            wallchartItem.OASAlpineStage = oas.stage;
                             break;
                         case "cycling":
                             wallchartItem.OASCyclingStage = oas.stage;
