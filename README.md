@@ -113,6 +113,6 @@ The Wallchart Report provides a report of the Group Life page for a Unit. There 
 
 Select the Unit and click Generate Wallchart report to download the report. The report is designed for an A3 landscape page but will shrink to A4. Click Generate Wallchart csv to download the Excel csv file.
 
-![TopoWallchartReport](https://user-images.githubusercontent.com/65288066/168469614-8c9ce168-b98f-455e-9c83-692a9052b8b3.png)
+![TopoWallchartReport](https://user-images.githubusercontent.com/65288066/168985163-346e7255-57e1-497b-b587-4a81ae360a77.png)
 
 ![TopoWallchartCSV](https://user-images.githubusercontent.com/65288066/168469623-4d5a01c6-92b9-4753-bb18-a6165716cab0.png)
