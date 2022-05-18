@@ -146,6 +146,7 @@ namespace Topo.Services
                             break;
                     }
                 }
+                wallchartItem.OASStageProgressions = result.oas.total_progressions;
                 var siaResultModel = await _terrainAPIService.GetSIAResultsForMember(result.member_id);
                 var awardedSIAProjects = siaResultModel.results.Where(r => r.section == section && r.status == "awarded");
                 var awardedSIAProjectsByArea = awardedSIAProjects.GroupBy(p => p.answers.special_interest_area_selection);
