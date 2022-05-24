@@ -124,12 +124,4 @@ namespace Topo.Controllers
     }
 }
 
-////Build report template for model
-//var report1 = new FastReport.Report();
-//report1.Dictionary.RegisterBusinessObject(
-//        new List<Models.Milestone.MilestoneSummaryListModel>(),
-//        "MilestoneSummary",
-//        2,
-//        true
-//    );
-//report1.Save(@"C:\Users\simon\Documents\MilestoneSummary.frx");
+

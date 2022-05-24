@@ -4,6 +4,7 @@ using Topo.Models.Events;
 using Topo.Models.OAS;
 using Topo.Models.MemberList;
 using Topo.Models.Wallchart;
+using Topo.Models.AditionalAwards;
 
 namespace Topo.Services
 {
@@ -19,12 +20,13 @@ namespace Topo.Services
         public string? SelectedUnitId { get; set; }
         public List<SelectListItem>? Events { get; set; }
         public List<SelectListItem>? Calendars { get; set; }
-        public GetCalendarsResultModel? GetCalendarsResult { get; set;} = null;
+        public GetCalendarsResultModel? GetCalendarsResult { get; set; } = null;
         public DateTime TokenExpiry { get; set; }
         public List<OASStageListModel> OASStageList { get; set; } = new List<OASStageListModel>();
         public string GroupName { get; set; } = "";
         public List<KeyValuePair<string, List<MemberListModel>>> CachedMembers { get; set; } = new List<KeyValuePair<string, List<MemberListModel>>>();
         public List<KeyValuePair<string, List<WallchartItemModel>>> CachedWallchartItems { get; set; } = new List<KeyValuePair<string, List<WallchartItemModel>>>();
+        public List<AdditionalAwardSpecificationListModel> AdditionalAwardSpecifications { get; set; } = new List<AdditionalAwardSpecificationListModel>();
         public void ClearStorage()
         {
             IsAuthenticated = false;
