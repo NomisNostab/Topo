@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Topo.Services;
 using NLog;
 using NLog.Web;
+using Topo.Images;
 
 var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 logger.Debug("init main");
@@ -31,6 +32,8 @@ try
     builder.Services.AddScoped<IMilestoneService, MilestoneService>();
     builder.Services.AddScoped<ILogbookService, LogbookService>();
     builder.Services.AddScoped<IWallchartService, WallchartService>();
+    builder.Services.AddScoped<IAdditionalAwardService, AdditionalAwardService>();
+    builder.Services.AddScoped<IImages, Images>();
     builder.Services.AddSqlite<Topo.Data.TopoDBContext>($@"Data Source={path}\Topo.db");
 
     // NLog: Setup NLog for Dependency injection

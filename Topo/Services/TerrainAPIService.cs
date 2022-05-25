@@ -8,6 +8,7 @@ using Topo.Models.OAS;
 using Topo.Models.SIA;
 using Topo.Models.Milestone;
 using Topo.Models.Logbook;
+using Topo.Models.AditionalAwards;
 
 namespace Topo.Services
 {
@@ -24,7 +25,7 @@ namespace Topo.Services
         public Task<GetCalendarsResultModel?> GetCalendarsAsync(string userId);
         public Task PutCalendarsAsync(string userId, GetCalendarsResultModel putCalendarsResultModel);
         public Task<GetOASTreeResultsModel?> GetOASTreeAsync(string stream);
-        public Task<GetUnitAchievementsResultsModel> GetUnitAchievements(string unit, string stream, string branch, int stage);
+        public Task<GetUnitAchievementsResultsModel> GetUnitOASAchievements(string unit, string stream, string branch, int stage);
         public Task<GetOASTemplateResultModel?> GetOASTemplateAsync(string stream);
         public Task<GetSIAResultsModel> GetSIAResultsForMember(string memberId);
         public Task<GetGroupLifeResultModel> GetGroupLifeForUnit(string unitId);
@@ -33,6 +34,8 @@ namespace Topo.Services
         public Task<GetMemberLogbookDetailResultModel> GetMemberLogbookDetail(string memberId, string logbookId);
         public Task RevokeAssumedProfiles();
         public Task AssumeProfile(string memberId);
+        public Task<GetAditionalAwardsSpecificationsResultModel> GetAditionalAwardSpecifications();
+        public Task<GetUnitAchievementsResultModel> GetUnitAdditionalAwardAchievements(string unitId);
     }
     public class TerrainAPIService : ITerrainAPIService
     {
@@ -220,7 +223,7 @@ namespace Topo.Services
             return getOASTreeResultsModel;
         }
 
-        public async Task<GetUnitAchievementsResultsModel> GetUnitAchievements(string unit, string stream, string branch, int stage)
+        public async Task<GetUnitAchievementsResultsModel> GetUnitOASAchievements(string unit, string stream, string branch, int stage)
         {
             await RefreshTokenAsync();
             string requestUri = $"{achievementsAddress}units/{unit}/achievements?type=outdoor_adventure_skill&stream={stream}&branch={branch}&stage={stage}";
@@ -323,6 +326,29 @@ namespace Topo.Services
 
             var requestUri = $"{membersAddress}members/{memberId}/assume-profiles";
             var result = await SendRequest(HttpMethod.Post, requestUri);
+        }
+
+        public async Task<GetAditionalAwardsSpecificationsResultModel> GetAditionalAwardSpecifications()
+        {
+            await RefreshTokenAsync();
+
+            var requestUri = $"{templatesAddress}additional-awards/specifications.json";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            result = result.Replace("\n", "");
+            var getAditionalAwardsSpecifications = DeserializeObject<GetAditionalAwardsSpecificationsResultModel>("{ \"AwardDescriptions\": " + result + "}");
+
+            return getAditionalAwardsSpecifications ?? new GetAditionalAwardsSpecificationsResultModel();
+        }
+
+        public async Task<GetUnitAchievementsResultModel> GetUnitAdditionalAwardAchievements(string unitId)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{achievementsAddress}units/{unitId}/achievements?type=additional_award";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var getUnitAchievementsResult = DeserializeObject<GetUnitAchievementsResultModel>(result);
+
+            return getUnitAchievementsResult ?? new GetUnitAchievementsResultModel();
         }
 
         private async Task<string> SendRequest(HttpMethod httpMethod, string requestUri, string content = "", string xAmzTargetHeader = "")

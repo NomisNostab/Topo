@@ -112,7 +112,7 @@ namespace Topo.Services
 
         public async Task<GetUnitAchievementsResultsModel> GetUnitAchievements(string unit, string stream, string branch, int stage)
         {
-            return await _terrainAPIService.GetUnitAchievements(unit, stream, branch, stage);
+            return await _terrainAPIService.GetUnitOASAchievements(unit, stream, branch, stage);
         }
 
         public async Task<List<OASTemplate>> GetOASTemplate(string templateName)
