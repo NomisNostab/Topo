@@ -237,7 +237,7 @@ namespace Topo.Services
                 if (memberAchievement.answers != null)
                     verifiedAnswers = memberAchievement.answers.Where(a => a.Key.EndsWith("_verifiedDate")).ToList();
                 // In progress
-                if (memberAchievement.status == "draft_review")
+                if (memberAchievement.status == "draft_review" || memberAchievement.status == "pending_review")
                 {
                     if (verifiedAnswers.Any())
                     {
