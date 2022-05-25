@@ -17,7 +17,7 @@ jobs:
         dotnet-version: 6.0.x
     - name: version
       id: generate_version
-      run: echo "::set-output name=version::1.18.$(($GITHUB_RUN_NUMBER))"
+      run: echo "::set-output name=version::1.19.$(($GITHUB_RUN_NUMBER))"
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
