@@ -116,3 +116,17 @@ Select the Unit and click Generate Wallchart report to download the report. The 
 ![TopoWallchartReport](https://user-images.githubusercontent.com/65288066/168985163-346e7255-57e1-497b-b587-4a81ae360a77.png)
 
 ![TopoWallchartCSV](https://user-images.githubusercontent.com/65288066/168469623-4d5a01c6-92b9-4753-bb18-a6165716cab0.png)
+
+### Additional Awards Report
+The Additional Awards Report provides a report of all additional awards awarded to the youth members. Due to the large number of possible additional awards, only those that have been awarded are shown. Also for each member a summary of the KMs hiked and Nights camped is shown against their name to make it easier to determine if a new KMs or Nights badge needs to be given out. There is also an option to create an Excel xlsx download as well.
+
+![TopoAdditionalAwards](https://user-images.githubusercontent.com/65288066/170488868-582eb2c5-14e5-45fc-9ed8-0bfc705d3c78.png)
+
+Select the Unit, select the member(s) or use Select All and click Generate Additional Awards report to download the report.
+
+![TopoAdditionalAwardsReport](https://user-images.githubusercontent.com/65288066/170489141-e2e7fdc5-9ea8-488b-bf8f-14f3cc1096b6.png)
+
+Click Generate Additional Awards xls to download the report in Excel format.
+
+![TopoAdditionalAwardsExcel](https://user-images.githubusercontent.com/65288066/170489286-f8804cc1-d79e-4868-b84d-e711554cb65c.png)
+
