@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Diagnostics;
 using Topo.Models;
 using Topo.Models.Home;
 using Topo.Services;
-using Topo.Data;
 
 namespace Topo.Controllers
 {
@@ -12,16 +10,14 @@ namespace Topo.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly StorageService _storageService;
-        private readonly TopoDBContext _dbContext;
         private readonly ILoginService _loginService;
 
         public HomeController(ILogger<HomeController> logger,
             StorageService storageService,
-            TopoDBContext dbContext, ILoginService loginService)
+            ILoginService loginService)
         {
             _logger = logger;
             _storageService = storageService;
-            _dbContext = dbContext;
             _loginService = loginService;
         }
 

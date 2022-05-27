@@ -1,14 +1,13 @@
 ﻿using Newtonsoft.Json;
 using System.Text;
-using Topo.Data;
+using Topo.Models.AditionalAwards;
 using Topo.Models.Events;
+using Topo.Models.Logbook;
 using Topo.Models.Login;
 using Topo.Models.MemberList;
+using Topo.Models.Milestone;
 using Topo.Models.OAS;
 using Topo.Models.SIA;
-using Topo.Models.Milestone;
-using Topo.Models.Logbook;
-using Topo.Models.AditionalAwards;
 
 namespace Topo.Services
 {
@@ -40,7 +39,6 @@ namespace Topo.Services
     public class TerrainAPIService : ITerrainAPIService
     {
         private readonly StorageService _storageService;
-        private readonly TopoDBContext _dbContext;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly string cognitoAddress = "https://cognito-idp.ap-southeast-2.amazonaws.com/";
         private readonly string membersAddress = "https://members.terrain.scouts.com.au/";
@@ -52,12 +50,10 @@ namespace Topo.Services
         private readonly ILogger<TerrainAPIService> _logger;
 
         public TerrainAPIService(StorageService storageService,
-            TopoDBContext topoDBContext,
             IHttpClientFactory httpClientFactory,
             ILogger<TerrainAPIService> logger)
         {
             _storageService = storageService;
-            _dbContext = topoDBContext;
             _httpClientFactory = httpClientFactory;
             _logger = logger;
         }

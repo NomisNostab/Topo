@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Topo.Models.Login;
 using Topo.Services;
-using Topo.Data;
-using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Topo.Controllers
 {
@@ -10,15 +9,12 @@ namespace Topo.Controllers
     {
         private readonly ILoginService _loginService;
         private readonly StorageService _storageService;
-        private readonly TopoDBContext _dbContext;
 
         public LoginController(ILoginService loginService,
-            StorageService storageService,
-            TopoDBContext topoDBContext)
+            StorageService storageService)
         {
             _loginService = loginService;
             _storageService = storageService;
-            _dbContext = topoDBContext;
         }
         public IActionResult Login()
         {
