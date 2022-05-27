@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Topo.Models.Login;
 using Topo.Services;
-using Topo.Data;
-using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Topo.Controllers
 {
@@ -10,15 +9,12 @@ namespace Topo.Controllers
     {
         private readonly ILoginService _loginService;
         private readonly StorageService _storageService;
-        private readonly TopoDBContext _dbContext;
 
         public LoginController(ILoginService loginService,
-            StorageService storageService,
-            TopoDBContext topoDBContext)
+            StorageService storageService)
         {
             _loginService = loginService;
             _storageService = storageService;
-            _dbContext = topoDBContext;
         }
         public IActionResult Login()
         {
@@ -66,20 +62,6 @@ namespace Topo.Controllers
                     _storageService.GroupName = _storageService.GetProfilesResult.profiles[0].group?.name ?? "";
                 }
                 _storageService.Units = _loginService.GetUnits();
-                var authentication = _dbContext.Authentications.FirstOrDefault();
-                if (authentication == null)
-                {
-                    authentication = new Data.Models.Authentication();
-                    _dbContext.Authentications.Add(authentication);
-                }
-                authentication.AccessToken = authenticationResult.AuthenticationSuccessResultModel.AuthenticationResult.AccessToken;
-                authentication.IdToken = authenticationResult.AuthenticationSuccessResultModel.AuthenticationResult.IdToken;
-                authentication.RefreshToken = authenticationResult.AuthenticationSuccessResultModel.AuthenticationResult.RefreshToken;
-                authentication.TokenType = authenticationResult.AuthenticationSuccessResultModel.AuthenticationResult.TokenType;
-                authentication.ExpiresIn = authenticationResult.AuthenticationSuccessResultModel.AuthenticationResult.ExpiresIn;
-                authentication.MemberName = _storageService.MemberName;
-                authentication.TokenExpiry = _storageService.TokenExpiry;
-                _dbContext.SaveChanges();
             }
             if (authenticationResult != null && authenticationResult.AuthenticationErrorResultModel.message != null)
             {
@@ -97,12 +79,6 @@ namespace Topo.Controllers
         public IActionResult Logout()
         {
             _storageService.ClearStorage();
-            var authentication = _dbContext.Authentications.FirstOrDefault();
-            if (authentication != null)
-            {
-                _dbContext.Remove(authentication);
-                _dbContext.SaveChanges();
-            }
 
             return RedirectToAction("Index", "Home");
         }

@@ -1,1 +1,0 @@
-﻿dotnet ef migrations add version02

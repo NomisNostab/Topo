@@ -1,8 +1,6 @@
 ﻿using FastReport;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Globalization;
-using Topo.Data;
-using Topo.Data.Models;
 using Topo.Models.OAS;
 
 namespace Topo.Services
@@ -21,14 +19,12 @@ namespace Topo.Services
     {
         private readonly StorageService _storageService;
         private readonly ITerrainAPIService _terrainAPIService;
-        private readonly TopoDBContext _dbContext;
         private readonly IMemberListService _memberListService;
 
-        public OASService(StorageService storageService, ITerrainAPIService terrainAPIService, TopoDBContext dBContext, IMemberListService memberListService)
+        public OASService(StorageService storageService, ITerrainAPIService terrainAPIService, IMemberListService memberListService)
         {
             _storageService = storageService;
             _terrainAPIService = terrainAPIService;
-            _dbContext = dBContext;
             _memberListService = memberListService;
         }
         public async Task<List<OASStageListModel>> GetOASStageList(string stream)
@@ -117,7 +113,7 @@ namespace Topo.Services
 
         public async Task<List<OASTemplate>> GetOASTemplate(string templateName)
         {
-            var templateList = _dbContext.OASTemplates
+            var templateList = _storageService.OASTemplates
                 .Where(t => t.TemplateName == templateName && t.InputGroupSort < 4)
                 .OrderBy(t => t.InputGroupSort)
                 .ThenBy(t => t.Id)
@@ -143,8 +139,8 @@ namespace Topo.Services
                                 InputId = input.id,
                                 InputLabel = input.label
                             };
-                            _dbContext.OASTemplates.Add(oasTemplate);
-                            templateList = _dbContext.OASTemplates
+                            _storageService.OASTemplates.Add(oasTemplate);
+                            templateList = _storageService.OASTemplates
                                 .Where(t => t.TemplateName == templateName && t.InputGroupSort < 4)
                                 .OrderBy(t => t.InputGroupSort)
                                 .ThenBy(t => t.Id)
@@ -152,8 +148,7 @@ namespace Topo.Services
                         }
                     }
                 }
-                _dbContext.SaveChanges();
-                templateList = _dbContext.OASTemplates
+                templateList = _storageService.OASTemplates
                 .Where(t => t.TemplateName == templateName && t.InputGroupSort < 4)
                 .OrderBy(t => t.InputGroupSort)
                 .ThenBy(t => t.Id)
@@ -209,7 +204,7 @@ namespace Topo.Services
             var members = await _memberListService.GetMembersAsync();
             var sortedMemberList = members.Where(m => m.isAdultLeader == 0).OrderBy(m => m.first_name).ThenBy(m => m.last_name).ToList();
 
-            _dbContext.OASWorksheetAnswers.RemoveRange(_dbContext.OASWorksheetAnswers);
+            var OASWorksheetAnswers = new List<OASWorksheetAnswers>();
 
             foreach (var item in templateList.Where(t => t.InputGroupSort < 4).OrderBy(t => t.InputGroupSort).ThenBy(t => t.Id))
             {
@@ -226,10 +221,9 @@ namespace Topo.Services
                         MemberName = $"{member.first_name} {member.last_name}",
                         MemberAnswer = null
                     };
-                    _dbContext.OASWorksheetAnswers.Add(oASWorksheetAnswers);
+                    OASWorksheetAnswers.Add(oASWorksheetAnswers);
                 }
             }
-            _dbContext.SaveChanges();
 
             foreach (var memberAchievement in getUnitAchievementsResultsModel.results)
             {
@@ -243,7 +237,7 @@ namespace Topo.Services
                     {
                         foreach (var answer in verifiedAnswers)
                         {
-                            var worksheetAnswer = _dbContext.OASWorksheetAnswers
+                            var worksheetAnswer = OASWorksheetAnswers
                                 .Where(wa => wa.InputId == answer.Key.Replace("_verifiedDate", ""))
                                 .Where(wa => wa.MemberId == memberAchievement.member_id)
                                 .FirstOrDefault();
@@ -265,9 +259,12 @@ namespace Topo.Services
                 {
                     if (hideCompletedMembers)
                     {
-                        var worksheetAnswers = _dbContext.OASWorksheetAnswers
-                            .Where(wa => wa.MemberId == memberAchievement.member_id);
-                        _dbContext.OASWorksheetAnswers.RemoveRange(worksheetAnswers);
+                        // Remove member answers from list
+                        var worksheetAnswersToRemove = OASWorksheetAnswers
+                            .Where(wa => wa.MemberId == memberAchievement.member_id)
+                            .Select(wa => wa.MemberId)
+                            .ToList();
+                        OASWorksheetAnswers.RemoveAll(r => worksheetAnswersToRemove.Any(a => a == r.MemberId));
                         continue;
                     }
 
@@ -277,7 +274,7 @@ namespace Topo.Services
                         // Conver string date from yyyy-mm-dd format
                         var importedDate = DateTime.ParseExact(memberAchievement.imported.date_awarded, "yyyy-MM-dd", CultureInfo.InvariantCulture);
                         // Get all answers
-                        var worksheetAnswers = _dbContext.OASWorksheetAnswers
+                        var worksheetAnswers = OASWorksheetAnswers
                             .Where(wa => wa.MemberId == memberAchievement.member_id)
                             .ToList();
                         // Set answer date for each answer
@@ -291,7 +288,7 @@ namespace Topo.Services
                     if (memberAchievement.answers == null || !verifiedAnswers.Any())
                     {
                         // Get all answers
-                        var worksheetAnswers = _dbContext.OASWorksheetAnswers
+                        var worksheetAnswers = OASWorksheetAnswers
                             .Where(wa => wa.MemberId == memberAchievement.member_id)
                             .ToList();
                         // Set answer date for each answer
@@ -306,7 +303,7 @@ namespace Topo.Services
                     {
                         foreach (var answer in verifiedAnswers)
                         {
-                            var worksheetAnswer = _dbContext.OASWorksheetAnswers
+                            var worksheetAnswer = OASWorksheetAnswers
                                 .Where(wa => wa.InputId == answer.Key.Replace("_verifiedDate", ""))
                                 .Where(wa => wa.MemberId == memberAchievement.member_id)
                                 .FirstOrDefault();
@@ -323,14 +320,11 @@ namespace Topo.Services
                     }
                 }
             }
-            _dbContext.SaveChanges();
 
-            var sortedAnswers = _dbContext.OASWorksheetAnswers
+            var sortedAnswers = OASWorksheetAnswers
                 .OrderBy(owa => owa.InputTitleSortIndex)
                 .ThenBy(owa => owa.InputSortIndex)
                 .ToList();
-
-            _dbContext.OASWorksheetAnswers.RemoveRange(_dbContext.OASWorksheetAnswers);
 
             return sortedAnswers;
         }
