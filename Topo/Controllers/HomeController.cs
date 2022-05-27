@@ -27,41 +27,13 @@ namespace Topo.Controllers
 
         public IActionResult Index()
         {
-            var model = PopulateModelFromStorage().Result;
+            var model = PopulateModelFromStorage();
             return View(model);
         }
 
 
-        private async Task<HomeViewModel> PopulateModelFromStorage()
+        private HomeViewModel PopulateModelFromStorage()
         {
-            if (_dbContext.Authentications.Any())
-            {
-                var authentication = _dbContext.Authentications.FirstOrDefault();
-                if (authentication != null)
-                {
-                    if (authentication.TokenExpiry < DateTime.Now) // Token expired, login again
-                    {
-                        _dbContext.Remove(authentication);
-                        _dbContext.SaveChanges();
-                    }
-                    else
-                    {
-                        _storageService.IsAuthenticated = true;
-                        _storageService.AuthenticationResult = new Models.Login.AuthenticationResult();
-                        _storageService.AuthenticationResult.AccessToken = authentication.AccessToken;
-                        _storageService.AuthenticationResult.IdToken = authentication.IdToken;
-                        _storageService.AuthenticationResult.ExpiresIn = authentication.ExpiresIn;
-                        _storageService.AuthenticationResult.TokenType = authentication.TokenType;
-                        _storageService.AuthenticationResult.RefreshToken = authentication.RefreshToken;
-                        _storageService.MemberName = authentication.MemberName;
-                        _storageService.TokenExpiry = authentication.TokenExpiry ?? DateTime.Now.AddMinutes(-5);
-                        await _loginService.GetUserAsync();
-                        await _loginService.GetProfilesAsync();
-                        _storageService.Units = _loginService.GetUnits();
-                        _storageService.GroupName = _storageService.GetProfilesResult.profiles[0].group?.name ?? "";
-                    }
-                }
-            }
             var model = new HomeViewModel();
             model.IsAuthenticated = _storageService.IsAuthenticated;
             model.FullName = _storageService.MemberName;
@@ -70,7 +42,7 @@ namespace Topo.Controllers
         }
         public IActionResult Privacy()
         {
-            var model = PopulateModelFromStorage().Result;
+            var model = PopulateModelFromStorage();
             return View(model);
         }
 

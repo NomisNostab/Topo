@@ -120,19 +120,6 @@ namespace Topo.Services
                     _storageService.AuthenticationResult.ExpiresIn = authenticationResult?.AuthenticationResult?.ExpiresIn;
                     _storageService.AuthenticationResult.TokenType = authenticationResult?.AuthenticationResult?.TokenType;
                     _storageService.TokenExpiry = DateTime.Now.AddSeconds((authenticationResult?.AuthenticationResult?.ExpiresIn ?? 0) - 60);
-
-                    var authentication = _dbContext.Authentications.FirstOrDefault();
-                    if (authentication == null)
-                    {
-                        authentication = new Data.Models.Authentication();
-                        _dbContext.Authentications.Add(authentication);
-                    }
-                    authentication.AccessToken = authenticationResult.AuthenticationResult.AccessToken;
-                    authentication.IdToken = authenticationResult.AuthenticationResult.IdToken;
-                    authentication.TokenType = authenticationResult.AuthenticationResult.TokenType;
-                    authentication.ExpiresIn = authenticationResult.AuthenticationResult.ExpiresIn;
-                    authentication.TokenExpiry = _storageService.TokenExpiry;
-                    _dbContext.SaveChanges();
                 }
             }
         }
