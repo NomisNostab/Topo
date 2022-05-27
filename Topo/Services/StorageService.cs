@@ -27,6 +27,7 @@ namespace Topo.Services
         public List<KeyValuePair<string, List<MemberListModel>>> CachedMembers { get; set; } = new List<KeyValuePair<string, List<MemberListModel>>>();
         public List<KeyValuePair<string, List<WallchartItemModel>>> CachedWallchartItems { get; set; } = new List<KeyValuePair<string, List<WallchartItemModel>>>();
         public List<AdditionalAwardSpecificationListModel> AdditionalAwardSpecifications { get; set; } = new List<AdditionalAwardSpecificationListModel>();
+        public List<OASTemplate> OASTemplates { get; set; } = new List<OASTemplate>();
         public void ClearStorage()
         {
             IsAuthenticated = false;
@@ -44,6 +45,7 @@ namespace Topo.Services
             TokenExpiry = DateTime.MinValue;
             CachedMembers = new List<KeyValuePair<string, List<MemberListModel>>>();
             CachedWallchartItems = new List<KeyValuePair<string, List<WallchartItemModel>>>();
+            OASTemplates = new List<OASTemplate>();
         }
     }
 }

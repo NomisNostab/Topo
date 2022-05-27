@@ -1,18 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using FastReport.Export.PdfSimple;
 using Microsoft.AspNetCore.Mvc;
-using Topo.Services;
-using Topo.Models.MemberList;
-using Topo.Models.OAS;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using FastReport;
-using FastReport.Table;
-using FastReport.Export.PdfSimple;
-using FastReport.Utils;
-using System.Drawing;
-using Topo.Data;
-using Topo.Data.Models;
-using System.Globalization;
 using System.Text;
+using Topo.Data;
+using Topo.Models.OAS;
+using Topo.Services;
 
 namespace Topo.Controllers
 {
@@ -21,17 +13,14 @@ namespace Topo.Controllers
         private readonly StorageService _storageService;
         private readonly IOASService _oasService;
         private readonly IMemberListService _memberListService;
-        private readonly TopoDBContext _dbContext;
 
         public OASController(StorageService storageService,
             IOASService oasService,
-            IMemberListService memberListService,
-            TopoDBContext dBContext)
+            IMemberListService memberListService)
         {
             _storageService = storageService;
             _oasService = oasService;
             _memberListService = memberListService;
-            _dbContext = dBContext;
         }
 
         private void SetViewBag()

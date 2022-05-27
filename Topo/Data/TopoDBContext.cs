@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Topo.Data.Models;
 
 namespace Topo.Data
 {
@@ -18,8 +17,5 @@ namespace Topo.Data
         {
             
         }
-
-        public DbSet<OASTemplate> OASTemplates { get; set; }
-        public DbSet<OASWorksheetAnswers> OASWorksheetAnswers { get; set; }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Topo.Data.Models
+namespace Topo.Models.OAS
 {
     public class OASWorksheetAnswers
     {
