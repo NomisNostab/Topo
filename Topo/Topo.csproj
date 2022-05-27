@@ -43,7 +43,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Update="Images\Cub Scouts Full Col Vertical .png">
+		<None Update="Images\Cub Scouts Full Col Vertical.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 		<None Update="Images\Joey Scouts Full Col Vertical.jpg">
