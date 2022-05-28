@@ -47,6 +47,13 @@ namespace Topo.Services
         private readonly string achievementsAddress = "https://achievements.terrain.scouts.com.au/";
         private readonly string metricsAddress = "https://metrics.terrain.scouts.com.au/";
         private readonly string clientId = "6v98tbc09aqfvh52fml3usas3c";
+        private readonly List<string> clientIds = new List<string>
+        {
+            "6v98tbc09aqfvh52fml3usas3c",
+            "5g9rg6ppc5g1pcs5odb7nf7hf9",
+            "1u4uajve0lin0ki5n6b61ovva7",
+            "21m9o832lp5krto1e8ioo6ldg2"
+        };
         private readonly ILogger<TerrainAPIService> _logger;
 
         public TerrainAPIService(StorageService storageService,
@@ -62,21 +69,26 @@ namespace Topo.Services
         {
             AuthenticationResultModel authenticationResultModel = new AuthenticationResultModel();
 
+            var result = "";
             var initiateAuth = new InitiateAuthModel();
             initiateAuth.ClientMetadata = new ClientMetadata();
             initiateAuth.AuthFlow = "USER_PASSWORD_AUTH";
-            initiateAuth.ClientId = clientId;
             initiateAuth.AuthParameters = new AuthParameters();
             initiateAuth.AuthParameters.USERNAME = $"{branch}-{username}";
             initiateAuth.AuthParameters.PASSWORD = password;
-            var content = JsonConvert.SerializeObject(initiateAuth);
-            var result = await SendRequest(HttpMethod.Post, cognitoAddress, content, "AWSCognitoIdentityProviderService.InitiateAuth");
-            var authenticationSuccessResult = JsonConvert.DeserializeObject<AuthenticationSuccessResultModel>(result);
-            if (authenticationSuccessResult?.AuthenticationResult != null)
+            foreach (var clientId in clientIds)
             {
-                authenticationResultModel.AuthenticationSuccessResultModel = authenticationSuccessResult;
+                initiateAuth.ClientId = clientId;
+                var content = JsonConvert.SerializeObject(initiateAuth);
+                result = await SendRequest(HttpMethod.Post, cognitoAddress, content, "AWSCognitoIdentityProviderService.InitiateAuth");
+                var authenticationSuccessResult = JsonConvert.DeserializeObject<AuthenticationSuccessResultModel>(result);
+                if (authenticationSuccessResult?.AuthenticationResult != null)
+                {
+                    authenticationResultModel.AuthenticationSuccessResultModel = authenticationSuccessResult;
+                    break;
+                }
             }
-            else
+            if (authenticationResultModel.AuthenticationSuccessResultModel.AuthenticationResult == null)
             {
                 var authenticationErrorResultModel = JsonConvert.DeserializeObject<AuthenticationErrorResultModel>(result);
                 authenticationResultModel.AuthenticationErrorResultModel = authenticationErrorResultModel;
