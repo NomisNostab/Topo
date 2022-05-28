@@ -28,6 +28,7 @@ namespace Topo.Services
         public List<KeyValuePair<string, List<WallchartItemModel>>> CachedWallchartItems { get; set; } = new List<KeyValuePair<string, List<WallchartItemModel>>>();
         public List<AdditionalAwardSpecificationListModel> AdditionalAwardSpecifications { get; set; } = new List<AdditionalAwardSpecificationListModel>();
         public List<OASTemplate> OASTemplates { get; set; } = new List<OASTemplate>();
+        public string ClientId { get; set; } = string.Empty;
         public void ClearStorage()
         {
             IsAuthenticated = false;
