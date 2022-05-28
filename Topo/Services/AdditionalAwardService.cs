@@ -1,4 +1,4 @@
-﻿using Spire.Xls;
+﻿using Syncfusion.XlsIO;
 using System.Globalization;
 using Topo.Images;
 using Topo.Models.AditionalAwards;
@@ -7,7 +7,7 @@ namespace Topo.Services
 {
     public interface IAdditionalAwardService
     {
-        public Task<Workbook> GenerateAdditionalAwardReport(List<KeyValuePair<string, string>> selectedMembers);
+        public Task<IWorkbook> GenerateAdditionalAwardReport(List<KeyValuePair<string, string>> selectedMembers);
     }
     public class AdditionalAwardService : IAdditionalAwardService
     {
@@ -28,7 +28,7 @@ namespace Topo.Services
             _logger = logger;
             _images = images;
         }
-        public async Task<Workbook> GenerateAdditionalAwardReport(List<KeyValuePair<string, string>> selectedMembers)
+        public async Task<IWorkbook> GenerateAdditionalAwardReport(List<KeyValuePair<string, string>> selectedMembers)
         {
             var unitName = _storageService.SelectedUnitName ?? "";
             var unit = _storageService.GetProfilesResult.profiles.FirstOrDefault(u => u.unit.name == unitName);
@@ -92,29 +92,40 @@ namespace Topo.Services
             return workbook;
         }
 
-        private Workbook BuildXLS(List<AdditionalAwardSpecificationListModel> awardSpecificationsList, List<AdditionalAwardListModel> sortedAdditionalAwardsList, List<string>? distinctAwards, string section, string unitName)
+        private IWorkbook BuildXLS(List<AdditionalAwardSpecificationListModel> awardSpecificationsList, List<AdditionalAwardListModel> sortedAdditionalAwardsList, List<string>? distinctAwards, string section, string unitName)
         {
-            //Create a new workbook
-            Workbook workbook = new Workbook();
-            //Initialize worksheet        
-            Worksheet sheet = workbook.Worksheets[0];
+            //Step 1 : Instantiate the spreadsheet creation engine.
+            ExcelEngine excelEngine = new ExcelEngine();
+            //Step 2 : Instantiate the excel application object.
+            IApplication application = excelEngine.Excel;
+            application.DefaultVersion = ExcelVersion.Excel2016;
+
+            // Creating new workbook
+            IWorkbook workbook = application.Workbooks.Create(1);
+            IWorksheet sheet = workbook.Worksheets[0];
+
             int rowNumber = 1;
 
             // Add Logo
             var directory = Directory.GetCurrentDirectory();
             var logoName = _images.GetLogoForSection(section);
-            var logo = sheet.Pictures.Add(rowNumber, 1, $@"{directory}/Images/{logoName}");
+            FileStream imageStream = new FileStream($@"{directory}/Images/{logoName}", FileMode.Open, FileAccess.Read);
+            IPictureShape logo = sheet.Pictures.AddPicture(rowNumber, 1, imageStream);
             var aspectRatio = (double)logo.Height / logo.Width;
             logo.Width = 100;
             logo.Height = (int)(100 * aspectRatio);
-            
+
+            //Adding cell style.               
+            IStyle headingStyle = workbook.Styles.Add("headingStyle");
+            headingStyle.Font.Bold = true;
+            headingStyle.Font.Size = 14;
+            headingStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+            headingStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+
             // Add Group Name
             var groupName = sheet.Range[rowNumber, 2];
             groupName.Text = _storageService.GroupName;
-            groupName.Style.Font.IsBold = true;
-            groupName.Style.Font.Size = 14;
-            groupName.Style.HorizontalAlignment = HorizontalAlignType.Center;
-            groupName.Style.VerticalAlignment = VerticalAlignType.Center;
+            groupName.CellStyle = headingStyle;
             sheet.Range[rowNumber, 2, rowNumber, 16].Merge();
             sheet.SetRowHeight(rowNumber, 30);
 
@@ -122,10 +133,7 @@ namespace Topo.Services
             rowNumber++;
             var title = sheet.Range[rowNumber, 2];
             title.Text = $"Additional Badges Awarded as at {DateTime.Now.ToShortDateString()}";
-            title.Style.Font.IsBold = true;
-            title.Style.Font.Size = 14;
-            title.Style.HorizontalAlignment = HorizontalAlignType.Center;
-            title.Style.VerticalAlignment = VerticalAlignType.Center;
+            title.CellStyle = headingStyle;
             sheet.Range[rowNumber, 2, rowNumber, 16].Merge();
             sheet.SetRowHeight(rowNumber, 30);
 
@@ -133,10 +141,7 @@ namespace Topo.Services
             rowNumber++;
             var unit = sheet.Range[rowNumber, 2];
             unit.Text = unitName;
-            unit.Style.Font.IsBold = true;
-            unit.Style.Font.Size = 14;
-            unit.Style.HorizontalAlignment = HorizontalAlignType.Center;
-            unit.Style.VerticalAlignment = VerticalAlignType.Center;
+            unit.CellStyle = headingStyle;
             sheet.Range[rowNumber, 2, rowNumber, 16].Merge();
             sheet.SetRowHeight(rowNumber, 30);
 
@@ -144,17 +149,17 @@ namespace Topo.Services
             rowNumber++;
             var columnNumber = 1;
             sheet.Range[rowNumber, 1].Text = "Scout";
-            sheet.Range[rowNumber, 1].Style.HorizontalAlignment = HorizontalAlignType.Center;
+            sheet.Range[rowNumber, 1].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
             var usedAwards = awardSpecificationsList.Where(x => distinctAwards.Contains(x.id));
             foreach (var award in usedAwards.OrderBy(x => x.additionalAwardSortIndex))
             {
                 columnNumber = distinctAwards.IndexOf(award.id) + 1;
                 var cell = sheet.Range[rowNumber, columnNumber + 1];
                 cell.Text = award.name;
-                cell.Style.Rotation = 90;
-                cell.Style.HorizontalAlignment = HorizontalAlignType.Center;
-                cell.Style.VerticalAlignment = VerticalAlignType.Bottom;
-                cell.BorderAround(LineStyleType.Thin);
+                cell.CellStyle.Rotation = 90;
+                cell.CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                cell.CellStyle.VerticalAlignment = ExcelVAlign.VAlignBottom;
+                cell.BorderAround();
             }
             rowNumber++;
             // Add detail rows
@@ -162,15 +167,15 @@ namespace Topo.Services
             {
                 sheet.SetRowHeight(rowNumber, 15);
                 sheet.Range[rowNumber, 1].Text = additionalAward.Key;
-                sheet.Range[rowNumber, 1].BorderAround(LineStyleType.Thin);
-                sheet.Range[rowNumber, 1].Style.VerticalAlignment = VerticalAlignType.Center;
+                sheet.Range[rowNumber, 1].BorderAround();
+                sheet.Range[rowNumber, 1].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
                 // Set style for date boxes
                 for (int i = 0; i < distinctAwards.Count(); i++)
                 {
                     var cell = sheet.Range[rowNumber, i + 2];
-                    cell.Style.HorizontalAlignment = HorizontalAlignType.Center;
-                    cell.Style.VerticalAlignment = VerticalAlignType.Center;
-                    cell.BorderAround(LineStyleType.Thin);
+                    cell.CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                    cell.CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+                    cell.BorderAround();
                 }
                 // Populate award dates
                 foreach (var x in additionalAward)
@@ -181,7 +186,7 @@ namespace Topo.Services
                 }
                 rowNumber++;
             }
-            sheet.AllocatedRange.AutoFitColumns();
+            sheet.UsedRange.AutofitColumns();
             return workbook;
         }
     }
