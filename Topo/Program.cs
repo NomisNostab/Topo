@@ -9,8 +9,7 @@ logger.Debug("init main");
 try
 {
     // Create AppData folder
-    string path = @"%LOCALAPPDATA%\Topo";
-    path = Environment.ExpandEnvironmentVariables(path);
+    string path = Environment.ExpandEnvironmentVariables(@"%LOCALAPPDATA%\Topo");
     if (!Directory.Exists(path))
         Directory.CreateDirectory(path);
 
