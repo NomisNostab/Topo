@@ -46,7 +46,6 @@ namespace Topo.Services
         private readonly string templatesAddress = "https://templates.terrain.scouts.com.au/";
         private readonly string achievementsAddress = "https://achievements.terrain.scouts.com.au/";
         private readonly string metricsAddress = "https://metrics.terrain.scouts.com.au/";
-        private readonly string clientId = "6v98tbc09aqfvh52fml3usas3c";
         private readonly List<string> clientIds = new List<string>
         {
             "6v98tbc09aqfvh52fml3usas3c",
@@ -67,6 +66,15 @@ namespace Topo.Services
 
         public async Task<AuthenticationResultModel?> LoginAsync(string? branch, string? username, string? password)
         {
+            string path = Environment.ExpandEnvironmentVariables(@"%LOCALAPPDATA%\Topo");
+            var clientIdFileName = $@"{path}\ClientId.txt";
+            var savedClientId = "";
+            if (!File.Exists(clientIdFileName))
+            {
+                File.WriteAllText(clientIdFileName, "");
+            }
+            savedClientId = File.ReadAllText(clientIdFileName);
+
             AuthenticationResultModel authenticationResultModel = new AuthenticationResultModel();
 
             var result = "";
@@ -76,16 +84,33 @@ namespace Topo.Services
             initiateAuth.AuthParameters = new AuthParameters();
             initiateAuth.AuthParameters.USERNAME = $"{branch}-{username}";
             initiateAuth.AuthParameters.PASSWORD = password;
-            foreach (var clientId in clientIds)
+            if (!string.IsNullOrEmpty(savedClientId))
             {
-                initiateAuth.ClientId = clientId;
+                initiateAuth.ClientId = savedClientId;
                 var content = JsonConvert.SerializeObject(initiateAuth);
                 result = await SendRequest(HttpMethod.Post, cognitoAddress, content, "AWSCognitoIdentityProviderService.InitiateAuth");
                 var authenticationSuccessResult = JsonConvert.DeserializeObject<AuthenticationSuccessResultModel>(result);
                 if (authenticationSuccessResult?.AuthenticationResult != null)
                 {
                     authenticationResultModel.AuthenticationSuccessResultModel = authenticationSuccessResult;
-                    break;
+                    _storageService.ClientId = savedClientId;
+                }
+            }
+            else
+            {
+                foreach (var clientId in clientIds)
+                {
+                    initiateAuth.ClientId = clientId;
+                    var content = JsonConvert.SerializeObject(initiateAuth);
+                    result = await SendRequest(HttpMethod.Post, cognitoAddress, content, "AWSCognitoIdentityProviderService.InitiateAuth");
+                    var authenticationSuccessResult = JsonConvert.DeserializeObject<AuthenticationSuccessResultModel>(result);
+                    if (authenticationSuccessResult?.AuthenticationResult != null)
+                    {
+                        authenticationResultModel.AuthenticationSuccessResultModel = authenticationSuccessResult;
+                        _storageService.ClientId = clientId;
+                        File.WriteAllText(clientIdFileName, clientId);
+                        break;
+                    }
                 }
             }
             if (authenticationResultModel.AuthenticationSuccessResultModel.AuthenticationResult == null)
@@ -114,7 +139,7 @@ namespace Topo.Services
                 var initiateAuth = new InitiateAuthModel();
                 initiateAuth.ClientMetadata = new ClientMetadata();
                 initiateAuth.AuthFlow = "REFRESH_TOKEN_AUTH";
-                initiateAuth.ClientId = clientId;
+                initiateAuth.ClientId = _storageService.ClientId;
                 initiateAuth.AuthParameters = new AuthParameters();
                 initiateAuth.AuthParameters.REFRESH_TOKEN = _storageService?.AuthenticationResult?.RefreshToken;
                 initiateAuth.AuthParameters.DEVICE_KEY = null;
@@ -383,5 +408,6 @@ namespace Topo.Services
             }
             return JsonConvert.DeserializeObject<T>("");
         }
+
     }
 }
