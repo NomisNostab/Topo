@@ -57,7 +57,8 @@ namespace Topo.Services
         }
         private void ProcessChild(string streamTitle, Child childNode, List<OASStageListModel> oasStageListModels)
         {
-            oasStageListModels.Add(new OASStageListModel {
+            oasStageListModels.Add(new OASStageListModel
+            {
                 Stream = streamTitle,
                 Branch = childNode.branch_id,
                 StageTitle = childNode.title,
@@ -114,10 +115,11 @@ namespace Topo.Services
         public async Task<List<OASTemplate>> GetOASTemplate(string templateName)
         {
             var templateList = _storageService.OASTemplates
-                .Where(t => t.TemplateName == templateName && t.InputGroupSort < 4)
+                .Where(t => t.TemplateName == templateName)
                 .OrderBy(t => t.InputGroupSort)
                 .ThenBy(t => t.Id)
                 .ToList();
+            var templateId = 0;
             if (templateList == null || templateList.Count == 0)
             {
                 var templateTitle = "";
@@ -127,11 +129,13 @@ namespace Topo.Services
                 {
                     templateTitle = document.title;
                     foreach (var inputGroup in document.input_groups)
-                    { 
+                    {
                         inputGroupTitle = inputGroup.title;
-                        foreach (var input in inputGroup.inputs)
+                        foreach (var input in inputGroup.inputs.Where(i => i.id != "file_uploader"))
                         {
-                            var oasTemplate = new OASTemplate { 
+                            var oasTemplate = new OASTemplate
+                            {
+                                Id = templateId++,
                                 TemplateName = templateName,
                                 TemplateTitle = templateTitle,
                                 InputGroup = inputGroupTitle,
@@ -140,16 +144,12 @@ namespace Topo.Services
                                 InputLabel = input.label
                             };
                             _storageService.OASTemplates.Add(oasTemplate);
-                            templateList = _storageService.OASTemplates
-                                .Where(t => t.TemplateName == templateName && t.InputGroupSort < 4)
-                                .OrderBy(t => t.InputGroupSort)
-                                .ThenBy(t => t.Id)
-                                .ToList();
                         }
                     }
                 }
+
                 templateList = _storageService.OASTemplates
-                .Where(t => t.TemplateName == templateName && t.InputGroupSort < 4)
+                .Where(t => t.TemplateName == templateName)
                 .OrderBy(t => t.InputGroupSort)
                 .ThenBy(t => t.Id)
                 .ToList();
@@ -206,7 +206,7 @@ namespace Topo.Services
 
             var OASWorksheetAnswers = new List<OASWorksheetAnswers>();
 
-            foreach (var item in templateList.Where(t => t.InputGroupSort < 4).OrderBy(t => t.InputGroupSort).ThenBy(t => t.Id))
+            foreach (var item in templateList.OrderBy(t => t.InputGroupSort).ThenBy(t => t.Id))
             {
                 foreach (var member in sortedMemberList)
                 {
@@ -229,7 +229,7 @@ namespace Topo.Services
             {
                 var verifiedAnswers = new List<KeyValuePair<string, string>>();
                 if (memberAchievement.answers != null)
-                    verifiedAnswers = memberAchievement.answers.Where(a => a.Key.EndsWith("_verifiedDate")).ToList();
+                    verifiedAnswers = memberAchievement.answers.Where(a => a.Key.EndsWith("_verifiedDate") || a.Key == "logbook_up_to_date").ToList();
                 // In progress
                 if (memberAchievement.status == "draft_review" || memberAchievement.status == "pending_review")
                 {
@@ -242,14 +242,23 @@ namespace Topo.Services
                                 .Where(wa => wa.MemberId == memberAchievement.member_id)
                                 .FirstOrDefault();
                             if (worksheetAnswer != null)
-                                try
-                                {
-                                    worksheetAnswer.MemberAnswer = ConvertAnswerDate(answer.Value);
-                                }
-                                catch (Exception ex)
+                            {
+                                if (answer.Key == "logbook_up_to_date" && answer.Value == "true")
                                 {
                                     worksheetAnswer.MemberAnswer = memberAchievement.status_updated;
                                 }
+                                else
+                                {
+                                    try
+                                    {
+                                        worksheetAnswer.MemberAnswer = ConvertAnswerDate(answer.Value);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        worksheetAnswer.MemberAnswer = memberAchievement.status_updated;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -318,6 +327,14 @@ namespace Topo.Services
                                 }
                         }
                     }
+                    // Set logbook up to date
+                    var logbookUpToDate = OASWorksheetAnswers
+                        .Where(wa => wa.InputId == "logbook_up_to_date")
+                        .Where(wa => wa.MemberId == memberAchievement.member_id)
+                        .Where(wa => wa.MemberAnswer == null)
+                        .FirstOrDefault();
+                    if (logbookUpToDate != null)
+                        logbookUpToDate.MemberAnswer = memberAchievement.status_updated;
                 }
             }
 
