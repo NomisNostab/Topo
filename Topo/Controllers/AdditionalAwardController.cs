@@ -115,7 +115,7 @@ namespace Topo.Controllers
                             if (button == "AdditionalAwardReport")
                             {
                                 var sheet = workbook.Worksheets[0];
-                                sheet.PageSetup.PaperSize = ExcelPaperSize.A3ExtraPaper;
+                                sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA3;
                                 sheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
                                 //Initialize XlsIO renderer.
                                 XlsIORenderer renderer = new XlsIORenderer();

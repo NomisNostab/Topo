@@ -143,7 +143,7 @@ namespace Topo.Services
             unit.Text = unitName;
             unit.CellStyle = headingStyle;
             sheet.Range[rowNumber, 2, rowNumber, 16].Merge();
-            sheet.SetRowHeight(rowNumber, 30);
+            sheet.SetRowHeight(rowNumber, 40);
 
             //Add Heading Row
             rowNumber++;
