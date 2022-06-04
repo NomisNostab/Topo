@@ -4,7 +4,7 @@ using Topo.Images;
 using Topo.Services;
 
 var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
-logger.Debug("init main");
+logger.Info($"Version {Topo.Constants.Version}");
 
 try
 {
