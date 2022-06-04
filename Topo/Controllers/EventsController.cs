@@ -9,6 +9,9 @@ using FastReport;
 using FastReport.Export.PdfSimple;
 using System.Text;
 using System.Reflection;
+using Syncfusion.XlsIO;
+using Syncfusion.XlsIORenderer;
+using Syncfusion.Pdf;
 
 namespace Topo.Controllers
 {
@@ -91,62 +94,51 @@ namespace Topo.Controllers
             var selectedEvent = _storageService.Events?.Where(e => e.Value == eventId).FirstOrDefault().Text;
             var groupName = _storageService.GroupName;
             var unitName = _storageService.SelectedUnitName ?? "";
+            var unit = _storageService.GetProfilesResult.profiles.FirstOrDefault(u => u.unit.name == unitName);
+            if (unit == null)
+                throw new IndexOutOfRangeException($"No unit found with name {unitName}. You may not have permissions to this section");
+            var section = unit.unit.section;
+
             var model = await _memberListService.GetMembersAsync();
-            var signInSheetReport = new Report();
-            var directory = Directory.GetCurrentDirectory();
-            signInSheetReport.Load($@"{directory}/Reports/SignInSheet.frx");
-            signInSheetReport.SetParameterValue("GroupName", groupName);
-            signInSheetReport.SetParameterValue("UnitName", unitName);
-            signInSheetReport.SetParameterValue("Event", selectedEvent);
-            signInSheetReport.RegisterData(model, "Members");
 
-            if (signInSheetReport.Prepare())
-            {
-                // Set PDF export props
-                PDFSimpleExport pdfExport = new PDFSimpleExport();
-                pdfExport.ShowProgress = false;
+            var workbook = _eventService.GenerateSignInSheet(model, section, unitName, selectedEvent);
 
-                MemoryStream strm = new MemoryStream();
-                signInSheetReport.Report.Export(pdfExport, strm);
-                signInSheetReport.Dispose();
-                pdfExport.Dispose();
-                strm.Position = 0;
+            //Stream as Excel file
+            MemoryStream strm = new MemoryStream();
 
-                // return stream in browser
-                return File(strm, "application/pdf", $"SignInSheet_{unitName.Replace(' ', '_')}_{selectedEvent.Replace(' ', '_')}.pdf");
-            }
-            else
-            {
-                SetViewBag();
-                return View();
-            }
+            //Initialize XlsIO renderer.
+            XlsIORenderer renderer = new XlsIORenderer();
+
+            //Convert Excel document into PDF document 
+            var sheet = workbook.Worksheets[0];
+            sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
+            sheet.PageSetup.Orientation = ExcelPageOrientation.Portrait;
+            PdfDocument pdfDocument = renderer.ConvertToPDF(sheet);
+            pdfDocument.Save(strm);
+
+            // return stream in browser
+            return File(strm.ToArray(), "application/pdf", $"SignInSheet_{unitName.Replace(' ', '_')}_{selectedEvent.Replace(' ', '_')}.pdf");
+
         }
 
         public async Task<ActionResult> AttendanceList(string eventId)
         {
             var groupName = _storageService.GroupName;
             var unitName = _storageService.SelectedUnitName ?? "";
+            var unit = _storageService.GetProfilesResult.profiles.FirstOrDefault(u => u.unit.name == unitName);
+            if (unit == null)
+                throw new IndexOutOfRangeException($"No unit found with name {unitName}. You may not have permissions to this section");
+            var section = unit.unit.section;
 
             var eventListModel = await _eventService.GetAttendanceForEvent(eventId);
+            var workbook = _eventService.GenerateEventAttendanceXlsx(eventListModel, section, unitName);
 
-            MemoryStream ms = new MemoryStream();
-            // Encoding.UTF8 produces stream with BOM, new UTF8Encoding(false) - without BOM
-            using (StreamWriter sw = new StreamWriter(ms, new UTF8Encoding(false), 8192, true))
-            {
-                sw.WriteLine(groupName);
-                sw.WriteLine(unitName);
-                sw.WriteLine(eventListModel.EventDisplay);
-                sw.WriteLine();
-                PropertyInfo[] properties = typeof(Attendee_Members).GetProperties();
-                sw.WriteLine(string.Join(",", properties.Where(x => x.Name != "id").Select(x => x.Name)));
+            MemoryStream strm = new MemoryStream();
+            //Stream as Excel file
+            workbook.SaveAs(strm);
 
-                foreach (Attendee_Members attendee in eventListModel.attendees.OrderBy(a => a.last_name))
-                {
-                    sw.WriteLine(string.Join(",", properties.Where(x => x.Name != "id").Select(prop => prop.GetValue(attendee))));
-                }
-            }
-            ms.Position = 0;
-            return File(ms, "application/vnd.ms-excel", $"Attendance_{unitName.Replace(' ', '_')}_{eventListModel.EventDisplay.Replace(' ', '_')}.csv");
+            // return stream in browser
+            return File(strm.ToArray(), "application/vnd.ms-excel", $"Attendance_{unitName.Replace(' ', '_')}_{eventListModel.EventDisplay.Replace(' ', '_')}.xlsx");
         }
 
         private async Task<ActionResult> AttendanceReport(DateTime fromDate, DateTime toDate, string selectedCalendar)
@@ -155,6 +147,11 @@ namespace Topo.Controllers
 
             var groupName = _storageService.GroupName;
             var unitName = _storageService.SelectedUnitName ?? "";
+            var unit = _storageService.GetProfilesResult.profiles.FirstOrDefault(u => u.unit.name == unitName);
+            if (unit == null)
+                throw new IndexOutOfRangeException($"No unit found with name {unitName}. You may not have permissions to this section");
+            var section = unit.unit.section;
+
             var report = new Report();
             var directory = Directory.GetCurrentDirectory();
             report.Load($@"{directory}/Reports/Attendance.frx");
