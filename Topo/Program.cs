@@ -4,7 +4,7 @@ using Topo.Images;
 using Topo.Services;
 
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
-logger.Info("Version 1.22");
+logger.Info($"Version {Topo.Constants.Version}");
 
 try
 {
