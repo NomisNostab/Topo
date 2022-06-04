@@ -251,7 +251,7 @@ namespace Topo.Services
                                 {
                                     try
                                     {
-                                        worksheetAnswer.MemberAnswer = ConvertAnswerDate(answer.Value);
+                                        worksheetAnswer.MemberAnswer = ConvertAnswerDate(answer.Value, memberAchievement.status_updated);
                                     }
                                     catch (Exception ex)
                                     {
@@ -319,7 +319,7 @@ namespace Topo.Services
                             if (worksheetAnswer != null)
                                 try
                                 {
-                                    worksheetAnswer.MemberAnswer = ConvertAnswerDate(answer.Value);
+                                    worksheetAnswer.MemberAnswer = ConvertAnswerDate(answer.Value, memberAchievement.status_updated);
                                 }
                                 catch (Exception ex)
                                 {
@@ -345,7 +345,7 @@ namespace Topo.Services
 
             return sortedAnswers;
         }
-        private DateTime ConvertAnswerDate(string answerValue)
+        private DateTime ConvertAnswerDate(string answerValue, DateTime updatedDate)
         {
             // Question answer dates seem to be either AU or US format. WTF!
             // "south_magnetic_find_electronic_means_compass_west_directions_e7e4fc_verifiedDate": "18/11/2020",
@@ -354,11 +354,14 @@ namespace Topo.Services
             try
             {
                 answerDate = DateTime.ParseExact(answerValue, "dd/MM/yyyy", CultureInfo.InvariantCulture); // Date in AU format
+                if (answerDate > updatedDate) 
+                    // Answer date is after when the record was updated, so treat as a US date.
+                    answerDate = DateTime.ParseExact(answerValue, "M/dd/yyyy", CultureInfo.InvariantCulture); // Date in US format
                 return answerDate;
             }
             catch
             {
-                answerDate = DateTime.ParseExact(answerValue, "MM/dd/yyyy", CultureInfo.InvariantCulture); // Date in UA format
+                answerDate = DateTime.ParseExact(answerValue, "M/dd/yyyy", CultureInfo.InvariantCulture); // Date in US format
                 return answerDate;
             }
         }
