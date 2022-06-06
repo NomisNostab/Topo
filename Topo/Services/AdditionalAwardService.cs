@@ -1,6 +1,5 @@
 ﻿using Syncfusion.XlsIO;
 using System.Globalization;
-using Topo.Images;
 using Topo.Models.AditionalAwards;
 
 namespace Topo.Services
@@ -12,24 +11,22 @@ namespace Topo.Services
     public class AdditionalAwardService : IAdditionalAwardService
     {
         private readonly StorageService _storageService;
-        private readonly IMemberListService _memberListService;
         private readonly ITerrainAPIService _terrainAPIService;
         private readonly ILogger<ISIAService> _logger;
-        private readonly IImages _images;
+        private readonly IReportService _reportService;
 
-        public AdditionalAwardService(IMemberListService memberListService,
-            ITerrainAPIService terrainAPIService,
+        public AdditionalAwardService(ITerrainAPIService terrainAPIService,
             StorageService storageService, ILogger<ISIAService> logger,
-            IImages images)
+            IReportService reportService)
         {
-            _memberListService = memberListService;
             _terrainAPIService = terrainAPIService;
             _storageService = storageService;
             _logger = logger;
-            _images = images;
+            _reportService = reportService;
         }
         public async Task<IWorkbook> GenerateAdditionalAwardReport(List<KeyValuePair<string, string>> selectedMembers)
         {
+            var groupName = _storageService.GroupName;
             var unitName = _storageService.SelectedUnitName ?? "";
             var unit = _storageService.GetProfilesResult.profiles.FirstOrDefault(u => u.unit.name == unitName);
             if (unit == null)
@@ -87,106 +84,8 @@ namespace Topo.Services
             await _terrainAPIService.RevokeAssumedProfiles();
             var sortedAdditionalAwardsList = additionalAwardsList.OrderBy(a => a.MemberName).ThenBy(a => a.AwardSortIndex).ToList();
             var distinctAwards = sortedAdditionalAwardsList.OrderBy(x => x.AwardSortIndex).Select(x => x.AwardId).Distinct().ToList();
-            var workbook = BuildXLS(awardSpecificationsList, sortedAdditionalAwardsList, distinctAwards, section, unitName);
+            var workbook = _reportService.BuildAdditionalAwardsWorkbook(awardSpecificationsList, sortedAdditionalAwardsList, distinctAwards, groupName, section, unitName);
 
-            return workbook;
-        }
-
-        private IWorkbook BuildXLS(List<AdditionalAwardSpecificationListModel> awardSpecificationsList, List<AdditionalAwardListModel> sortedAdditionalAwardsList, List<string>? distinctAwards, string section, string unitName)
-        {
-            //Step 1 : Instantiate the spreadsheet creation engine.
-            ExcelEngine excelEngine = new ExcelEngine();
-            //Step 2 : Instantiate the excel application object.
-            IApplication application = excelEngine.Excel;
-            application.DefaultVersion = ExcelVersion.Excel2016;
-
-            // Creating new workbook
-            IWorkbook workbook = application.Workbooks.Create(1);
-            IWorksheet sheet = workbook.Worksheets[0];
-
-            int rowNumber = 1;
-
-            // Add Logo
-            var directory = Directory.GetCurrentDirectory();
-            var logoName = _images.GetLogoForSection(section);
-            FileStream imageStream = new FileStream($@"{directory}/Images/{logoName}", FileMode.Open, FileAccess.Read);
-            IPictureShape logo = sheet.Pictures.AddPicture(rowNumber, 1, imageStream);
-            var aspectRatio = (double)logo.Height / logo.Width;
-            logo.Width = 100;
-            logo.Height = (int)(100 * aspectRatio);
-
-            //Adding cell style.               
-            IStyle headingStyle = workbook.Styles.Add("headingStyle");
-            headingStyle.Font.Bold = true;
-            headingStyle.Font.Size = 14;
-            headingStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-            headingStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
-
-            // Add Group Name
-            var groupName = sheet.Range[rowNumber, 2];
-            groupName.Text = _storageService.GroupName;
-            groupName.CellStyle = headingStyle;
-            sheet.Range[rowNumber, 2, rowNumber, 16].Merge();
-            sheet.SetRowHeight(rowNumber, 30);
-
-            // Add Title
-            rowNumber++;
-            var title = sheet.Range[rowNumber, 2];
-            title.Text = $"Additional Badges Awarded as at {DateTime.Now.ToShortDateString()}";
-            title.CellStyle = headingStyle;
-            sheet.Range[rowNumber, 2, rowNumber, 16].Merge();
-            sheet.SetRowHeight(rowNumber, 30);
-
-            // Add Unit name
-            rowNumber++;
-            var unit = sheet.Range[rowNumber, 2];
-            unit.Text = unitName;
-            unit.CellStyle = headingStyle;
-            sheet.Range[rowNumber, 2, rowNumber, 16].Merge();
-            sheet.SetRowHeight(rowNumber, 40);
-
-            //Add Heading Row
-            rowNumber++;
-            var columnNumber = 1;
-            sheet.Range[rowNumber, 1].Text = "Scout";
-            sheet.Range[rowNumber, 1].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-            var usedAwards = awardSpecificationsList.Where(x => distinctAwards.Contains(x.id));
-            foreach (var award in usedAwards.OrderBy(x => x.additionalAwardSortIndex))
-            {
-                columnNumber = distinctAwards.IndexOf(award.id) + 1;
-                var cell = sheet.Range[rowNumber, columnNumber + 1];
-                cell.Text = award.name;
-                cell.CellStyle.Rotation = 90;
-                cell.CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-                cell.CellStyle.VerticalAlignment = ExcelVAlign.VAlignBottom;
-                cell.BorderAround();
-            }
-            rowNumber++;
-            // Add detail rows
-            foreach (var additionalAward in sortedAdditionalAwardsList.GroupBy(x => x.MemberName))
-            {
-                sheet.SetRowHeight(rowNumber, 15);
-                sheet.Range[rowNumber, 1].Text = additionalAward.Key;
-                sheet.Range[rowNumber, 1].BorderAround();
-                sheet.Range[rowNumber, 1].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
-                // Set style for date boxes
-                for (int i = 0; i < distinctAwards.Count(); i++)
-                {
-                    var cell = sheet.Range[rowNumber, i + 2];
-                    cell.CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-                    cell.CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
-                    cell.BorderAround();
-                }
-                // Populate award dates
-                foreach (var x in additionalAward)
-                {
-                    columnNumber = distinctAwards.IndexOf(x.AwardId) + 1;
-                    var cell = sheet.Range[rowNumber, columnNumber + 1];
-                    cell.Text = x.AwardDate.Value.ToString("dd/MM/yy");
-                }
-                rowNumber++;
-            }
-            sheet.UsedRange.AutofitColumns();
             return workbook;
         }
     }

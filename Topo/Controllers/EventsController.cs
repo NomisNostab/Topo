@@ -1,17 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Diagnostics;
-using Topo.Models;
-using Topo.Models.Home;
-using Topo.Models.Events;
-using Topo.Services;
-using FastReport;
-using FastReport.Export.PdfSimple;
-using System.Text;
-using System.Reflection;
+using Syncfusion.Pdf;
 using Syncfusion.XlsIO;
 using Syncfusion.XlsIORenderer;
-using Syncfusion.Pdf;
+using Topo.Models.Events;
+using Topo.Services;
 
 namespace Topo.Controllers
 {
@@ -20,14 +13,14 @@ namespace Topo.Controllers
         private readonly StorageService _storageService;
         private readonly IMemberListService _memberListService;
         private readonly IEventService _eventService;
-
-        public EventsController(StorageService storageService, IMemberListService memberListService, IEventService eventService)
+        private readonly IReportService _reportService;
+        public EventsController(StorageService storageService, IMemberListService memberListService, IEventService eventService, IReportService reportService)
         {
             _storageService = storageService;
             _memberListService = memberListService;
             _eventService = eventService;
+            _reportService = reportService;
         }
-
         private void SetViewBag()
         {
             ViewBag.IsAuthenticated = _storageService.IsAuthenticated;
@@ -67,13 +60,13 @@ namespace Topo.Controllers
                 var selectedUnit = _storageService.Units.Where(u => u.Text == calendarTitle)?.FirstOrDefault();
                 _storageService.SelectedUnitName = selectedUnit.Text;
                 _storageService.SelectedUnitId = selectedUnit.Value;
-                if (button == "AttendanceReport")
+                if (button == "AttendanceReportPdf")
                 {
-                    return await AttendanceReport(eventViewModel.CalendarSearchFromDate, eventViewModel.CalendarSearchToDate, eventViewModel.SelectedCalendar);
+                    return await AttendanceReport(eventViewModel.CalendarSearchFromDate, eventViewModel.CalendarSearchToDate, eventViewModel.SelectedCalendar, Topo.Constants.OutputType.pdf);
                 }
-                if (button == "AttendanceCSV")
+                if (button == "AttendanceReportXlsx")
                 {
-                    return await AttendanceCSV(eventViewModel.CalendarSearchFromDate, eventViewModel.CalendarSearchToDate, eventViewModel.SelectedCalendar);
+                    return await AttendanceReport(eventViewModel.CalendarSearchFromDate, eventViewModel.CalendarSearchToDate, eventViewModel.SelectedCalendar, Topo.Constants.OutputType.xlsx);
                 }
                 await _eventService.SetCalendar(eventViewModel.SelectedCalendar);
                 var events = await _eventService.GetEventsForDates(eventViewModel.CalendarSearchFromDate, eventViewModel.CalendarSearchToDate);
@@ -101,7 +94,7 @@ namespace Topo.Controllers
 
             var model = await _memberListService.GetMembersAsync();
 
-            var workbook = _eventService.GenerateSignInSheet(model, section, unitName, selectedEvent);
+            var workbook = _reportService.GenerateSignInSheetWorkbook(model, groupName, section, unitName, selectedEvent);
 
             //Stream as Excel file
             MemoryStream strm = new MemoryStream();
@@ -131,7 +124,7 @@ namespace Topo.Controllers
             var section = unit.unit.section;
 
             var eventListModel = await _eventService.GetAttendanceForEvent(eventId);
-            var workbook = _eventService.GenerateEventAttendanceXlsx(eventListModel, section, unitName);
+            var workbook = _reportService.GenerateEventAttendanceWorkbook(eventListModel, groupName, section, unitName);
 
             MemoryStream strm = new MemoryStream();
             //Stream as Excel file
@@ -141,7 +134,7 @@ namespace Topo.Controllers
             return File(strm.ToArray(), "application/vnd.ms-excel", $"Attendance_{unitName.Replace(' ', '_')}_{eventListModel.EventDisplay.Replace(' ', '_')}.xlsx");
         }
 
-        private async Task<ActionResult> AttendanceReport(DateTime fromDate, DateTime toDate, string selectedCalendar)
+        private async Task<ActionResult> AttendanceReport(DateTime fromDate, DateTime toDate, string selectedCalendar, Topo.Constants.OutputType outputType)
         {
             var attendanceReportData = await _eventService.GenerateAttendanceReportData(fromDate, toDate, selectedCalendar);
 
@@ -152,101 +145,35 @@ namespace Topo.Controllers
                 throw new IndexOutOfRangeException($"No unit found with name {unitName}. You may not have permissions to this section");
             var section = unit.unit.section;
 
-            var report = new Report();
-            var directory = Directory.GetCurrentDirectory();
-            report.Load($@"{directory}/Reports/Attendance.frx");
-            report.SetParameterValue("GroupName", groupName);
-            report.SetParameterValue("UnitName", unitName);
-            report.SetParameterValue("FromDate", fromDate.ToShortDateString());
-            report.SetParameterValue("ToDate", toDate.ToShortDateString());
-            report.SetParameterValue("TotalEvents", attendanceReportData.attendanceReportChallengeAreaSummaries.FirstOrDefault()?.TotalEvents ?? 0);
-            report.SetParameterValue("CommunityEvents", attendanceReportData.attendanceReportChallengeAreaSummaries.Where(c => c.ChallengeArea == "Community").FirstOrDefault()?.EventCount ?? 0);
-            report.SetParameterValue("CreativeEvents", attendanceReportData.attendanceReportChallengeAreaSummaries.Where(c => c.ChallengeArea == "Creative").FirstOrDefault()?.EventCount ?? 0);
-            report.SetParameterValue("OutdoorsEvents", attendanceReportData.attendanceReportChallengeAreaSummaries.Where(c => c.ChallengeArea == "Outdoors").FirstOrDefault()?.EventCount ?? 0);
-            report.SetParameterValue("PersonalGrowthEvents", attendanceReportData.attendanceReportChallengeAreaSummaries.Where(c => c.ChallengeArea == "Personal Growth").FirstOrDefault()?.EventCount ?? 0);
-            report.RegisterData(attendanceReportData.attendanceReportItems.ToList(), "MemberAttendance");
+            var workbook = _reportService.GenerateAttendanceReportWorkbook(attendanceReportData, groupName, section, unitName, fromDate, toDate, outputType == Constants.OutputType.pdf);
 
+            //Stream as Excel file
+            MemoryStream strm = new MemoryStream();
 
-            if (report.Prepare())
+            if (outputType == Constants.OutputType.pdf)
             {
-                // Set PDF export props
-                PDFSimpleExport pdfExport = new PDFSimpleExport();
-                pdfExport.ShowProgress = false;
+                //Initialize XlsIO renderer.
+                XlsIORenderer renderer = new XlsIORenderer();
 
-                MemoryStream strm = new MemoryStream();
-                report.Report.Export(pdfExport, strm);
-                report.Dispose();
-                pdfExport.Dispose();
-                strm.Position = 0;
+                //Convert Excel document into PDF document 
+                var sheet = workbook.Worksheets[0];
+
+                PdfDocument pdfDocument = renderer.ConvertToPDF(sheet);
+                pdfDocument.Save(strm);
 
                 // return stream in browser
-                return File(strm, "application/pdf", $"Attendance_{unitName.Replace(' ', '_')}.pdf");
+                return File(strm.ToArray(), "application/pdf", $"Attendance_{unitName.Replace(' ', '_')}.pdf");
             }
-            else
+
+            if (outputType == Constants.OutputType.xlsx)
             {
-                SetViewBag();
-                return View();
+                //Stream as Excel file
+                workbook.SaveAs(strm);
+
+                // return stream in browser
+                return File(strm.ToArray(), "application/vnd.ms-excel", $"Attendance_{unitName.Replace(' ', '_')}.xlsx");
             }
+            return View();
         }
-
-        private async Task<ActionResult> AttendanceCSV(DateTime fromDate, DateTime toDate, string selectedCalendar)
-        {
-
-            var attendanceReportData = await _eventService.GenerateAttendanceReportData(fromDate, toDate, selectedCalendar);
-
-            var groupName = _storageService.GroupName;
-            var unitName = _storageService.SelectedUnitName ?? "";
-            var groupedAttendances = attendanceReportData.attendanceReportItems.GroupBy(wa => $"{wa.IsAdultMember} {wa.MemberName}").ToList();
-            var quote = '"';
-            MemoryStream ms = new MemoryStream();
-            // Encoding.UTF8 produces stream with BOM, new UTF8Encoding(false) - without BOM
-            using (StreamWriter sw = new StreamWriter(ms, new UTF8Encoding(false), 8192, true))
-            {
-                sw.WriteLine(groupName);
-                sw.WriteLine(unitName);
-                sw.WriteLine($"Attendance from {fromDate.ToShortDateString()} to {toDate.ToShortDateString()}");
-                sw.WriteLine();
-                sw.Write(",Challenge Area,");
-                sw.WriteLine(string.Join(",", groupedAttendances.FirstOrDefault().Select(a => a.EventChallengeArea)));
-                sw.Write(",Event Date,");
-                sw.WriteLine(string.Join(",", groupedAttendances.FirstOrDefault().Select(a => a.EventStartDate.ToShortDateString())));
-                sw.Write("Adult/Youth,Scout,");
-                sw.WriteLine(string.Join(",", groupedAttendances.FirstOrDefault().Select(a => a.EventName)));
-
-                foreach (var groupedAttendance in groupedAttendances.OrderBy(ga => ga.Key))
-                {
-                    var member = groupedAttendance.FirstOrDefault()?.MemberName ?? "";
-                    var isAdult = groupedAttendance.FirstOrDefault()?.IsAdultMember ?? 0;
-                    sw.Write($"{isAdult},{member},");
-                    sw.WriteLine(string.Join(", ", groupedAttendance.OrderBy(ga => ga.EventStartDate).Select(a => a.Attended)));
-                }
-            }
-            ms.Position = 0;
-            return File(ms, "application/vnd.ms-excel", $"Attendance{unitName.Replace(' ', '_')}.csv");
-        }
-
     }
 }
-
-////Build report template for model
-//var reportDS = new Report();
-//var directoryDS = Directory.GetCurrentDirectory();
-//reportDS.Dictionary.RegisterBusinessObject(
-//        new List<AttendanceReportItemModel>(),
-//        "MemberAttendance",
-//        2,
-//        true
-//    );
-//reportDS.Dictionary.RegisterBusinessObject(
-//        new List<AttendanceReportMemberSummaryModel>(),
-//        "MemberSummaries",
-//        2,
-//        true
-//    );
-//reportDS.Dictionary.RegisterBusinessObject(
-//        new List<AttendanceReportChallengeAreaSummaryModel>(),
-//        "ChallengeSummaries",
-//        2,
-//        true
-//    );
-//reportDS.Save(@$"{directoryDS}/Reports/AttendanceSummary.frx");

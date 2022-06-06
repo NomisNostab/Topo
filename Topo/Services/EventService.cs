@@ -1,9 +1,6 @@
-﻿using FastReport;
-using Syncfusion.XlsIO;
-using System.Globalization;
+﻿using System.Globalization;
 using Topo.Images;
 using Topo.Models.Events;
-using Topo.Models.MemberList;
 
 namespace Topo.Services
 {
@@ -14,8 +11,6 @@ namespace Topo.Services
         public Task<List<EventListModel>> GetEventsForDates(DateTime fromDate, DateTime toDate);
         public Task<EventListModel> GetAttendanceForEvent(string eventId);
         public Task<AttendanceReportModel> GenerateAttendanceReportData(DateTime fromDate, DateTime toDate, string selectedCalendar);
-        public IWorkbook GenerateEventAttendanceXlsx(EventListModel eventListModel, string section, string unitName);
-        public IWorkbook GenerateSignInSheet(List<MemberListModel> memberListModel, string section, string unitName, string eventName);
     }
 
     public class EventService : IEventService
@@ -105,7 +100,10 @@ namespace Topo.Services
                 eventListModel.StartDateTime = getEventResultModel.start_datetime;
                 foreach (var attended in getEventResultModel.attendance.attendee_members)
                 {
-                    eventAttendance.Where(a => a.member_number == attended.member_number).Single().attended = true;
+                    if (eventAttendance.Any(a => a.member_number == attended.member_number))
+                    {
+                        eventAttendance.Where(a => a.member_number == attended.member_number).Single().attended = true;
+                    }
                 }
                 eventListModel.attendees = eventAttendance.ToArray();
                 return eventListModel;
@@ -128,7 +126,7 @@ namespace Topo.Services
                 programEvent.attendees = eventListModel.attendees;
                 foreach (var member in members)
                 {
-                    var attended = programEvent.attendees.Any(a => a.id == member.id);
+                    var attended = programEvent.attendees.Where(a => a.member_number == member.member_number).SingleOrDefault()?.attended ?? false;
                     attendanceReportItems.Add(new AttendanceReportItemModel
                     {
                         MemberId = member.id,
@@ -184,240 +182,6 @@ namespace Topo.Services
             return attendanceReport;
         }
 
-        public IWorkbook GenerateSignInSheet(List<MemberListModel> memberListModel, string section, string unitName, string eventName)
-        {
-            //Step 1 : Instantiate the spreadsheet creation engine.
-            ExcelEngine excelEngine = new ExcelEngine();
-            //Step 2 : Instantiate the excel application object.
-            IApplication application = excelEngine.Excel;
-            application.DefaultVersion = ExcelVersion.Excel2016;
-
-            // Creating new workbook
-            IWorkbook workbook = application.Workbooks.Create(1);
-            IWorksheet sheet = workbook.Worksheets[0];
-
-            int rowNumber = 1;
-            int columnNumber = 1;
-
-            // Add Logo
-            var directory = Directory.GetCurrentDirectory();
-            var logoName = _images.GetLogoForSection(section);
-            FileStream imageStream = new FileStream($@"{directory}/Images/{logoName}", FileMode.Open, FileAccess.Read);
-            IPictureShape logo = sheet.Pictures.AddPicture(rowNumber, 1, imageStream);
-            var aspectRatio = (double)logo.Height / logo.Width;
-            logo.Width = 100;
-            logo.Height = (int)(100 * aspectRatio);
-            sheet.SetColumnWidthInPixels(1, 100);
-
-            //Adding cell style.               
-            IStyle headingStyle = workbook.Styles.Add("headingStyle");
-            headingStyle.Font.Bold = true;
-            headingStyle.Font.Size = 14;
-            headingStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-            headingStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
-
-            // Add Group Name
-            var groupName = sheet.Range[rowNumber, 2];
-            groupName.Text = _storageService.GroupName;
-            groupName.CellStyle = headingStyle;
-            sheet.Range[rowNumber, 2, rowNumber, 7].Merge();
-            sheet.SetRowHeight(rowNumber, 30);
-
-            // Add Unit name
-            rowNumber++;
-            var unit = sheet.Range[rowNumber, 2];
-            unit.Text = unitName;
-            unit.CellStyle = headingStyle;
-            sheet.Range[rowNumber, 2, rowNumber, 7].Merge();
-            sheet.SetRowHeight(rowNumber, 40);
-
-            // Add Title
-            rowNumber++;
-            var title = sheet.Range[rowNumber, 2];
-            title.Text = eventName;
-            title.CellStyle = headingStyle;
-            sheet.Range[rowNumber, 2, rowNumber, 7].Merge();
-            sheet.SetRowHeight(rowNumber, 30);
-
-            // Add Header
-            rowNumber++;
-            sheet.Range[rowNumber, 1].Text = "Name";
-            sheet.Range[rowNumber, 2].Text = "Number";
-            sheet.Range[rowNumber, 3].Text = "Patrol";
-            sheet.Range[rowNumber, 4].Text = "Role";
-            sheet.Range[rowNumber, 5].Text = "Registered";
-            sheet.Range[rowNumber, 6].Text = "Paid";
-            sheet.Range[rowNumber, 7].Text = "Attended";
-            sheet.Range[rowNumber, 5, rowNumber, 7].CellStyle.Rotation = 90;
-            sheet.Range[rowNumber, 8].Text = "Name";
-            sheet.Range[rowNumber, 1, rowNumber, 8].CellStyle.Font.Bold = true;
-
-            foreach (var member in memberListModel.Where(m => m.isAdultLeader == 0))
-            {
-                rowNumber++;
-                sheet.Range[rowNumber, 1].Text = $"{member.first_name} {member.last_name}";
-                sheet.Range[rowNumber, 1].BorderAround();
-                sheet.Range[rowNumber, 2].Text = member.member_number;
-                sheet.Range[rowNumber, 2].BorderAround();
-                sheet.Range[rowNumber, 3].Text = member.patrol_name;
-                sheet.Range[rowNumber, 3].BorderAround();
-                sheet.Range[rowNumber, 4].Text = member.patrol_duty;
-                sheet.Range[rowNumber, 4].BorderAround();
-                sheet.Range[rowNumber, 5].Text = "";
-                sheet.Range[rowNumber, 5].BorderAround();
-                sheet.Range[rowNumber, 6].Text = "";
-                sheet.Range[rowNumber, 6].BorderAround();
-                sheet.Range[rowNumber, 7].Text = "";
-                sheet.Range[rowNumber, 7].BorderAround();
-                sheet.Range[rowNumber, 8].Text = member.first_name;
-                sheet.Range[rowNumber, 8].BorderAround();
-            }
-
-            rowNumber++;
-            // Add Header
-            rowNumber++;
-            sheet.Range[rowNumber, 1].Text = "Name";
-            sheet.Range[rowNumber, 2].Text = "Number";
-            sheet.Range[rowNumber, 3].Text = "Patrol";
-            sheet.Range[rowNumber, 4].Text = "Role";
-            sheet.Range[rowNumber, 5].Text = "Registered";
-            sheet.Range[rowNumber, 6].Text = "Paid";
-            sheet.Range[rowNumber, 7].Text = "Attended";
-            sheet.Range[rowNumber, 5, rowNumber, 7].CellStyle.Rotation = 90;
-            sheet.Range[rowNumber, 8].Text = "Name";
-            sheet.Range[rowNumber, 1, rowNumber, 8].CellStyle.Font.Bold = true;
-
-            foreach (var member in memberListModel.Where(m => m.isAdultLeader == 1))
-            {
-                rowNumber++;
-                sheet.Range[rowNumber, 1].Text = $"{member.first_name} {member.last_name}";
-                sheet.Range[rowNumber, 1].BorderAround();
-                sheet.Range[rowNumber, 2].Text = member.member_number;
-                sheet.Range[rowNumber, 2].BorderAround();
-                sheet.Range[rowNumber, 3].Text = "";
-                sheet.Range[rowNumber, 3].BorderAround();
-                sheet.Range[rowNumber, 4].Text = "";
-                sheet.Range[rowNumber, 4].BorderAround();
-                sheet.Range[rowNumber, 5].Text = "";
-                sheet.Range[rowNumber, 5].BorderAround();
-                sheet.Range[rowNumber, 6].Text = "";
-                sheet.Range[rowNumber, 6].BorderAround();
-                sheet.Range[rowNumber, 7].Text = "";
-                sheet.Range[rowNumber, 7].BorderAround();
-                sheet.Range[rowNumber, 8].Text = member.first_name;
-                sheet.Range[rowNumber, 8].BorderAround();
-            }
-
-            sheet.UsedRange.AutofitColumns();
-
-            return workbook;
-        }
-        public IWorkbook GenerateEventAttendanceXlsx(EventListModel eventListModel, string section, string unitName)
-        {
-            //Step 1 : Instantiate the spreadsheet creation engine.
-            ExcelEngine excelEngine = new ExcelEngine();
-            //Step 2 : Instantiate the excel application object.
-            IApplication application = excelEngine.Excel;
-            application.DefaultVersion = ExcelVersion.Excel2016;
-
-            // Creating new workbook
-            IWorkbook workbook = application.Workbooks.Create(1);
-            IWorksheet sheet = workbook.Worksheets[0];
-
-            int rowNumber = 1;
-            int columnNumber = 1;
-
-            // Add Logo
-            var directory = Directory.GetCurrentDirectory();
-            var logoName = _images.GetLogoForSection(section);
-            FileStream imageStream = new FileStream($@"{directory}/Images/{logoName}", FileMode.Open, FileAccess.Read);
-            IPictureShape logo = sheet.Pictures.AddPicture(rowNumber, 1, imageStream);
-            var aspectRatio = (double)logo.Height / logo.Width;
-            logo.Width = 100;
-            logo.Height = (int)(100 * aspectRatio);
-            sheet.SetColumnWidthInPixels(1, 100);
-
-            //Adding cell style.               
-            IStyle headingStyle = workbook.Styles.Add("headingStyle");
-            headingStyle.Font.Bold = true;
-            headingStyle.Font.Size = 14;
-            headingStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-            headingStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
-
-            // Add Group Name
-            var groupName = sheet.Range[rowNumber, 2];
-            groupName.Text = _storageService.GroupName;
-            groupName.CellStyle = headingStyle;
-            sheet.Range[rowNumber, 2, rowNumber, 7].Merge();
-            sheet.SetRowHeight(rowNumber, 30);
-
-            // Add Unit name
-            rowNumber++;
-            var unit = sheet.Range[rowNumber, 2];
-            unit.Text = unitName;
-            unit.CellStyle = headingStyle;
-            sheet.Range[rowNumber, 2, rowNumber, 7].Merge();
-            sheet.SetRowHeight(rowNumber, 40);
-
-            // Add Title
-            rowNumber++;
-            var title = sheet.Range[rowNumber, 2];
-            title.Text = eventListModel.EventDisplay;
-            title.CellStyle = headingStyle;
-            sheet.Range[rowNumber, 2, rowNumber, 7].Merge();
-            sheet.SetRowHeight(rowNumber, 30);
-
-            // Add Header
-            rowNumber++;
-            sheet.Range[rowNumber, 2, rowNumber, 6].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
-            sheet.Range[rowNumber, 2].Text = "First Name";
-            sheet.Range[rowNumber, 2].BorderAround();
-            sheet.Range[rowNumber, 3].Text = "Last Name";
-            sheet.Range[rowNumber, 3].BorderAround();
-            sheet.Range[rowNumber, 4].Text = "Member";
-            sheet.Range[rowNumber, 4].BorderAround();
-            sheet.Range[rowNumber, 5].Text = "Patrol";
-            sheet.Range[rowNumber, 5].BorderAround();
-            sheet.Range[rowNumber, 6].Text = "Attended";
-            sheet.Range[rowNumber, 6].BorderAround();
-
-            foreach (var attendee in eventListModel.attendees.Where(a => !a.isAdultMember).OrderBy(a => a.last_name))
-            {
-                rowNumber++;
-                sheet.Range[rowNumber, 2].Text = attendee.first_name;
-                sheet.Range[rowNumber, 2].BorderAround();
-                sheet.Range[rowNumber, 3].Text = attendee.last_name;
-                sheet.Range[rowNumber, 3].BorderAround();
-                sheet.Range[rowNumber, 4].Text = attendee.member_number;
-                sheet.Range[rowNumber, 4].BorderAround();
-                sheet.Range[rowNumber, 5].Text = attendee.patrol_name;
-                sheet.Range[rowNumber, 5].BorderAround();
-                sheet.Range[rowNumber, 6].Text = attendee.attended ? "Y" : "";
-                sheet.Range[rowNumber, 6].BorderAround();
-            }
-
-            rowNumber++;
-
-            foreach (var attendee in eventListModel.attendees.Where(a => a.isAdultMember).OrderBy(a => a.last_name))
-            {
-                rowNumber++;
-                sheet.Range[rowNumber, 2].Text = attendee.first_name;
-                sheet.Range[rowNumber, 2].BorderAround();
-                sheet.Range[rowNumber, 3].Text = attendee.last_name;
-                sheet.Range[rowNumber, 3].BorderAround();
-                sheet.Range[rowNumber, 4].Text = attendee.member_number;
-                sheet.Range[rowNumber, 4].BorderAround();
-                sheet.Range[rowNumber, 5].Text = attendee.patrol_name;
-                sheet.Range[rowNumber, 5].BorderAround();
-                sheet.Range[rowNumber, 6].Text = attendee.attended ? "Y" : "";
-                sheet.Range[rowNumber, 6].BorderAround();
-            }
-
-            sheet.UsedRange.AutofitColumns();
-
-            return workbook;
-
-        }
         private string GetUser()
         {
             var userId = "";

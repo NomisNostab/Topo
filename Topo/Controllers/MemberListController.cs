@@ -1,13 +1,10 @@
-﻿using FastReport;
-using FastReport.Export.PdfSimple;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Topo.Services;
-using Topo.Models.MemberList;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Syncfusion.Pdf;
 using Syncfusion.XlsIO;
 using Syncfusion.XlsIORenderer;
-using Syncfusion.Pdf;
+using Topo.Models.MemberList;
+using Topo.Services;
 
 namespace Topo.Controllers
 {
@@ -15,15 +12,13 @@ namespace Topo.Controllers
     {
         private readonly StorageService _storageService;
         private readonly IMemberListService _memberListService;
-        private enum OutputType
-        {
-            pdf,
-            xlsx
-        }
-        public MemberListController(StorageService storageService, IMemberListService memberListService)
+        private readonly IReportService _reportService;
+
+        public MemberListController(StorageService storageService, IMemberListService memberListService, IReportService reportService)
         {
             _storageService = storageService;
             _memberListService = memberListService;
+            _reportService = reportService;
         }
 
         private void SetViewBag()
@@ -72,17 +67,17 @@ namespace Topo.Controllers
                     switch (button)
                     {
                         case "PatrolListPdf":
-                            return await GeneratePatrolReport(memberListViewModel.IncludeLeaders, OutputType.pdf);
+                            return await GeneratePatrolReport(memberListViewModel.IncludeLeaders, Topo.Constants.OutputType.pdf);
                         case "PatrolListXlsx":
-                            return await GeneratePatrolReport(memberListViewModel.IncludeLeaders, OutputType.xlsx);
+                            return await GeneratePatrolReport(memberListViewModel.IncludeLeaders, Topo.Constants.OutputType.xlsx);
                         case "PatrolSheetPdf":
-                            return await GeneratePatrolSheets(OutputType.pdf);
+                            return await GeneratePatrolSheets(Topo.Constants.OutputType.pdf);
                         case "PatrolSheetXlsx":
-                            return await GeneratePatrolSheets(OutputType.xlsx);
+                            return await GeneratePatrolSheets(Topo.Constants.OutputType.xlsx);
                         case "MemberListXlsx":
-                            return await GenerateMemberList(OutputType.xlsx);
+                            return await GenerateMemberList(Topo.Constants.OutputType.xlsx);
                         case "MemberListPdf":
-                            return await GenerateMemberList(OutputType.pdf);
+                            return await GenerateMemberList(Topo.Constants.OutputType.pdf);
                     }
                 }
             }
@@ -93,7 +88,7 @@ namespace Topo.Controllers
             return View(model);
         }
 
-        private async Task<ActionResult> GeneratePatrolReport(bool includeLeaders, OutputType outputType)
+        private async Task<ActionResult> GeneratePatrolReport(bool includeLeaders, Topo.Constants.OutputType outputType)
         {
             var model = await _memberListService.GetMembersAsync();
             var reportDownloadName = "Patrol_List";
@@ -108,12 +103,12 @@ namespace Topo.Controllers
                 sortedPatrolList = model.OrderBy(m => m.patrol_name).ToList();
             else
                 sortedPatrolList = model.Where(m => m.isAdultLeader == 0).OrderBy(m => m.patrol_name).ToList();
-            var workbook = _memberListService.GeneratePatrolList(sortedPatrolList, section, unitName, includeLeaders);
+            var workbook = _reportService.GeneratePatrolListWorkbook(sortedPatrolList, groupName, section, unitName, includeLeaders);
 
             MemoryStream strm = new MemoryStream();
             workbook.Version = ExcelVersion.Excel2016;
 
-            if (outputType == OutputType.pdf)
+            if (outputType == Topo.Constants.OutputType.pdf)
             {
                 //Stream as Excel file
                 var sheet = workbook.Worksheets[0];
@@ -130,7 +125,7 @@ namespace Topo.Controllers
                 // return stream in browser
                 return File(strm.ToArray(), "application/pdf", $"{reportDownloadName}_{unitName.Replace(' ', '_')}.pdf");
             }
-            if (outputType == OutputType.xlsx)
+            if (outputType == Topo.Constants.OutputType.xlsx)
             {
                 //Stream as Excel file
                 workbook.SaveAs(strm);
@@ -143,7 +138,7 @@ namespace Topo.Controllers
             return View(viewModel);
         }
 
-        private async Task<ActionResult> GenerateMemberList(OutputType outputType)
+        private async Task<ActionResult> GenerateMemberList(Topo.Constants.OutputType outputType)
         {
             var model = await _memberListService.GetMembersAsync();
             var groupName = _storageService.GroupName;
@@ -153,12 +148,12 @@ namespace Topo.Controllers
                 throw new IndexOutOfRangeException($"No unit found with name {unitName}. You may not have permissions to this section");
             var section = unit.unit.section;
             var sortedMemberList = model.Where(m => m.isAdultLeader == 0).OrderBy(m => m.first_name).ThenBy(m => m.last_name).ToList();
-            var workbook = _memberListService.GenerateMemberList(sortedMemberList, section, unitName);
+            var workbook = _reportService.GenerateMemberListWorkbook(sortedMemberList, groupName, section, unitName);
 
             MemoryStream strm = new MemoryStream();
             workbook.Version = ExcelVersion.Excel2016;
 
-            if (outputType == OutputType.pdf)
+            if (outputType == Topo.Constants.OutputType.pdf)
             {
                 //Stream as Excel file
                 var sheet = workbook.Worksheets[0];
@@ -176,7 +171,7 @@ namespace Topo.Controllers
                 return File(strm.ToArray(), "application/pdf", $"Members_{unitName.Replace(' ', '_')}.pdf");
             }
 
-            if (outputType == OutputType.xlsx)
+            if (outputType == Topo.Constants.OutputType.xlsx)
             {
                 //Stream as Excel file
                 workbook.SaveAs(strm);
@@ -190,7 +185,7 @@ namespace Topo.Controllers
 
         }
 
-        private async Task<ActionResult> GeneratePatrolSheets(OutputType outputType)
+        private async Task<ActionResult> GeneratePatrolSheets(Topo.Constants.OutputType outputType)
         {
             var model = await _memberListService.GetMembersAsync();
             var reportDownloadName = "Patrol_Sheets";
@@ -202,12 +197,12 @@ namespace Topo.Controllers
             var section = unit.unit.section;
             var sortedPatrolList = new List<MemberListModel>();
             sortedPatrolList = model.Where(m => m.isAdultLeader == 0).OrderBy(m => m.patrol_name).ToList();
-            var workbook = _memberListService.GeneratePatrolSheets(sortedPatrolList, section, unitName);
+            var workbook = _reportService.GeneratePatrolSheetsWorkbook(sortedPatrolList, section);
 
             MemoryStream strm = new MemoryStream();
             workbook.Version = ExcelVersion.Excel2016;
 
-            if (outputType == OutputType.pdf)
+            if (outputType == Topo.Constants.OutputType.pdf)
             {
                 //Stream as Excel file
                 var sheet = workbook.Worksheets[0];
@@ -225,7 +220,7 @@ namespace Topo.Controllers
                 return File(strm.ToArray(), "application/pdf", $"{reportDownloadName}_{unitName.Replace(' ', '_')}.pdf");
             }
 
-            if (outputType == OutputType.xlsx)
+            if (outputType == Topo.Constants.OutputType.xlsx)
             {
                 //Stream as Excel file
                 workbook.SaveAs(strm);
