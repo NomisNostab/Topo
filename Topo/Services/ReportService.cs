@@ -3,6 +3,7 @@ using Topo.Images;
 using Topo.Models.AditionalAwards;
 using Topo.Models.Events;
 using Topo.Models.MemberList;
+using Topo.Models.OAS;
 
 namespace Topo.Services
 {
@@ -15,6 +16,7 @@ namespace Topo.Services
         public IWorkbook GenerateSignInSheetWorkbook(List<MemberListModel> memberListModel, string groupName, string section, string unitName, string eventName);
         public IWorkbook GenerateEventAttendanceWorkbook(EventListModel eventListModel, string groupName, string section, string unitName);
         public IWorkbook GenerateAttendanceReportWorkbook(AttendanceReportModel attendanceReportData, string groupName, string section, string unitName, DateTime fromDate, DateTime toDate, bool forPdfOutput);
+        public IWorkbook GenerateOASWorksheetWorkbook(List<OASWorksheetAnswers> worksheetAnswers, string groupName, string section, string unitName, string templateTitle, bool forPdfOutput);
     }
     public class ReportService : IReportService
     {
@@ -688,7 +690,6 @@ namespace Topo.Services
 
 
             // Add youth member rows
-            var charA = (int)'A';
             var sumStartRow = rowNumber + 1;
             foreach (var groupedAttendance in groupedAttendances)
             {
@@ -704,9 +705,9 @@ namespace Topo.Services
                     sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 }
                 // Row total
-                var lastColumn = (char)(charA + columnNumber - 1);
+                var sumRange = sheet.Range[rowNumber, 2, rowNumber, columnNumber].AddressLocal;
                 columnNumber++;
-                sheet.Range[rowNumber, columnNumber].Formula = $"=SUM(B{rowNumber}:{lastColumn}{rowNumber})";
+                sheet.Range[rowNumber, columnNumber].Formula = $"=SUM({sumRange})";
                 sheet.Range[rowNumber, columnNumber].BorderAround();
                 sheet.Range[rowNumber, columnNumber].CellStyle.Font.Bold = true;
                 sheet.Range[rowNumber, columnNumber].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
@@ -721,8 +722,8 @@ namespace Topo.Services
             sheet.Range[rowNumber, 1].BorderAround();
             for (int i = 2; i <= columnNumber; i++)
             {
-                char columnName = (char) (charA + i - 1);
-                sheet.Range[rowNumber, i].Formula = $"=SUM({columnName}{sumStartRow}:{columnName}{sumEndRow})";
+                var sumRange = sheet.Range[sumStartRow, i, sumEndRow, i].AddressLocal;
+                sheet.Range[rowNumber, i].Formula = $"=SUM({sumRange})";
                 sheet.Range[rowNumber, i].BorderAround();
                 sheet.Range[rowNumber, i].CellStyle.Font.Bold = true;
                 sheet.Range[rowNumber, i].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
@@ -748,9 +749,9 @@ namespace Topo.Services
                     sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 }
                 // Row total
-                var lastColumn = (char)(charA + columnNumber - 1);
+                var sumRange = sheet.Range[rowNumber, 2, rowNumber, columnNumber].AddressLocal;
                 columnNumber++;
-                sheet.Range[rowNumber, columnNumber].Formula = $"=SUM(B{rowNumber}:{lastColumn}{rowNumber})";
+                sheet.Range[rowNumber, columnNumber].Formula = $"=SUM({sumRange})";
                 sheet.Range[rowNumber, columnNumber].BorderAround();
                 sheet.Range[rowNumber, columnNumber].CellStyle.Font.Bold = true;
                 sheet.Range[rowNumber, columnNumber].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
@@ -765,8 +766,8 @@ namespace Topo.Services
             sheet.Range[rowNumber, 1].BorderAround();
             for (int i = 2; i <= columnNumber; i++)
             {
-                char columnName = (char)(charA + i - 1);
-                sheet.Range[rowNumber, i].Formula = $"=SUM({columnName}{sumStartRow}:{columnName}{sumEndRow})";
+                var sumRange = sheet.Range[sumStartRow, i, sumEndRow, i].AddressLocal;
+                sheet.Range[rowNumber, i].Formula = $"=SUM({sumRange})";
                 sheet.Range[rowNumber, i].BorderAround();
                 sheet.Range[rowNumber, i].CellStyle.Font.Bold = true;
                 sheet.Range[rowNumber, i].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
@@ -779,8 +780,9 @@ namespace Topo.Services
             sheet.Range[rowNumber, 1].BorderAround();
             for (int i = 2; i <= columnNumber; i++)
             {
-                char columnName = (char)(charA + i - 1);
-                sheet.Range[rowNumber, i].Formula = $"={columnName}{youthTotalRow}+{columnName}{adultTotalRow}";
+                var youthTotalCell = sheet.Range[youthTotalRow, i].AddressLocal;
+                var adultTotalCell = sheet.Range[adultTotalRow, i].AddressLocal;
+                sheet.Range[rowNumber, i].Formula = $"={youthTotalCell}+{adultTotalCell}";
                 sheet.Range[rowNumber, i].BorderAround();
                 sheet.Range[rowNumber, i].CellStyle.Font.Bold = true;
                 sheet.Range[rowNumber, i].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
@@ -803,6 +805,112 @@ namespace Topo.Services
 
             return workbook;
         }
+
+        public IWorkbook GenerateOASWorksheetWorkbook(List<OASWorksheetAnswers> worksheetAnswers, string groupName, string section, string unitName, string templateTitle, bool forPdfOutput)
+        {
+            var workbook = CreateWorkbookWithLogo(groupName, section, 10);
+            IWorksheet sheet = workbook.Worksheets[0];
+            int rowNumber = 1;
+            int columnNumber = 1;
+
+            IStyle headingStyle = workbook.Styles["headingStyle"];
+
+            // Add Unit name
+            rowNumber++;
+            var unit = sheet.Range[rowNumber, 2];
+            unit.Text = unitName;
+            unit.CellStyle = headingStyle;
+            sheet.Range[rowNumber, 2, rowNumber, 10].Merge();
+            sheet.SetRowHeight(rowNumber, 25);
+
+            // Add Title
+            rowNumber++;
+            var title = sheet.Range[rowNumber, 2];
+            title.Text = $"{templateTitle} as at {DateTime.Now.ToShortDateString()}";
+            title.CellStyle = headingStyle;
+            sheet.Range[rowNumber, 2, rowNumber, 10].Merge();
+            sheet.SetRowHeight(rowNumber, 25);
+
+            rowNumber++;
+            var pdrText = "";
+            int pdrStartCol = 99;
+            var groupedAnswers = worksheetAnswers.GroupBy(x => x.MemberName).ToList();
+            foreach (var plan in groupedAnswers.FirstOrDefault().OrderBy(ga => ga.InputTitleSortIndex).ThenBy(ga => ga.InputSortIndex).ToList())
+            {
+                // Plan Do Review
+                columnNumber++;
+                if (pdrText != plan.InputTitle)
+                {
+                    pdrText = plan.InputTitle;
+                    sheet.Range[rowNumber, columnNumber].Text = plan.InputTitle;
+                    sheet.Range[rowNumber, columnNumber].CellStyle.ColorIndex = GetInputTitleColour(plan.InputTitle);
+                    sheet.Range[rowNumber, columnNumber].BorderAround();
+                    sheet.Range[rowNumber, columnNumber].CellStyle.Font.Bold = true;
+                    sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                    if (pdrStartCol > columnNumber)
+                        pdrStartCol = columnNumber;
+                    else
+                    {
+                        sheet.Range[rowNumber, pdrStartCol, rowNumber, columnNumber - 1].Merge();
+                        sheet.Range[rowNumber, pdrStartCol, rowNumber, columnNumber - 1].BorderAround();
+                        pdrStartCol = columnNumber;
+                    }
+                }
+
+                // iStatement
+                sheet.Range[rowNumber + 1, columnNumber].Text = plan.InputLabel;
+                sheet.Range[rowNumber + 1, columnNumber].BorderAround();
+                sheet.Range[rowNumber + 1, columnNumber].CellStyle.Font.Bold = true;
+                if (forPdfOutput)
+                {
+                    sheet.Range[rowNumber + 1, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                    sheet.Range[rowNumber + 1, columnNumber].CellStyle.Rotation = 90;
+                    sheet.Range[rowNumber + 1, columnNumber].CellStyle.WrapText = true; 
+                    sheet.SetRowHeight(rowNumber + 1, 200);
+                }
+                sheet.SetColumnWidth(columnNumber, 10);
+            }
+
+            // Member Name and answers
+            rowNumber++;
+            rowNumber++;
+            columnNumber = 0;
+            foreach (var groupedAnswer in groupedAnswers.OrderBy(ga => ga.Key))
+            {
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].Text = groupedAnswer.Key;
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                sheet.Range[rowNumber, columnNumber].CellStyle.Font.Bold = true;
+
+                foreach(var answer in groupedAnswer.OrderBy(ga => ga.InputTitleSortIndex).ThenBy(ga => ga.InputSortIndex))
+                {
+                    columnNumber++;
+                    if (answer.MemberAnswer.HasValue)
+                    {
+                        sheet.Range[rowNumber, columnNumber].DateTime = answer.MemberAnswer.Value;
+                        sheet.Range[rowNumber, columnNumber].CellStyle.ColorIndex = ExcelKnownColors.Sea_green;
+                    }
+                    sheet.Range[rowNumber, columnNumber].BorderAround();
+                }
+                rowNumber++;
+                columnNumber = 0;
+            }
+
+            sheet.Range[1, 1, rowNumber, 1].AutofitColumns();
+
+            sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA3;
+            sheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
+            sheet.PageSetup.BottomMargin = 0.25;
+            sheet.PageSetup.TopMargin = 0.25;
+            sheet.PageSetup.LeftMargin = 0.25;
+            sheet.PageSetup.RightMargin = 0.25;
+            sheet.PageSetup.HeaderMargin = 0;
+            sheet.PageSetup.FooterMargin = 0;
+            sheet.PageSetup.IsFitToPage = true;
+
+            return workbook;
+        }
+
         private int UnitMaxAge(string unit)
         {
             switch (unit)
@@ -836,7 +944,23 @@ namespace Topo.Services
                 default:
                     return ExcelKnownColors.None;
             }
+        }
 
+        private ExcelKnownColors GetInputTitleColour(string inputTitle)
+        {
+            switch (inputTitle)
+            {
+                case "Plan":
+                    return ExcelKnownColors.Pale_blue;
+                case "Do":
+                    return ExcelKnownColors.Sky_blue;
+                case "Review":
+                    return ExcelKnownColors.Light_blue;
+                case "Verify":
+                    return ExcelKnownColors.Blue_grey;
+                default:
+                    return ExcelKnownColors.None;
+            }
         }
     }
 }
