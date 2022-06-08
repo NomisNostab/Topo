@@ -161,8 +161,9 @@ namespace Topo.Services
             foreach (var patrol in groupedMembersList)
             {
                 // Add Patrol Name
+                var patrolName = string.IsNullOrEmpty(patrol.Key) ? "Unassigned" : patrol.Key;
                 rowNumber++;
-                sheet.Range[rowNumber, 1].Text = patrol.Key;
+                sheet.Range[rowNumber, 1].Text = $"{patrolName} ({patrol.Count()})";
                 sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
                 sheet.Range[rowNumber, 1].CellStyle.Font.Size = 14;
                 sheet.Range[rowNumber, 1].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
