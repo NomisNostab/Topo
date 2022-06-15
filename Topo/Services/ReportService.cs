@@ -4,6 +4,7 @@ using Topo.Models.AditionalAwards;
 using Topo.Models.Events;
 using Topo.Models.MemberList;
 using Topo.Models.OAS;
+using Topo.Models.SIA;
 
 namespace Topo.Services
 {
@@ -17,6 +18,7 @@ namespace Topo.Services
         public IWorkbook GenerateEventAttendanceWorkbook(EventListModel eventListModel, string groupName, string section, string unitName);
         public IWorkbook GenerateAttendanceReportWorkbook(AttendanceReportModel attendanceReportData, string groupName, string section, string unitName, DateTime fromDate, DateTime toDate, bool forPdfOutput);
         public IWorkbook GenerateOASWorksheetWorkbook(List<OASWorksheetAnswers> worksheetAnswers, string groupName, string section, string unitName, string templateTitle, bool forPdfOutput);
+        public IWorkbook GenerateSIAWorkbook(List<SIAProjectListModel> siaProjects, string groupName, string section, string unitName, bool forPdfOutput);
     }
     public class ReportService : IReportService
     {
@@ -901,6 +903,68 @@ namespace Topo.Services
 
             sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA3;
             sheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
+            sheet.PageSetup.BottomMargin = 0.25;
+            sheet.PageSetup.TopMargin = 0.25;
+            sheet.PageSetup.LeftMargin = 0.25;
+            sheet.PageSetup.RightMargin = 0.25;
+            sheet.PageSetup.HeaderMargin = 0;
+            sheet.PageSetup.FooterMargin = 0;
+            sheet.PageSetup.IsFitToPage = true;
+
+            return workbook;
+        }
+
+        public IWorkbook GenerateSIAWorkbook(List<SIAProjectListModel> siaProjects, string groupName, string section, string unitName, bool forPdfOutput)
+        {
+            var workbook = CreateWorkbookWithLogo(groupName, section, 6);
+            IWorksheet sheet = workbook.Worksheets[0];
+            int rowNumber = 1;
+
+            IStyle headingStyle = workbook.Styles["headingStyle"];
+
+            // Add Unit name
+            rowNumber++;
+            var unit = sheet.Range[rowNumber, 2];
+            unit.Text = unitName;
+            unit.CellStyle = headingStyle;
+            sheet.Range[rowNumber, 2, rowNumber, 6].Merge();
+            sheet.SetRowHeight(rowNumber, 40);
+
+            // Add Title
+            rowNumber++;
+            var title = sheet.Range[rowNumber, 2];
+            title.Text = $"SIA Project List as at {DateTime.Now.ToShortDateString()}";
+            title.CellStyle = headingStyle;
+            sheet.Range[rowNumber, 2, rowNumber, 6].Merge();
+            sheet.SetRowHeight(rowNumber, 30);
+
+            foreach (var memberSiaProject in siaProjects.GroupBy(sp => sp.memberName))
+            {
+                rowNumber++;
+                sheet.Range[rowNumber, 1].Text = memberSiaProject.Key;
+                sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+                sheet.Range[rowNumber, 1].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+                sheet.Range[rowNumber, 1, rowNumber, 2].Merge();
+                sheet.SetRowHeight(rowNumber, 20);
+                foreach (var siaProject in memberSiaProject)
+                {
+                    rowNumber++;
+                    sheet.Range[rowNumber, 2].Text = siaProject.area;
+                    sheet.Range[rowNumber, 3].Text = siaProject.projectName;
+                    sheet.Range[rowNumber, 3].CellStyle.WrapText = true;
+                    sheet.Range[rowNumber, 4].Text = siaProject.status;
+                    sheet.Range[rowNumber, 5].DateTime = siaProject.statusUpdated;
+                }
+            }
+
+            sheet.SetColumnWidth(1, 10);
+            sheet.SetColumnWidth(2, 21);
+            sheet.SetColumnWidth(3, 65);
+            sheet.SetColumnWidth(4, 20);
+            sheet.SetColumnWidth(5, 15);
+
+            sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
+            sheet.PageSetup.Orientation = ExcelPageOrientation.Portrait;
             sheet.PageSetup.BottomMargin = 0.25;
             sheet.PageSetup.TopMargin = 0.25;
             sheet.PageSetup.LeftMargin = 0.25;
