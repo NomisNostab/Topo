@@ -28,10 +28,7 @@ namespace Topo.Services
         {
             var groupName = _storageService.GroupName;
             var unitName = _storageService.SelectedUnitName ?? "";
-            var unit = _storageService.GetProfilesResult.profiles.FirstOrDefault(u => u.unit.name == unitName);
-            if (unit == null)
-                throw new IndexOutOfRangeException($"No unit found with name {unitName}. You may not have permissions to this section");
-            var section = unit.unit.section;
+            var section = _storageService.SeclectedSection;
             var awardSpecificationsList = _storageService.AdditionalAwardSpecifications;
             if (awardSpecificationsList == null || awardSpecificationsList.Count == 0)
             {

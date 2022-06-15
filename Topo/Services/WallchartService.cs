@@ -45,10 +45,7 @@ namespace Topo.Services
             if (cachedWallchartItems != null)
                 return cachedWallchartItems;
 
-            var unit = _storageService.GetProfilesResult.profiles.FirstOrDefault(u => u.unit.id == selectedUnitId);
-            if (unit == null)
-                throw new IndexOutOfRangeException($"No unit found. You may not have permissions to this section");
-            var section = unit.unit.section;
+            var section = _storageService.SeclectedSection;
 
             var wallchartItems = new List<WallchartItemModel>();
             var getGroupLifeResultModel = await _terrainAPIService.GetGroupLifeForUnit(selectedUnitId);

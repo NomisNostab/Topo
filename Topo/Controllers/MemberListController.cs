@@ -191,10 +191,7 @@ namespace Topo.Controllers
             var reportDownloadName = "Patrol_Sheets";
             var groupName = _storageService.GroupName;
             var unitName = _storageService.SelectedUnitName ?? "";
-            var unit = _storageService.GetProfilesResult.profiles.FirstOrDefault(u => u.unit.name == unitName);
-            if (unit == null)
-                throw new IndexOutOfRangeException($"No unit found with name {unitName}. You may not have permissions to this section");
-            var section = unit.unit.section;
+            var section = _storageService.SeclectedSection;
             var sortedPatrolList = new List<MemberListModel>();
             sortedPatrolList = model.Where(m => m.isAdultLeader == 0).OrderBy(m => m.patrol_name).ToList();
             var workbook = _reportService.GeneratePatrolSheetsWorkbook(sortedPatrolList, section);

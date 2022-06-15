@@ -29,6 +29,16 @@ namespace Topo.Services
         public List<AdditionalAwardSpecificationListModel> AdditionalAwardSpecifications { get; set; } = new List<AdditionalAwardSpecificationListModel>();
         public List<OASTemplate> OASTemplates { get; set; } = new List<OASTemplate>();
         public string ClientId { get; set; } = string.Empty;
+        public string SeclectedSection
+        {
+            get
+            {
+                var unit = GetProfilesResult.profiles.FirstOrDefault(u => u.unit.name == SelectedUnitName);
+                if (unit == null)
+                    throw new IndexOutOfRangeException($"No unit found with name {SelectedUnitName}. You may not have permissions to this section");
+                return unit.unit.section;
+            }
+        }
         public void ClearStorage()
         {
             IsAuthenticated = false;
