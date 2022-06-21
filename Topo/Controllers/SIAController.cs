@@ -138,7 +138,6 @@ namespace Topo.Controllers
                         else
                         {
                             //Stream as Excel file
-                            var sheet = workbook.Worksheets[0];
 
                             //Initialize XlsIO renderer.
                             XlsIORenderer renderer = new XlsIORenderer();

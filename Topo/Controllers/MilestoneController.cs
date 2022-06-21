@@ -1,6 +1,8 @@
 ﻿using FastReport.Export.PdfSimple;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Syncfusion.Pdf;
+using Syncfusion.XlsIORenderer;
 using System.Reflection;
 using System.Text;
 using Topo.Models.Milestone;
@@ -13,12 +15,14 @@ namespace Topo.Controllers
         private readonly StorageService _storageService;
         private readonly IMemberListService _memberListService;
         private readonly IMilestoneService _milestoneService;
+        private readonly IReportService _reportService;
 
-        public MilestoneController(StorageService storageService, IMemberListService memberListService, IMilestoneService milestoneService)
+        public MilestoneController(StorageService storageService, IMemberListService memberListService, IMilestoneService milestoneService, IReportService reportService)
         {
             _storageService = storageService;
             _memberListService = memberListService;
             _milestoneService = milestoneService;
+            _reportService = reportService;
         }
 
         private void SetViewBag()
@@ -94,31 +98,50 @@ namespace Topo.Controllers
             }
         }
 
-        public async Task<ActionResult> MilestoneCSV(string selectedUnitId)
+        public async Task<ActionResult> MilestonePdf(string selectedUnitId)
+        {
+            return await MilestoneWorkbook(selectedUnitId, Constants.OutputType.pdf);
+        }
+
+        public async Task<ActionResult> MilestoneXlsx(string selectedUnitId)
+        {
+            return await MilestoneWorkbook(selectedUnitId, Constants.OutputType.xlsx);
+        }
+
+        public async Task<ActionResult> MilestoneWorkbook(string selectedUnitId, Constants.OutputType outputType)
         {
             var groupName = _storageService.GroupName;
             var unitName = _storageService.SelectedUnitName ?? "";
+            var section = _storageService.SeclectedSection;
 
             var milestoneSummaries = await _milestoneService.GetMilestoneSummaries(selectedUnitId);
 
-            MemoryStream ms = new MemoryStream();
-            // Encoding.UTF8 produces stream with BOM, new UTF8Encoding(false) - without BOM
-            using (StreamWriter sw = new StreamWriter(ms, new UTF8Encoding(false), 8192, true))
-            {
-                sw.WriteLine(groupName);
-                sw.WriteLine(unitName);
-                sw.WriteLine("Milestones");
-                sw.WriteLine();
-                PropertyInfo[] properties = typeof(MilestoneSummaryListModel).GetProperties();
-                sw.WriteLine(string.Join(",", properties.Select(x => x.Name)));
+            var workbook = _reportService.GenerateMilestoneWorkbook(milestoneSummaries, groupName, section, unitName, true);
 
-                foreach (var member in milestoneSummaries.OrderBy(m => m.currentLevel).ThenBy(m => m.memberName))
-                {
-                    sw.WriteLine(string.Join(",", properties.Select(prop => prop.GetValue(member))));
-                }
+            MemoryStream strm = new MemoryStream();
+            if (outputType == Constants.OutputType.xlsx)
+            {
+                //Stream as Excel file
+                workbook.SaveAs(strm);
+
+                // return stream in browser
+                return File(strm.ToArray(), "application/vnd.ms-excel", $"Milestone_Report_{unitName.Replace(' ', '_')}.xlsx");
             }
-            ms.Position = 0;
-            return File(ms, "application/vnd.ms-excel", $"Milestone_Report_{unitName.Replace(' ', '_')}.csv");
+            else
+            {
+                //Stream as Excel file
+
+                //Initialize XlsIO renderer.
+                XlsIORenderer renderer = new XlsIORenderer();
+
+                //Convert Excel document into PDF document 
+                PdfDocument pdfDocument = renderer.ConvertToPDF(workbook);
+                pdfDocument.Save(strm);
+
+                // return stream in browser
+                return File(strm.ToArray(), "application/pdf", $"Milestone_Report_{unitName.Replace(' ', '_')}.pdf");
+            }
+
         }
 
     }

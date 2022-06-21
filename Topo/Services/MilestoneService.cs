@@ -60,7 +60,7 @@ namespace Topo.Services
                     new MilestoneSummaryListModel
                     {
                         memberName = result.name,
-                        currentLevel = $"Milestone {result.milestone.milestone}",
+                        currentLevel = result.milestone.milestone,
                         percentComplete = CalculateMilestonePercentComplete(result.milestone),
                         milestone1ParticipateCommunity = milestone1Skipped ? -1 : (milestone1Awarded ? 6 : milestone1?.participates.Where(p => p.challenge_area == "community").FirstOrDefault()?.total ?? 0),
                         milestone1ParticipateOutdoors = milestone1Skipped ? -1 : (milestone1Awarded ? 6 : milestone1?.participates.Where(p => p.challenge_area == "outdoors").FirstOrDefault()?.total ?? 0),

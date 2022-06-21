@@ -3,7 +3,7 @@
     public class MilestoneSummaryListModel
     {
         public string memberName { get; set; } = string.Empty;
-        public string currentLevel { get; set; } = string.Empty;
+        public int currentLevel { get; set; }
         public int percentComplete { get; set; }
         public int milestone1ParticipateCommunity { get; set; }
         public int milestone1ParticipateOutdoors { get; set; }
