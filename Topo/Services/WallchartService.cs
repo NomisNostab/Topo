@@ -45,7 +45,7 @@ namespace Topo.Services
             if (cachedWallchartItems != null)
                 return cachedWallchartItems;
 
-            var section = _storageService.SeclectedSection;
+            var section = _storageService.SelectedSection;
 
             var wallchartItems = new List<WallchartItemModel>();
             var getGroupLifeResultModel = await _terrainAPIService.GetGroupLifeForUnit(selectedUnitId);

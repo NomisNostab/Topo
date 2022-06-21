@@ -111,7 +111,7 @@ namespace Topo.Controllers
 
             var groupName = _storageService.GroupName;
             var unitName = _storageService.SelectedUnitName ?? "";
-            var section = _storageService.SeclectedSection;
+            var section = _storageService.SelectedSection;
 
             var workbook = _reportService.GenerateOASWorksheetWorkbook(sortedAnswers, groupName, section, unitName, templateTitle, outputType == Constants.OutputType.pdf);
 

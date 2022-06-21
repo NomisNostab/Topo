@@ -112,7 +112,7 @@ namespace Topo.Controllers
         {
             var groupName = _storageService.GroupName;
             var unitName = _storageService.SelectedUnitName ?? "";
-            var section = _storageService.SeclectedSection;
+            var section = _storageService.SelectedSection;
 
             var milestoneSummaries = await _milestoneService.GetMilestoneSummaries(selectedUnitId);
 

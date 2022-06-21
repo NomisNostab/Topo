@@ -140,7 +140,7 @@ namespace Topo.Controllers
 
             var groupName = _storageService.GroupName;
             var unitName = _storageService.SelectedUnitName ?? "";
-            var section = _storageService.SeclectedSection;
+            var section = _storageService.SelectedSection;
 
             var workbook = _reportService.GenerateAttendanceReportWorkbook(attendanceReportData, groupName, section, unitName, fromDate, toDate, outputType == Constants.OutputType.pdf);
 

@@ -29,7 +29,7 @@ namespace Topo.Services
         public List<AdditionalAwardSpecificationListModel> AdditionalAwardSpecifications { get; set; } = new List<AdditionalAwardSpecificationListModel>();
         public List<OASTemplate> OASTemplates { get; set; } = new List<OASTemplate>();
         public string ClientId { get; set; } = string.Empty;
-        public string SeclectedSection
+        public string SelectedSection
         {
             get
             {

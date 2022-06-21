@@ -28,7 +28,7 @@ namespace Topo.Services
         {
             var groupName = _storageService.GroupName;
             var unitName = _storageService.SelectedUnitName ?? "";
-            var section = _storageService.SeclectedSection;
+            var section = _storageService.SelectedSection;
             var awardSpecificationsList = _storageService.AdditionalAwardSpecifications;
             if (awardSpecificationsList == null || awardSpecificationsList.Count == 0)
             {

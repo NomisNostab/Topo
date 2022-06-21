@@ -67,6 +67,7 @@ namespace Topo.Services
 
             var groupName = _storageService.GroupName;
             var unitName = _storageService.SelectedUnitName ?? "";
+            var section = _storageService.SelectedSection;
             var report = new Report();
             var directory = Directory.GetCurrentDirectory();
             report.Load(@$"{directory}/Reports/Logbook.frx");

@@ -191,7 +191,7 @@ namespace Topo.Controllers
             var reportDownloadName = "Patrol_Sheets";
             var groupName = _storageService.GroupName;
             var unitName = _storageService.SelectedUnitName ?? "";
-            var section = _storageService.SeclectedSection;
+            var section = _storageService.SelectedSection;
             var sortedPatrolList = new List<MemberListModel>();
             sortedPatrolList = model.Where(m => m.isAdultLeader == 0).OrderBy(m => m.patrol_name).ToList();
             var workbook = _reportService.GeneratePatrolSheetsWorkbook(sortedPatrolList, section);
