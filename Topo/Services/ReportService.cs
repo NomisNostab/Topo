@@ -3,6 +3,7 @@ using Syncfusion.XlsIO;
 using Topo.Images;
 using Topo.Models.AditionalAwards;
 using Topo.Models.Events;
+using Topo.Models.Logbook;
 using Topo.Models.MemberList;
 using Topo.Models.Milestone;
 using Topo.Models.OAS;
@@ -22,6 +23,7 @@ namespace Topo.Services
         public IWorkbook GenerateOASWorksheetWorkbook(List<OASWorksheetAnswers> worksheetAnswers, string groupName, string section, string unitName, string templateTitle, bool forPdfOutput);
         public IWorkbook GenerateSIAWorkbook(List<SIAProjectListModel> siaProjects, string groupName, string section, string unitName, bool forPdfOutput);
         public IWorkbook GenerateMilestoneWorkbook(List<MilestoneSummaryListModel> milestoneSummaries, string groupName, string section, string unitName, bool forPdfOutput);
+        public IWorkbook GenerateLogbookWorkbook(List<MemberLogbookReportViewModel> logbookEntries, string groupName, string section, string unitName, bool forPdfOutput);
     }
     public class ReportService : IReportService
     {
@@ -1211,6 +1213,78 @@ namespace Topo.Services
             sheet.PageSetup.IsFitToPage = true;
 
             return workbook;
+        }
+
+        public IWorkbook GenerateLogbookWorkbook(List<MemberLogbookReportViewModel> logbookEntries, string groupName, string section, string unitName, bool forPdfOutput)
+        {
+            var workbook = CreateWorkbookWithLogo(groupName, section, 8);
+            IWorksheet sheet = workbook.Worksheets[0];
+            int rowNumber = 1;
+
+            IStyle headingStyle = workbook.Styles["headingStyle"];
+
+            // Add Unit name
+            rowNumber++;
+            var unit = sheet.Range[rowNumber, 2];
+            unit.Text = unitName;
+            unit.CellStyle = headingStyle;
+            sheet.Range[rowNumber, 2, rowNumber, 8].Merge();
+            sheet.SetRowHeight(rowNumber, 40);
+
+            // Add Title
+            rowNumber++;
+            var title = sheet.Range[rowNumber, 2];
+            title.Text = $"Logbook entries as at {DateTime.Now.ToShortDateString()}";
+            title.CellStyle = headingStyle;
+            sheet.Range[rowNumber, 2, rowNumber, 8].Merge();
+            sheet.SetRowHeight(rowNumber, 30);
+
+            foreach (var logbookGroupEntry in logbookEntries.GroupBy(lb => lb.MemberName).OrderBy(lb => lb.Key))
+            {
+                rowNumber++;
+                sheet.Range[rowNumber, 1].Text = logbookGroupEntry.Key;
+                sheet.Range[rowNumber, 1, rowNumber, 2].Merge();
+                sheet.Range[rowNumber, 3].Text = $"{logbookGroupEntry.FirstOrDefault()?.TotalKilometersHiked ?? 0} KMs";
+                sheet.Range[rowNumber, 4].Text = $"{logbookGroupEntry.FirstOrDefault()?.TotalNightsCamped ?? 0} Nights";
+                sheet.Range[rowNumber, 1, rowNumber, 4].CellStyle.Font.Bold = true;
+
+                sheet.SetRowHeight(rowNumber, 20);
+
+                foreach (var logbookEntry in logbookGroupEntry)
+                {
+                    rowNumber++;
+                    sheet.Range[rowNumber, 2].Text = logbookEntry.ActivityName;
+                    sheet.Range[rowNumber, 3].Text = logbookEntry.ActivityArea;
+                    sheet.Range[rowNumber, 4].DateTime = logbookEntry.ActivityDate;
+                    sheet.Range[rowNumber, 5].Text = logbookEntry.MemberRole;
+                    sheet.Range[rowNumber, 6].Text = $"{logbookEntry.KilometersHiked} KMs";
+                    sheet.Range[rowNumber, 7].Text = $"{logbookEntry.NightsCamped} Nights";
+                    sheet.Range[rowNumber, 8].Text = logbookEntry.Verifier;
+                }
+            }
+
+            sheet.SetColumnWidth(1, 10);
+            sheet.SetColumnWidth(2, 40);
+            sheet.Range[1, 2, rowNumber, 2].CellStyle.WrapText = true;
+            sheet.SetColumnWidth(3, 15);
+            sheet.SetColumnWidth(4, 15);
+            sheet.SetColumnWidth(5, 15);
+            sheet.SetColumnWidth(6, 10);
+            sheet.SetColumnWidth(7, 10);
+            sheet.Range[1, 8, rowNumber, 8].AutofitColumns();
+
+            sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
+            sheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
+            sheet.PageSetup.BottomMargin = 0.5;
+            sheet.PageSetup.TopMargin = 0.25;
+            sheet.PageSetup.LeftMargin = 0.25;
+            sheet.PageSetup.RightMargin = 0.25;
+            sheet.PageSetup.HeaderMargin = 0;
+            sheet.PageSetup.FooterMargin = 0.25;
+            sheet.PageSetup.RightFooter = "&P of &N";
+
+            return workbook;
+
         }
 
         private int UnitMaxAge(string unit)

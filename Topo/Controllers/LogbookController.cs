@@ -1,6 +1,7 @@
-﻿using FastReport.Export.PdfSimple;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Syncfusion.Pdf;
+using Syncfusion.XlsIORenderer;
 using Topo.Models.Logbook;
 using Topo.Models.MemberList;
 using Topo.Services;
@@ -12,15 +13,20 @@ namespace Topo.Controllers
         private readonly StorageService _storageService;
         private readonly IMemberListService _memberListService;
         private ILogbookService _logbookService;
+        private IReportService _reportService;
         private ILogger<LogbookController> _logger;
 
         public LogbookController(StorageService storageService,
-            IMemberListService memberListService, ILogbookService logbookService, ILogger<LogbookController> logger)
+                                    IMemberListService memberListService, 
+                                    ILogbookService logbookService, 
+                                    ILogger<LogbookController> logger,
+                                    IReportService reportService)
         {
             _storageService = storageService;
             _memberListService = memberListService;
             _logbookService = logbookService;
             _logger = logger;
+            _reportService = reportService;
         }
 
         private async Task<LogbookListViewModel> SetUpViewModel(bool includeLeaders = false)
@@ -107,23 +113,43 @@ namespace Topo.Controllers
                             memberKVP.Add(new KeyValuePair<string, string>(member, memberName ?? ""));
                         }
                         _logger.LogInformation($"memberKVP.Count: {memberKVP.Count()}");
-                        var report = await _logbookService.GenerateLogbookReport(memberKVP);
-                        if (report.Prepare())
+
+                        Constants.OutputType outputType;
+                        if (button == "LogbookReportPdf")
+                            outputType = Constants.OutputType.pdf;
+                        else
+                            outputType = Constants.OutputType.xlsx;
+
+                        var logbookEntries = await _logbookService.GenerateLogbookData(memberKVP);
+                        var groupName = _storageService.GroupName;
+                        var unitName = _storageService.SelectedUnitName ?? "";
+                        var section = _storageService.SelectedSection;
+                        var workbook = _reportService.GenerateLogbookWorkbook(logbookEntries, groupName, section, unitName, outputType == Constants.OutputType.pdf);
+
+                        //Stream 
+                        MemoryStream strm = new MemoryStream();
+
+                        if (outputType == Constants.OutputType.xlsx)
                         {
-                            // Set PDF export props
-                            PDFSimpleExport pdfExport = new PDFSimpleExport();
-                            pdfExport.ShowProgress = false;
+                            //Stream as Excel file
+                            workbook.SaveAs(strm);
 
-                            MemoryStream strm = new MemoryStream();
-                            report.Report.Export(pdfExport, strm);
-                            report.Dispose();
-                            pdfExport.Dispose();
-                            strm.Position = 0;
-
-                            SetViewBag();
                             // return stream in browser
-                            var unitName = _storageService.SelectedUnitName ?? "";
-                            return File(strm, "application/pdf", $"Logbook_Report_{unitName.Replace(' ', '_')}.pdf");
+                            return File(strm.ToArray(), "application/vnd.ms-excel", $"Logbook_Report_{unitName.Replace(' ', '_')}.xlsx");
+                        }
+                        else
+                        {
+                            //Stream as Excel file
+
+                            //Initialize XlsIO renderer.
+                            XlsIORenderer renderer = new XlsIORenderer();
+
+                            //Convert Excel document into PDF document 
+                            PdfDocument pdfDocument = renderer.ConvertToPDF(workbook);
+                            pdfDocument.Save(strm);
+
+                            // return stream in browser
+                            return File(strm.ToArray(), "application/pdf", $"Logbook_Report_{unitName.Replace(' ', '_')}.pdf");
                         }
                     }
                 }

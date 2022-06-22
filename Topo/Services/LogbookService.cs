@@ -1,12 +1,11 @@
-﻿using FastReport;
-using System.Globalization;
+﻿using System.Globalization;
 using Topo.Models.Logbook;
 
 namespace Topo.Services
 {
     public interface ILogbookService
     {
-        public Task<Report> GenerateLogbookReport(List<KeyValuePair<string, string>> selectedMembers);
+        public Task<List<MemberLogbookReportViewModel>> GenerateLogbookData(List<KeyValuePair<string, string>> selectedMembers);
     }
     public class LogbookService : ILogbookService
     {
@@ -19,7 +18,7 @@ namespace Topo.Services
             _terrainAPIService = terrainAPIService;
         }
 
-        public async Task<Report> GenerateLogbookReport(List<KeyValuePair<string, string>> selectedMembers)
+        public async Task<List<MemberLogbookReportViewModel>> GenerateLogbookData(List<KeyValuePair<string, string>> selectedMembers)
         {
             var memberLogbooks = new List<MemberLogbookReportViewModel>();
             foreach (var memberKVP in selectedMembers)
@@ -65,19 +64,7 @@ namespace Topo.Services
             }
             await _terrainAPIService.RevokeAssumedProfiles();
 
-            var groupName = _storageService.GroupName;
-            var unitName = _storageService.SelectedUnitName ?? "";
-            var section = _storageService.SelectedSection;
-            var report = new Report();
-            var directory = Directory.GetCurrentDirectory();
-            report.Load(@$"{directory}/Reports/Logbook.frx");
-            report.SetParameterValue("GroupName", groupName);
-            report.SetParameterValue("UnitName", unitName);
-            report.SetParameterValue("ReportDate", DateTime.Now.ToShortDateString());
-            report.RegisterData(memberLogbooks, "MemberLogbooks");
-
-            return report;
-
+            return memberLogbooks;
         }
     }
 }
