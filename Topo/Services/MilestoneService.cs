@@ -1,11 +1,9 @@
-﻿using FastReport;
-using Topo.Models.Milestone;
+﻿using Topo.Models.Milestone;
 
 namespace Topo.Services
 {
     public interface IMilestoneService
     {
-        Task<Report> GenerateMilestoneReport(string selectedUnitId);
         Task<List<MilestoneSummaryListModel>> GetMilestoneSummaries(string selectedUnitId);
     }
     public class MilestoneService : IMilestoneService
@@ -23,23 +21,6 @@ namespace Topo.Services
             _terrainAPIService = terrainAPIService;
             _storageService = storageService;
             _logger = logger;
-        }
-
-        public async Task<Report> GenerateMilestoneReport(string selectedUnitId)
-        {
-            var unitMilestoneSummary = await GetMilestoneSummaries(selectedUnitId);
-            var groupName = _storageService.GroupName;
-            var unitName = _storageService.SelectedUnitName ?? "";
-            var report = new Report();
-            var directory = Directory.GetCurrentDirectory();
-            report.Load(@$"{directory}/Reports/Milestone.frx");
-            report.SetParameterValue("GroupName", groupName);
-            report.SetParameterValue("UnitName", unitName);
-            report.SetParameterValue("ReportDate", DateTime.Now.ToShortDateString());
-            report.RegisterData(unitMilestoneSummary, "MilestoneSummary");
-
-            return report;
-
         }
 
         public async Task<List<MilestoneSummaryListModel>> GetMilestoneSummaries(string selectedUnitId)

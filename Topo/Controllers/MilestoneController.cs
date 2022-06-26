@@ -1,10 +1,7 @@
-﻿using FastReport.Export.PdfSimple;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Syncfusion.Pdf;
 using Syncfusion.XlsIORenderer;
-using System.Reflection;
-using System.Text;
 using Topo.Models.Milestone;
 using Topo.Services;
 
@@ -69,33 +66,6 @@ namespace Topo.Controllers
             }
             SetViewBag();
             return View(model);
-        }
-
-        public async Task<ActionResult> MilestoneReport(string selectedUnitId)
-        {
-            var report = await _milestoneService.GenerateMilestoneReport(selectedUnitId);
-            if (report.Prepare())
-            {
-                // Set PDF export props
-                PDFSimpleExport pdfExport = new PDFSimpleExport();
-                pdfExport.ShowProgress = false;
-
-                MemoryStream strm = new MemoryStream();
-                report.Report.Export(pdfExport, strm);
-                report.Dispose();
-                pdfExport.Dispose();
-                strm.Position = 0;
-
-                // return stream in browser
-                var unitName = _storageService.SelectedUnitName ?? "";
-                return File(strm, "application/pdf", $"Milestone_Report_{unitName.Replace(' ', '_')}.pdf");
-            }
-            else
-            {
-                var model = SetModel();
-                SetViewBag();
-                return View(model);
-            }
         }
 
         public async Task<ActionResult> MilestonePdf(string selectedUnitId)

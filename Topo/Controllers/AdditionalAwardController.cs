@@ -149,14 +149,3 @@ namespace Topo.Controllers
 
     }
 }
-
-////Build report template for model
-//var directory = Directory.GetCurrentDirectory();
-//var report1 = new FastReport.Report();
-//report1.Dictionary.RegisterBusinessObject(
-//        new List<Models.AditionalAwards.AdditionalAwardListModel>(),
-//        "AdditionalAwards",
-//        2,
-//        true
-//    );
-//report1.Save($"{directory}/Reports/AdditionalAwards.frx");

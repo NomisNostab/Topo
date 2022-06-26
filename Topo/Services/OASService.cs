@@ -1,5 +1,4 @@
-﻿using FastReport;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Globalization;
 using Topo.Models.OAS;
 
