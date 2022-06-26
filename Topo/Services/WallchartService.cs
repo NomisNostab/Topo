@@ -1,11 +1,9 @@
-﻿using FastReport;
-using Topo.Models.Wallchart;
+﻿using Topo.Models.Wallchart;
 
 namespace Topo.Services
 {
     public interface IWallchartService
     {
-        Task<Report> GenerateWallchartReport(string selectedUnitId);
         Task<List<WallchartItemModel>> GetWallchartItems(string selectedUnitId);
     }
     public class WallchartService : IWallchartService
@@ -21,22 +19,6 @@ namespace Topo.Services
             _memberListService = memberListService;
             _terrainAPIService = terrainAPIService;
             _logger = logger;
-        }
-
-        public async Task<Report> GenerateWallchartReport(string selectedUnitId)
-        {
-            var wallchartItems = await GetWallchartItems(selectedUnitId);
-            var groupName = _storageService.GroupName;
-            var unitName = _storageService.SelectedUnitName ?? "";
-            var report = new Report();
-            var directory = Directory.GetCurrentDirectory();
-            report.Load(@$"{directory}/Reports/Wallchart.frx");
-            report.SetParameterValue("GroupName", groupName);
-            report.SetParameterValue("UnitName", unitName);
-            report.SetParameterValue("ReportDate", DateTime.Now.ToShortDateString());
-            report.RegisterData(wallchartItems, "Wallchart");
-
-            return report;
         }
 
         public async Task<List<WallchartItemModel>> GetWallchartItems(string selectedUnitId)

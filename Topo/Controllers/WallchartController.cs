@@ -1,10 +1,7 @@
-﻿using FastReport.Export.PdfSimple;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Syncfusion.Pdf;
 using Syncfusion.XlsIORenderer;
-using System.Reflection;
-using System.Text;
 using Topo.Models.Wallchart;
 using Topo.Services;
 
