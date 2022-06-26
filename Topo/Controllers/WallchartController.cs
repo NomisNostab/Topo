@@ -1,6 +1,8 @@
 ﻿using FastReport.Export.PdfSimple;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Syncfusion.Pdf;
+using Syncfusion.XlsIORenderer;
 using System.Reflection;
 using System.Text;
 using Topo.Models.Wallchart;
@@ -13,12 +15,13 @@ namespace Topo.Controllers
         private readonly StorageService _storageService;
         private readonly IMemberListService _memberListService;
         private readonly IWallchartService _wallchartService;
-
-        public WallchartController(StorageService storageService, IMemberListService memberListService, IWallchartService wallchartService)
+        private readonly IReportService _reportService;
+        public WallchartController(StorageService storageService, IMemberListService memberListService, IWallchartService wallchartService, IReportService reportService)
         {
             _storageService = storageService;
             _memberListService = memberListService;
             _wallchartService = wallchartService;
+            _reportService = reportService;
         }
 
         private void SetViewBag()
@@ -65,58 +68,51 @@ namespace Topo.Controllers
             return View(model);
         }
 
-        public async Task<ActionResult> WallchartReport(string selectedUnitId)
+        public async Task<ActionResult> WallchartPdf(string selectedUnitId)
         {
-            var report = await _wallchartService.GenerateWallchartReport(selectedUnitId);
-            if (report.Prepare())
-            {
-                // Set PDF export props
-                PDFSimpleExport pdfExport = new PDFSimpleExport();
-                pdfExport.ShowProgress = false;
-
-                MemoryStream strm = new MemoryStream();
-                report.Report.Export(pdfExport, strm);
-                report.Dispose();
-                pdfExport.Dispose();
-                strm.Position = 0;
-
-                // return stream in browser
-                var unitName = _storageService.SelectedUnitName ?? "";
-                return File(strm, "application/pdf", $"Wallchart_Report_{unitName.Replace(' ', '_')}.pdf");
-            }
-            else
-            {
-                var model = SetModel();
-                SetViewBag();
-                return View(model);
-            }
+            return await WallchartReport(selectedUnitId, Constants.OutputType.pdf);
         }
 
-        public async Task<ActionResult> WallchartCSV(string selectedUnitId)
+        public async Task<ActionResult> WallchartXlsx(string selectedUnitId)
+        {
+            return await WallchartReport(selectedUnitId, Constants.OutputType.xlsx);
+        }
+
+        public async Task<ActionResult> WallchartReport(string selectedUnitId, Constants.OutputType outputType)
         {
             var groupName = _storageService.GroupName;
+            var section = _storageService.SelectedSection;
             var unitName = _storageService.SelectedUnitName ?? "";
 
             var wallchartItems = await _wallchartService.GetWallchartItems(selectedUnitId);
+            var workbook = _reportService.GenerateWallchartWorkbook(wallchartItems, groupName, section, unitName, true);
 
-            MemoryStream ms = new MemoryStream();
-            // Encoding.UTF8 produces stream with BOM, new UTF8Encoding(false) - without BOM
-            using (StreamWriter sw = new StreamWriter(ms, new UTF8Encoding(false), 8192, true))
+            //Stream 
+            MemoryStream strm = new MemoryStream();
+
+            if (outputType == Constants.OutputType.xlsx)
             {
-                sw.WriteLine(groupName);
-                sw.WriteLine(unitName);
-                sw.WriteLine("Wallchart");
-                sw.WriteLine();
-                PropertyInfo[] properties = typeof(WallchartItemModel).GetProperties();
-                sw.WriteLine(string.Join(",", properties.Select(x => x.Name)));
+                //Stream as Excel file
+                workbook.SaveAs(strm);
 
-                foreach (var member in wallchartItems.OrderBy(m => m.MemberName))
-                {
-                    sw.WriteLine(string.Join(",", properties.Select(prop => prop.GetValue(member))));
-                }
+                // return stream in browser
+                return File(strm.ToArray(), "application/vnd.ms-excel", $"Wallchart_Report_{unitName.Replace(' ', '_')}.xlsx");
             }
-            ms.Position = 0;
-            return File(ms, "application/vnd.ms-excel", $"Wallchart_Report_{unitName.Replace(' ', '_')}.csv");
+            else
+            {
+                //Stream as PDF
+
+                //Initialize XlsIO renderer.
+                XlsIORenderer renderer = new XlsIORenderer();
+
+                //Convert Excel document into PDF document 
+                PdfDocument pdfDocument = renderer.ConvertToPDF(workbook);
+                pdfDocument.Save(strm);
+
+                // return stream in browser
+                return File(strm.ToArray(), "application/pdf", $"Wallchart_Report_{unitName.Replace(' ', '_')}.pdf");
+            }
+
         }
     }
 }

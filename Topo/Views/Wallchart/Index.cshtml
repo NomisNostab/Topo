@@ -18,10 +18,10 @@
     {
         <div class="mt-3 mb-3 row">
             <div class="col-sm-3">
-                @Html.ActionLink("Generate Wallchart report", "WallchartReport", "Wallchart", new { selectedUnitId = Model.SelectedUnitId }, new { @class = "btn btn-primary" })
+                @Html.ActionLink("Wallchart Report (pdf)", "WallchartPdf", "Wallchart", new { selectedUnitId = Model.SelectedUnitId }, new { @class = "btn btn-primary" })
             </div>
             <div class="col-sm-3">
-                @Html.ActionLink("Generate Wallchart csv", "WallchartCSV", "Wallchart", new { selectedUnitId = Model.SelectedUnitId }, new { @class = "btn btn-success" })
+                @Html.ActionLink("Wallchart Report (xlsx)", "WallchartXlsx", "Wallchart", new { selectedUnitId = Model.SelectedUnitId }, new { @class = "btn btn-success" })
             </div>
         </div>
     }
