@@ -1029,7 +1029,7 @@ namespace Topo.Services
                 sheet.Range[rowNumber, 1].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
                 sheet.Range[rowNumber, 1, rowNumber, 2].Merge();
                 sheet.SetRowHeight(rowNumber, 20);
-                foreach (var siaProject in memberSiaProject)
+                foreach (var siaProject in memberSiaProject.OrderBy(sia => sia.statusUpdated))
                 {
                     rowNumber++;
                     sheet.Range[rowNumber, 2].Text = siaProject.area;
