@@ -81,7 +81,7 @@ namespace Topo.Services
             await _terrainAPIService.RevokeAssumedProfiles();
             var sortedAdditionalAwardsList = additionalAwardsList.OrderBy(a => a.MemberName).ThenBy(a => a.AwardSortIndex).ToList();
             var distinctAwards = sortedAdditionalAwardsList.OrderBy(x => x.AwardSortIndex).Select(x => x.AwardId).Distinct().ToList();
-            var workbook = _reportService.BuildAdditionalAwardsWorkbook(awardSpecificationsList, sortedAdditionalAwardsList, distinctAwards, groupName, section, unitName);
+            var workbook = _reportService.GenerateAdditionalAwardsWorkbook(awardSpecificationsList, sortedAdditionalAwardsList, distinctAwards, groupName, section, unitName);
 
             return workbook;
         }
