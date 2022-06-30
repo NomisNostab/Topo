@@ -3,7 +3,7 @@ using NLog.Web;
 using Topo.Images;
 using Topo.Services;
 
-var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
+var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 logger.Info($"Version {Topo.Constants.Version}");
 
 try
@@ -32,6 +32,8 @@ try
     builder.Services.AddScoped<IWallchartService, WallchartService>();
     builder.Services.AddScoped<IAdditionalAwardService, AdditionalAwardService>();
     builder.Services.AddScoped<IImages, Images>();
+    builder.Services.AddScoped<IReportService, ReportService>();
+    Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Mgo+DSMBPh8sVXJ0S0d+XE9AcVRDX3xKf0x/TGpQb19xflBPallYVBYiSV9jS3xTc0drWXhceXZcQ2ZcUQ==;Mgo+DSMBMAY9C3t2VVhhQlFaclhJXGFWfVJpTGpQdk5xdV9DaVZUTWY/P1ZhSXxRdkBhUX9Zcn1XT2VbUEQ=");
 
     // NLog: Setup NLog for Dependency injection
     builder.Logging.ClearProviders();

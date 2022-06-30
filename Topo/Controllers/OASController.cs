@@ -1,7 +1,7 @@
-﻿using FastReport.Export.PdfSimple;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Text;
+using Syncfusion.Pdf;
+using Syncfusion.XlsIORenderer;
 using Topo.Models.OAS;
 using Topo.Services;
 
@@ -12,14 +12,16 @@ namespace Topo.Controllers
         private readonly StorageService _storageService;
         private readonly IOASService _oasService;
         private readonly IMemberListService _memberListService;
-
+        private readonly IReportService _reportService;
         public OASController(StorageService storageService,
             IOASService oasService,
-            IMemberListService memberListService)
+            IMemberListService memberListService,
+            IReportService reportService)
         {
             _storageService = storageService;
             _oasService = oasService;
             _memberListService = memberListService;
+            _reportService = reportService;
         }
 
         private void SetViewBag()
@@ -71,13 +73,13 @@ namespace Topo.Controllers
                 model.Stages = _oasService.GetOASStageListItems(_storageService.OASStageList);
                 model.SelectedStream = oasIndexViewModel.SelectedStream;
                 model.SelectedStage = oasIndexViewModel.SelectedStage;
-                if (button == "OASReport")
+                if (button == "OASReportPdf")
                 {
-                    return await OASReport(oasIndexViewModel.SelectedUnitId, oasIndexViewModel.SelectedStage, oasIndexViewModel.HideCompletedMembers);
+                    return await OASWorkbook(oasIndexViewModel.SelectedUnitId, oasIndexViewModel.SelectedStage, oasIndexViewModel.HideCompletedMembers, Constants.OutputType.pdf);
                 }
-                if (button == "OASCSV")
+                if (button == "OASReportXlsx")
                 {
-                    return await OASCSV(oasIndexViewModel.SelectedUnitId, oasIndexViewModel.SelectedStage, oasIndexViewModel.HideCompletedMembers);
+                    return await OASWorkbook(oasIndexViewModel.SelectedUnitId, oasIndexViewModel.SelectedStage, oasIndexViewModel.HideCompletedMembers, Constants.OutputType.xlsx);
                 }
             }
             else
@@ -95,61 +97,48 @@ namespace Topo.Controllers
             return View(model);
         }
 
-        private async Task<ActionResult> OASReport(string selectedUnitId, string selectedStageTemplate, bool hideCompletedMembers)
+        private async Task<ActionResult> OASWorkbook(string selectedUnitId, string selectedStageTemplate, bool hideCompletedMembers, Constants.OutputType outputType)
         {
-            var report = await _oasService.GenerateOASWorksheet(selectedUnitId, selectedStageTemplate, hideCompletedMembers);
-            if (report.Prepare())
-            {
-                // Set PDF export props
-                PDFSimpleExport pdfExport = new PDFSimpleExport();
-                pdfExport.ShowProgress = false;
+            var templateList = await _oasService.GetOASTemplate(selectedStageTemplate.Replace("/latest.json", ""));
+            var templateName = selectedStageTemplate.Replace("/latest.json", "").Replace('/', '_');
+            var templateTitle = templateList.Count > 0 ? templateList[0].TemplateTitle : "";
+            if (hideCompletedMembers)
+                templateTitle += " (in progress)";
 
-                MemoryStream strm = new MemoryStream();
-                report.Report.Export(pdfExport, strm);
-                report.Dispose();
-                pdfExport.Dispose();
-                strm.Position = 0;
+            var sortedAnswers = await _oasService.GenerateOASWorksheetAnswers(selectedUnitId, selectedStageTemplate, hideCompletedMembers, templateList);
 
-                // return stream in browser
-                var templateName = selectedStageTemplate.Replace("/latest.json", "").Replace('/', '_');
-                var unitName = _storageService.SelectedUnitName ?? "";
-                var fileName = $"OAS_Worksheet_{unitName.Replace(' ', '_')}_{templateName}.pdf";
-                return File(strm, "application/pdf", fileName);
-            }
-            return null;
-        }
-
-        private async Task<ActionResult> OASCSV(string selectedUnitId, string selectedStageTemplate, bool hideCompletedMembers)
-        {
             var groupName = _storageService.GroupName;
             var unitName = _storageService.SelectedUnitName ?? "";
-            var templateName = selectedStageTemplate.Replace("/latest.json", "").Replace('/', '_');
+            var section = _storageService.SelectedSection;
 
-            var worksheetAnswers = await _oasService.GenerateOASWorksheetCSV(selectedUnitId, selectedStageTemplate, hideCompletedMembers);
-            var groupedAnswers = worksheetAnswers.GroupBy(wa => wa.MemberName).ToList();
-            var quote = '"';
-            MemoryStream ms = new MemoryStream();
-            // Encoding.UTF8 produces stream with BOM, new UTF8Encoding(false) - without BOM
-            using (StreamWriter sw = new StreamWriter(ms, new UTF8Encoding(false), 8192, true))
+            var workbook = _reportService.GenerateOASWorksheetWorkbook(sortedAnswers, groupName, section, unitName, templateTitle, outputType == Constants.OutputType.pdf);
+
+            //Stream 
+            MemoryStream strm = new MemoryStream();
+
+            if (outputType == Constants.OutputType.xlsx)
             {
-                sw.WriteLine(groupName);
-                sw.WriteLine(unitName);
-                sw.WriteLine($"{templateName.Replace('_', ' ').ToUpper()}");
-                sw.Write(",");
-                sw.WriteLine(string.Join(",", groupedAnswers.FirstOrDefault().Select(a => a.InputTitle)));
-                sw.Write("Scout,");
-                sw.WriteLine(string.Join(",", groupedAnswers.FirstOrDefault().Select(a => quote + a.InputLabel + quote)));
+                //Stream as Excel file
+                workbook.SaveAs(strm);
 
-                foreach (var groupedAnswer in groupedAnswers.OrderBy(ga => ga.Key))
-                {
-                    var member = groupedAnswer.Key;
-                    var answerCount = groupedAnswer.Count();
-                    sw.Write($"{member},");
-                    sw.WriteLine(string.Join(", ", groupedAnswer.OrderBy(ga => ga.InputTitleSortIndex).ThenBy(ga => ga.InputSortIndex).Select(a => a.MemberAnswer)));
-                }
+                // return stream in browser
+                return File(strm.ToArray(), "application/vnd.ms-excel", $"OAS_Worksheet_{unitName.Replace(' ', '_')}_{templateName}.xlsx");
             }
-            ms.Position = 0;
-            return File(ms, "application/vnd.ms-excel", $"OAS_Worksheet_{unitName.Replace(' ', '_')}_{templateName}.csv");
+            else
+            {
+                //Stream as Excel file
+                var sheet = workbook.Worksheets[0];
+
+                //Initialize XlsIO renderer.
+                XlsIORenderer renderer = new XlsIORenderer();
+
+                //Convert Excel document into PDF document 
+                PdfDocument pdfDocument = renderer.ConvertToPDF(workbook);
+                pdfDocument.Save(strm);
+
+                // return stream in browser
+                return File(strm.ToArray(), "application/pdf", $"OAS_Worksheet_{unitName.Replace(' ', '_')}_{templateName}.pdf");
+            }
         }
 
     }

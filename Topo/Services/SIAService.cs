@@ -1,37 +1,26 @@
-﻿using FastReport;
-using System.Globalization;
+﻿using System.Globalization;
 using Topo.Models.SIA;
 
 namespace Topo.Services
 {
     public interface ISIAService
     {
-        public Task<Report> GenerateSIAReport(List<KeyValuePair<string, string>> selectedMembers);
+        public Task<List<SIAProjectListModel>> GenerateSIAReportData(List<KeyValuePair<string, string>> selectedMembers, string section);
     }
 
     public class SIAService : ISIAService
     {
-        private readonly StorageService _storageService;
-        private readonly IMemberListService _memberListService;
         private readonly ITerrainAPIService _terrainAPIService;
         private readonly ILogger<ISIAService> _logger;
 
-        public SIAService(IMemberListService memberListService,
-            ITerrainAPIService terrainAPIService,
-            StorageService storageService, ILogger<ISIAService> logger)
+        public SIAService(ITerrainAPIService terrainAPIService,
+            ILogger<ISIAService> logger)
         {
-            _memberListService = memberListService;
             _terrainAPIService = terrainAPIService;
-            _storageService = storageService;
             _logger = logger;
         }
-        public async Task<Report> GenerateSIAReport(List<KeyValuePair<string, string>> selectedMembers)
+        public async Task<List<SIAProjectListModel>> GenerateSIAReportData(List<KeyValuePair<string, string>> selectedMembers, string section)
         {
-            var unitName = _storageService.SelectedUnitName ?? "";
-            var unit = _storageService.GetProfilesResult.profiles.FirstOrDefault(u => u.unit.name == unitName);
-            if (unit == null)
-                throw new IndexOutOfRangeException($"No unit found with name {unitName}. You may not have permissions to this section");
-            var section = unit.unit.section;
             TextInfo myTI = new CultureInfo("en-US", false).TextInfo;
             var unitSiaProjects = new List<SIAProjectListModel>();
             foreach (var member in selectedMembers)
@@ -68,16 +57,7 @@ namespace Topo.Services
                 }
             }
 
-            var groupName = _storageService.GroupName;
-            var report = new Report();
-            var directory = Directory.GetCurrentDirectory();
-            report.Load(@$"{directory}/Reports/SIAProjectReport.frx");
-            report.SetParameterValue("GroupName", groupName);
-            report.SetParameterValue("UnitName", unitName);
-            report.SetParameterValue("ReportDate", DateTime.Now.ToShortDateString());
-            report.RegisterData(unitSiaProjects, "SIAProjects");
-
-            return report;
+            return unitSiaProjects;
         }
     }
 }

@@ -31,15 +31,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="FastReport.OpenSource" Version="2022.2.9" />
-		<PackageReference Include="FastReport.OpenSource.Export.PdfSimple" Version="2022.2.9" />
-		<PackageReference Include="FastReport.OpenSource.Web" Version="2022.2.9" />
-		<PackageReference Include="FreeSpire.XLS" Version="12.2.0" />
 		<PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.8" />
 		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.5" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 		<PackageReference Include="NLog" Version="5.0.0" />
 		<PackageReference Include="NLog.Web.AspNetCore" Version="5.0.0" />
+		<PackageReference Include="Syncfusion.XlsIO.Net.Core" Version="20.1.0.57" />
+		<PackageReference Include="Syncfusion.XlsIORenderer.Net.Core" Version="20.1.0.57" />
 	</ItemGroup>
 
 	<ItemGroup>

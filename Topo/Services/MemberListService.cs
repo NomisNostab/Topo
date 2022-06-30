@@ -1,24 +1,28 @@
 ﻿using Newtonsoft.Json;
 using System.Text;
 using Topo.Models.MemberList;
+using Syncfusion.XlsIO;
+using Topo.Images;
+using System.Globalization;
 
 namespace Topo.Services
 {
     public interface IMemberListService
     {
         public Task<List<MemberListModel>> GetMembersAsync();
-        
     }
 
     public class MemberListService : IMemberListService
     {
         private readonly StorageService _storageService;
         private readonly ITerrainAPIService _terrainAPIService;
+        private readonly IImages _images;
 
-        public MemberListService(StorageService storageService, ITerrainAPIService terrainAPIService)
+        public MemberListService(StorageService storageService, ITerrainAPIService terrainAPIService, IImages images)
         {
             _storageService = storageService;
             _terrainAPIService = terrainAPIService;
+            _images = images;
         }
 
         public async Task<List<MemberListModel>> GetMembersAsync()
@@ -38,7 +42,8 @@ namespace Topo.Services
                         member_number = m.member_number,
                         first_name = m.first_name,
                         last_name = m.last_name,
-                        date_of_birth = m.date_of_birth,
+                        date_of_birth = DateTime.ParseExact(m.date_of_birth, "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                        age = GetAgeFromBirthdate(m.date_of_birth),
                         unit_council = m.unit.unit_council,
                         patrol_name = m.patrol == null ? "" : m.patrol.name,
                         patrol_duty = m.patrol == null ? "" : GetPatrolDuty(m.unit.duty, m.patrol.duty),
@@ -51,6 +56,28 @@ namespace Topo.Services
             }
             return memberList;
         }
+
+        private string GetAgeFromBirthdate(string dateOfBirth)
+        {
+            var birthday = DateTime.ParseExact(dateOfBirth, "yyyy-MM-dd", CultureInfo.InvariantCulture); // Date in AU format
+            DateTime now = DateTime.Today;
+            int months = now.Month - birthday.Month;
+            int years = now.Year - birthday.Year;
+
+            if (now.Day < birthday.Day)
+            {
+                months--;
+            }
+
+            if (months < 0)
+            {
+                years--;
+                months += 12;
+            }
+            return $"{years}y {months}m";
+        }
+
+
 
         private string GetPatrolDuty(string unitDuty, string patrolDuty)
         {

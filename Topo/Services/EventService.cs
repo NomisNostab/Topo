@@ -1,5 +1,5 @@
-﻿using FastReport;
-using System.Globalization;
+﻿using System.Globalization;
+using Topo.Images;
 using Topo.Models.Events;
 
 namespace Topo.Services
@@ -18,12 +18,13 @@ namespace Topo.Services
         private readonly StorageService _storageService;
         private readonly ITerrainAPIService _terrainAPIService;
         private readonly IMemberListService _memberListService;
-
-        public EventService(StorageService storageService, ITerrainAPIService terrainAPIService, IMemberListService memberListService)
+        private readonly IImages _images;
+        public EventService(StorageService storageService, ITerrainAPIService terrainAPIService, IMemberListService memberListService, IImages images)
         {
             _storageService = storageService;
             _terrainAPIService = terrainAPIService;
             _memberListService = memberListService;
+            _images = images;
         }
 
         public async Task<List<CalendarListModel>> GetCalendars()
@@ -33,10 +34,10 @@ namespace Topo.Services
             {
                 var calendars = getCalendarsResultModel.own_calendars.Where(c => c.type == "unit")
                     .Select(e => new CalendarListModel()
-                {
-                    Id = e.id,
-                    Title = e.title
-                })
+                    {
+                        Id = e.id,
+                        Title = e.title
+                    })
                     .ToList();
                 _storageService.GetCalendarsResult = getCalendarsResultModel;
                 return calendars;
@@ -77,12 +78,34 @@ namespace Topo.Services
         {
             var eventListModel = new EventListModel();
             var getEventResultModel = await _terrainAPIService.GetEventAsync(eventId);
+            var eventAttendance = new List<EventAttendance>();
+            var members = await _memberListService.GetMembersAsync();
+            foreach (var member in members)
+            {
+                eventAttendance.Add(new EventAttendance
+                {
+                    first_name = member.first_name,
+                    last_name = member.last_name,
+                    member_number = member.member_number,
+                    patrol_name = member.patrol_name,
+                    isAdultMember = member.isAdultLeader == 1,
+                    attended = false
+                });
+            }
+
             if (getEventResultModel != null && getEventResultModel.attendance != null && getEventResultModel.attendance.attendee_members != null)
             {
                 eventListModel.Id = eventId;
                 eventListModel.EventName = getEventResultModel.title;
                 eventListModel.StartDateTime = getEventResultModel.start_datetime;
-                eventListModel.attendees = getEventResultModel.attendance.attendee_members;
+                foreach (var attended in getEventResultModel.attendance.attendee_members)
+                {
+                    if (eventAttendance.Any(a => a.member_number == attended.member_number))
+                    {
+                        eventAttendance.Where(a => a.member_number == attended.member_number).Single().attended = true;
+                    }
+                }
+                eventListModel.attendees = eventAttendance.ToArray();
                 return eventListModel;
             }
             return new EventListModel();
@@ -91,7 +114,7 @@ namespace Topo.Services
 
         public async Task<AttendanceReportModel> GenerateAttendanceReportData(DateTime fromDate, DateTime toDate, string selectedCalendar)
         {
-            var attendanceReport =  new AttendanceReportModel();
+            var attendanceReport = new AttendanceReportModel();
             var attendanceReportItems = new List<AttendanceReportItemModel>();
             await SetCalendar(selectedCalendar);
             var members = await _memberListService.GetMembersAsync();
@@ -103,7 +126,7 @@ namespace Topo.Services
                 programEvent.attendees = eventListModel.attendees;
                 foreach (var member in members)
                 {
-                    var attended = programEvent.attendees.Any(a => a.id == member.id);
+                    var attended = programEvent.attendees.Where(a => a.member_number == member.member_number).SingleOrDefault()?.attended ?? false;
                     attendanceReportItems.Add(new AttendanceReportItemModel
                     {
                         MemberId = member.id,
@@ -114,7 +137,7 @@ namespace Topo.Services
                         EventStartDate = programEvent.StartDateTime,
                         Attended = attended ? 1 : 0,
                         IsAdultMember = member.isAdultLeader
-                    }) ;
+                    });
                 }
             }
             attendanceReport.attendanceReportItems = attendanceReportItems;
@@ -158,6 +181,7 @@ namespace Topo.Services
 
             return attendanceReport;
         }
+
         private string GetUser()
         {
             var userId = "";

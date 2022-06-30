@@ -1,6 +1,7 @@
-﻿using FastReport.Export.PdfSimple;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Syncfusion.Pdf;
+using Syncfusion.XlsIORenderer;
 using Topo.Models.MemberList;
 using Topo.Models.SIA;
 using Topo.Services;
@@ -13,13 +14,15 @@ namespace Topo.Controllers
         private readonly IMemberListService _memberListService;
         private readonly ISIAService _SIAService;
         private readonly ILogger<SIAController> _logger;
+        private readonly IReportService _reportService;
 
-        public SIAController(StorageService storageService, IMemberListService memberListService, ISIAService sIAService, ILogger<SIAController> logger)
+        public SIAController(StorageService storageService, IMemberListService memberListService, ISIAService sIAService, ILogger<SIAController> logger, IReportService reportService)
         {
             _storageService = storageService;
             _memberListService = memberListService;
             _SIAService = sIAService;
             _logger = logger;
+            _reportService = reportService;
         }
 
         private void SetViewBag()
@@ -107,22 +110,44 @@ namespace Topo.Controllers
                             memberKVP.Add(new KeyValuePair<string, string>(member, memberName ?? ""));
                         }
                         _logger.LogInformation($"memberKVP.Count: {memberKVP.Count()}");
-                        var report = await _SIAService.GenerateSIAReport(memberKVP);
-                        if (report.Prepare())
-                        {
-                            // Set PDF export props
-                            PDFSimpleExport pdfExport = new PDFSimpleExport();
-                            pdfExport.ShowProgress = false;
 
-                            MemoryStream strm = new MemoryStream();
-                            report.Report.Export(pdfExport, strm);
-                            report.Dispose();
-                            pdfExport.Dispose();
-                            strm.Position = 0;
+                        var groupName = _storageService.GroupName;
+                        var unitName = _storageService.SelectedUnitName ?? "";
+                        var section = _storageService.SelectedSection;
+
+                        Constants.OutputType outputType;
+                        if (button == "SIAReportPdf")
+                            outputType = Constants.OutputType.pdf;
+                        else
+                            outputType = Constants.OutputType.xlsx;
+
+                        var reportData = await _SIAService.GenerateSIAReportData(memberKVP, section);
+                        var workbook = _reportService.GenerateSIAWorkbook(reportData, groupName, section, unitName, outputType == Constants.OutputType.pdf);
+
+                        //Stream 
+                        MemoryStream strm = new MemoryStream();
+
+                        if (outputType == Constants.OutputType.xlsx)
+                        {
+                            //Stream as Excel file
+                            workbook.SaveAs(strm);
 
                             // return stream in browser
-                            var unitName = _storageService.SelectedUnitName ?? "";
-                            return File(strm, "application/pdf", $"SIA_Projects_{unitName.Replace(' ', '_')}.pdf");
+                            return File(strm.ToArray(), "application/vnd.ms-excel", $"SIA_Projects_{unitName.Replace(' ', '_')}.xlsx");
+                        }
+                        else
+                        {
+                            //Stream as Excel file
+
+                            //Initialize XlsIO renderer.
+                            XlsIORenderer renderer = new XlsIORenderer();
+
+                            //Convert Excel document into PDF document 
+                            PdfDocument pdfDocument = renderer.ConvertToPDF(workbook);
+                            pdfDocument.Save(strm);
+
+                            // return stream in browser
+                            return File(strm.ToArray(), "application/pdf", $"SIA_Projects_{unitName.Replace(' ', '_')}.pdf");
                         }
                     }
                 }

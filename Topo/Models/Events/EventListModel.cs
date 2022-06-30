@@ -19,6 +19,17 @@ namespace Topo.Models.Events
         [Display(Name = "Date")]
         public string EventDate => StartDateTime.ToShortDateString();
 
-        public Attendee_Members[] attendees = new Attendee_Members[0];
+        public EventAttendance[] attendees = new EventAttendance[0];
+    }
+
+    public class EventAttendance
+    {
+        public string id { get; set; }
+        public string first_name { get; set; }
+        public string last_name { get; set; }
+        public string member_number { get; set; }
+        public string patrol_name { get; set; }
+        public bool isAdultMember { get; set; }
+        public bool attended { get; set; }
     }
 }

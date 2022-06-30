@@ -1,7 +1,8 @@
-﻿using FastReport.Export.PdfSimple;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Spire.Xls;
+using Syncfusion.Pdf;
+using Syncfusion.XlsIO;
+using Syncfusion.XlsIORenderer;
 using Topo.Models.AditionalAwards;
 using Topo.Models.MemberList;
 using Topo.Services;
@@ -114,20 +115,25 @@ namespace Topo.Controllers
                             if (button == "AdditionalAwardReport")
                             {
                                 var sheet = workbook.Worksheets[0];
-                                sheet.PageSetup.PaperSize = PaperSizeType.PaperA3;
-                                sheet.PageSetup.Orientation = PageOrientationType.Landscape;
+                                sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA3;
+                                sheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
+                                //Initialize XlsIO renderer.
+                                XlsIORenderer renderer = new XlsIORenderer();
+                                //Convert Excel document into PDF document 
+                                PdfDocument pdfDocument = renderer.ConvertToPDF(sheet);
                                 MemoryStream strm = new MemoryStream();
-                                sheet.SaveToPdfStream(strm);
+                                pdfDocument.Save(strm);
 
                                 // return stream in browser
                                 var unitName = _storageService.SelectedUnitName ?? "";
-                                return File(strm, "application/pdf", $"Additional_Awards_{unitName.Replace(' ', '_')}.pdf");
+                                return File(strm.ToArray(), "application/pdf", $"Additional_Awards_{unitName.Replace(' ', '_')}.pdf");
                             }
                             if (button == "AdditionalAwardxls")
                             {
                                 //Stream as Excel file
                                 MemoryStream strm = new MemoryStream();
-                                workbook.SaveToStream(strm, FileFormat.Version2016);
+                                workbook.Version = ExcelVersion.Excel2016;
+                                workbook.SaveAs(strm);
 
                                 // return stream in browser
                                 var unitName = _storageService.SelectedUnitName ?? "";
@@ -143,14 +149,3 @@ namespace Topo.Controllers
 
     }
 }
-
-////Build report template for model
-//var directory = Directory.GetCurrentDirectory();
-//var report1 = new FastReport.Report();
-//report1.Dictionary.RegisterBusinessObject(
-//        new List<Models.AditionalAwards.AdditionalAwardListModel>(),
-//        "AdditionalAwards",
-//        2,
-//        true
-//    );
-//report1.Save($"{directory}/Reports/AdditionalAwards.frx");

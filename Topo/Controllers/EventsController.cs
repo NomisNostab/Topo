@@ -1,14 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Diagnostics;
-using Topo.Models;
-using Topo.Models.Home;
+using Syncfusion.Pdf;
+using Syncfusion.XlsIO;
+using Syncfusion.XlsIORenderer;
 using Topo.Models.Events;
 using Topo.Services;
-using FastReport;
-using FastReport.Export.PdfSimple;
-using System.Text;
-using System.Reflection;
 
 namespace Topo.Controllers
 {
@@ -17,14 +13,14 @@ namespace Topo.Controllers
         private readonly StorageService _storageService;
         private readonly IMemberListService _memberListService;
         private readonly IEventService _eventService;
-
-        public EventsController(StorageService storageService, IMemberListService memberListService, IEventService eventService)
+        private readonly IReportService _reportService;
+        public EventsController(StorageService storageService, IMemberListService memberListService, IEventService eventService, IReportService reportService)
         {
             _storageService = storageService;
             _memberListService = memberListService;
             _eventService = eventService;
+            _reportService = reportService;
         }
-
         private void SetViewBag()
         {
             ViewBag.IsAuthenticated = _storageService.IsAuthenticated;
@@ -64,13 +60,13 @@ namespace Topo.Controllers
                 var selectedUnit = _storageService.Units.Where(u => u.Text == calendarTitle)?.FirstOrDefault();
                 _storageService.SelectedUnitName = selectedUnit.Text;
                 _storageService.SelectedUnitId = selectedUnit.Value;
-                if (button == "AttendanceReport")
+                if (button == "AttendanceReportPdf")
                 {
-                    return await AttendanceReport(eventViewModel.CalendarSearchFromDate, eventViewModel.CalendarSearchToDate, eventViewModel.SelectedCalendar);
+                    return await AttendanceReport(eventViewModel.CalendarSearchFromDate, eventViewModel.CalendarSearchToDate, eventViewModel.SelectedCalendar, Topo.Constants.OutputType.pdf);
                 }
-                if (button == "AttendanceCSV")
+                if (button == "AttendanceReportXlsx")
                 {
-                    return await AttendanceCSV(eventViewModel.CalendarSearchFromDate, eventViewModel.CalendarSearchToDate, eventViewModel.SelectedCalendar);
+                    return await AttendanceReport(eventViewModel.CalendarSearchFromDate, eventViewModel.CalendarSearchToDate, eventViewModel.SelectedCalendar, Topo.Constants.OutputType.xlsx);
                 }
                 await _eventService.SetCalendar(eventViewModel.SelectedCalendar);
                 var events = await _eventService.GetEventsForDates(eventViewModel.CalendarSearchFromDate, eventViewModel.CalendarSearchToDate);
@@ -91,165 +87,90 @@ namespace Topo.Controllers
             var selectedEvent = _storageService.Events?.Where(e => e.Value == eventId).FirstOrDefault().Text;
             var groupName = _storageService.GroupName;
             var unitName = _storageService.SelectedUnitName ?? "";
+            var unit = _storageService.GetProfilesResult.profiles.FirstOrDefault(u => u.unit.name == unitName);
+            if (unit == null)
+                throw new IndexOutOfRangeException($"No unit found with name {unitName}. You may not have permissions to this section");
+            var section = unit.unit.section;
+
             var model = await _memberListService.GetMembersAsync();
-            var signInSheetReport = new Report();
-            var directory = Directory.GetCurrentDirectory();
-            signInSheetReport.Load($@"{directory}/Reports/SignInSheet.frx");
-            signInSheetReport.SetParameterValue("GroupName", groupName);
-            signInSheetReport.SetParameterValue("UnitName", unitName);
-            signInSheetReport.SetParameterValue("Event", selectedEvent);
-            signInSheetReport.RegisterData(model, "Members");
 
-            if (signInSheetReport.Prepare())
-            {
-                // Set PDF export props
-                PDFSimpleExport pdfExport = new PDFSimpleExport();
-                pdfExport.ShowProgress = false;
+            var workbook = _reportService.GenerateSignInSheetWorkbook(model, groupName, section, unitName, selectedEvent);
 
-                MemoryStream strm = new MemoryStream();
-                signInSheetReport.Report.Export(pdfExport, strm);
-                signInSheetReport.Dispose();
-                pdfExport.Dispose();
-                strm.Position = 0;
+            //Stream as Excel file
+            MemoryStream strm = new MemoryStream();
 
-                // return stream in browser
-                return File(strm, "application/pdf", $"SignInSheet_{unitName.Replace(' ', '_')}_{selectedEvent.Replace(' ', '_')}.pdf");
-            }
-            else
-            {
-                SetViewBag();
-                return View();
-            }
+            //Initialize XlsIO renderer.
+            XlsIORenderer renderer = new XlsIORenderer();
+
+            //Convert Excel document into PDF document 
+            var sheet = workbook.Worksheets[0];
+            sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
+            sheet.PageSetup.Orientation = ExcelPageOrientation.Portrait;
+            PdfDocument pdfDocument = renderer.ConvertToPDF(sheet);
+            pdfDocument.Save(strm);
+
+            // return stream in browser
+            return File(strm.ToArray(), "application/pdf", $"SignInSheet_{unitName.Replace(' ', '_')}_{selectedEvent.Replace(' ', '_')}.pdf");
+
         }
 
         public async Task<ActionResult> AttendanceList(string eventId)
         {
             var groupName = _storageService.GroupName;
             var unitName = _storageService.SelectedUnitName ?? "";
+            var unit = _storageService.GetProfilesResult.profiles.FirstOrDefault(u => u.unit.name == unitName);
+            if (unit == null)
+                throw new IndexOutOfRangeException($"No unit found with name {unitName}. You may not have permissions to this section");
+            var section = unit.unit.section;
 
             var eventListModel = await _eventService.GetAttendanceForEvent(eventId);
+            var workbook = _reportService.GenerateEventAttendanceWorkbook(eventListModel, groupName, section, unitName);
 
-            MemoryStream ms = new MemoryStream();
-            // Encoding.UTF8 produces stream with BOM, new UTF8Encoding(false) - without BOM
-            using (StreamWriter sw = new StreamWriter(ms, new UTF8Encoding(false), 8192, true))
-            {
-                sw.WriteLine(groupName);
-                sw.WriteLine(unitName);
-                sw.WriteLine(eventListModel.EventDisplay);
-                sw.WriteLine();
-                PropertyInfo[] properties = typeof(Attendee_Members).GetProperties();
-                sw.WriteLine(string.Join(",", properties.Where(x => x.Name != "id").Select(x => x.Name)));
+            MemoryStream strm = new MemoryStream();
+            //Stream as Excel file
+            workbook.SaveAs(strm);
 
-                foreach (Attendee_Members attendee in eventListModel.attendees.OrderBy(a => a.last_name))
-                {
-                    sw.WriteLine(string.Join(",", properties.Where(x => x.Name != "id").Select(prop => prop.GetValue(attendee))));
-                }
-            }
-            ms.Position = 0;
-            return File(ms, "application/vnd.ms-excel", $"Attendance_{unitName.Replace(' ', '_')}_{eventListModel.EventDisplay.Replace(' ', '_')}.csv");
+            // return stream in browser
+            return File(strm.ToArray(), "application/vnd.ms-excel", $"Attendance_{unitName.Replace(' ', '_')}_{eventListModel.EventDisplay.Replace(' ', '_')}.xlsx");
         }
 
-        private async Task<ActionResult> AttendanceReport(DateTime fromDate, DateTime toDate, string selectedCalendar)
+        private async Task<ActionResult> AttendanceReport(DateTime fromDate, DateTime toDate, string selectedCalendar, Topo.Constants.OutputType outputType)
         {
             var attendanceReportData = await _eventService.GenerateAttendanceReportData(fromDate, toDate, selectedCalendar);
 
             var groupName = _storageService.GroupName;
             var unitName = _storageService.SelectedUnitName ?? "";
-            var report = new Report();
-            var directory = Directory.GetCurrentDirectory();
-            report.Load($@"{directory}/Reports/Attendance.frx");
-            report.SetParameterValue("GroupName", groupName);
-            report.SetParameterValue("UnitName", unitName);
-            report.SetParameterValue("FromDate", fromDate.ToShortDateString());
-            report.SetParameterValue("ToDate", toDate.ToShortDateString());
-            report.SetParameterValue("TotalEvents", attendanceReportData.attendanceReportChallengeAreaSummaries.FirstOrDefault()?.TotalEvents ?? 0);
-            report.SetParameterValue("CommunityEvents", attendanceReportData.attendanceReportChallengeAreaSummaries.Where(c => c.ChallengeArea == "Community").FirstOrDefault()?.EventCount ?? 0);
-            report.SetParameterValue("CreativeEvents", attendanceReportData.attendanceReportChallengeAreaSummaries.Where(c => c.ChallengeArea == "Creative").FirstOrDefault()?.EventCount ?? 0);
-            report.SetParameterValue("OutdoorsEvents", attendanceReportData.attendanceReportChallengeAreaSummaries.Where(c => c.ChallengeArea == "Outdoors").FirstOrDefault()?.EventCount ?? 0);
-            report.SetParameterValue("PersonalGrowthEvents", attendanceReportData.attendanceReportChallengeAreaSummaries.Where(c => c.ChallengeArea == "Personal Growth").FirstOrDefault()?.EventCount ?? 0);
-            report.RegisterData(attendanceReportData.attendanceReportItems.ToList(), "MemberAttendance");
+            var section = _storageService.SelectedSection;
 
+            var workbook = _reportService.GenerateAttendanceReportWorkbook(attendanceReportData, groupName, section, unitName, fromDate, toDate, outputType == Constants.OutputType.pdf);
 
-            if (report.Prepare())
+            //Stream as Excel file
+            MemoryStream strm = new MemoryStream();
+
+            if (outputType == Constants.OutputType.pdf)
             {
-                // Set PDF export props
-                PDFSimpleExport pdfExport = new PDFSimpleExport();
-                pdfExport.ShowProgress = false;
+                //Initialize XlsIO renderer.
+                XlsIORenderer renderer = new XlsIORenderer();
 
-                MemoryStream strm = new MemoryStream();
-                report.Report.Export(pdfExport, strm);
-                report.Dispose();
-                pdfExport.Dispose();
-                strm.Position = 0;
+                //Convert Excel document into PDF document 
+                var sheet = workbook.Worksheets[0];
+
+                PdfDocument pdfDocument = renderer.ConvertToPDF(sheet);
+                pdfDocument.Save(strm);
 
                 // return stream in browser
-                return File(strm, "application/pdf", $"Attendance_{unitName.Replace(' ', '_')}.pdf");
+                return File(strm.ToArray(), "application/pdf", $"Attendance_{unitName.Replace(' ', '_')}.pdf");
             }
-            else
+
+            if (outputType == Constants.OutputType.xlsx)
             {
-                SetViewBag();
-                return View();
+                //Stream as Excel file
+                workbook.SaveAs(strm);
+
+                // return stream in browser
+                return File(strm.ToArray(), "application/vnd.ms-excel", $"Attendance_{unitName.Replace(' ', '_')}.xlsx");
             }
+            return View();
         }
-
-        private async Task<ActionResult> AttendanceCSV(DateTime fromDate, DateTime toDate, string selectedCalendar)
-        {
-
-            var attendanceReportData = await _eventService.GenerateAttendanceReportData(fromDate, toDate, selectedCalendar);
-
-            var groupName = _storageService.GroupName;
-            var unitName = _storageService.SelectedUnitName ?? "";
-            var groupedAttendances = attendanceReportData.attendanceReportItems.GroupBy(wa => $"{wa.IsAdultMember} {wa.MemberName}").ToList();
-            var quote = '"';
-            MemoryStream ms = new MemoryStream();
-            // Encoding.UTF8 produces stream with BOM, new UTF8Encoding(false) - without BOM
-            using (StreamWriter sw = new StreamWriter(ms, new UTF8Encoding(false), 8192, true))
-            {
-                sw.WriteLine(groupName);
-                sw.WriteLine(unitName);
-                sw.WriteLine($"Attendance from {fromDate.ToShortDateString()} to {toDate.ToShortDateString()}");
-                sw.WriteLine();
-                sw.Write(",Challenge Area,");
-                sw.WriteLine(string.Join(",", groupedAttendances.FirstOrDefault().Select(a => a.EventChallengeArea)));
-                sw.Write(",Event Date,");
-                sw.WriteLine(string.Join(",", groupedAttendances.FirstOrDefault().Select(a => a.EventStartDate.ToShortDateString())));
-                sw.Write("Adult/Youth,Scout,");
-                sw.WriteLine(string.Join(",", groupedAttendances.FirstOrDefault().Select(a => a.EventName)));
-
-                foreach (var groupedAttendance in groupedAttendances.OrderBy(ga => ga.Key))
-                {
-                    var member = groupedAttendance.FirstOrDefault()?.MemberName ?? "";
-                    var isAdult = groupedAttendance.FirstOrDefault()?.IsAdultMember ?? 0;
-                    sw.Write($"{isAdult},{member},");
-                    sw.WriteLine(string.Join(", ", groupedAttendance.OrderBy(ga => ga.EventStartDate).Select(a => a.Attended)));
-                }
-            }
-            ms.Position = 0;
-            return File(ms, "application/vnd.ms-excel", $"Attendance{unitName.Replace(' ', '_')}.csv");
-        }
-
     }
 }
-
-////Build report template for model
-//var reportDS = new Report();
-//var directoryDS = Directory.GetCurrentDirectory();
-//reportDS.Dictionary.RegisterBusinessObject(
-//        new List<AttendanceReportItemModel>(),
-//        "MemberAttendance",
-//        2,
-//        true
-//    );
-//reportDS.Dictionary.RegisterBusinessObject(
-//        new List<AttendanceReportMemberSummaryModel>(),
-//        "MemberSummaries",
-//        2,
-//        true
-//    );
-//reportDS.Dictionary.RegisterBusinessObject(
-//        new List<AttendanceReportChallengeAreaSummaryModel>(),
-//        "ChallengeSummaries",
-//        2,
-//        true
-//    );
-//reportDS.Save(@$"{directoryDS}/Reports/AttendanceSummary.frx");

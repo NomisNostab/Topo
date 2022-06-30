@@ -71,17 +71,17 @@
                     @Html.DisplayFor(model => item.ChallengeArea)
                 </div>
                 <div class="col-md-4">
-                    @Html.ActionLink("Generate Sign In Sheet", "SignInSheet", "Events", new { eventId = item.Id }) |
-                    @Html.ActionLink("Download Attendance", "AttendanceList", "Events", new { eventId = item.Id })
+                    @Html.ActionLink("Sign In Sheet", "SignInSheet", "Events", new { eventId = item.Id }) |
+                    @Html.ActionLink("Event Attendance", "AttendanceList", "Events", new { eventId = item.Id })
                 </div>
             </div>
         }
         <div class="mt-3 mb-3 row">
             <div class="col-sm-3">
-                <button type="submit" name="button" value="AttendanceReport" class="btn btn-primary">Generate Attendance report</button> &nbsp;
+                <button type="submit" name="button" value="AttendanceReportPdf" class="btn btn-primary">Attendance Report (pdf)</button> &nbsp;
             </div>
             <div class="col-sm-3">
-                <button type="submit" name="button" value="AttendanceCSV" class="btn btn-success">Generate Attendance csv</button>
+                <button type="submit" name="button" value="AttendanceReportXlsx" class="btn btn-success">Attendance Report (xlsx)</button>
             </div>
         </div>
 

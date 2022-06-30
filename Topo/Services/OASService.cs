@@ -1,5 +1,4 @@
-﻿using FastReport;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Globalization;
 using Topo.Models.OAS;
 
@@ -12,8 +11,7 @@ namespace Topo.Services
         public List<SelectListItem> GetOASStageListItems(List<OASStageListModel> oasStageListModels);
         public Task<GetUnitAchievementsResultsModel> GetUnitAchievements(string unit, string stream, string branch, int stage);
         public Task<List<OASTemplate>> GetOASTemplate(string templateName);
-        public Task<Report> GenerateOASWorksheet(string selectedUnitId, string selectedStageTemplate, bool hideCompletedMembers);
-        public Task<List<OASWorksheetAnswers>> GenerateOASWorksheetCSV(string selectedUnitId, string selectedStageTemplate, bool hideCompletedMembers);
+        public Task<List<OASWorksheetAnswers>> GenerateOASWorksheetAnswers(string selectedUnitId, string selectedStageTemplate, bool hideCompletedMembers, List<OASTemplate> templateList);
     }
     public class OASService : IOASService
     {
@@ -169,35 +167,7 @@ namespace Topo.Services
             return 4;
         }
 
-        public async Task<Report> GenerateOASWorksheet(string selectedUnitId, string selectedStageTemplate, bool hideCompletedMembers)
-        {
-            var templateList = await GetOASTemplate(selectedStageTemplate.Replace("/latest.json", ""));
-
-            var templateTitle = templateList.Count > 0 ? templateList[0].TemplateTitle : "";
-            if (hideCompletedMembers)
-                templateTitle += " (in progress)";
-            var sortedAnswers = await GenerateOASWorksheetAnswers(selectedUnitId, selectedStageTemplate, hideCompletedMembers, templateList);
-            var groupName = _storageService.GroupName;
-            var unitName = _storageService.SelectedUnitName ?? "";
-            var report = new Report();
-            var directory = Directory.GetCurrentDirectory();
-            report.Load($@"{directory}/Reports/OASWorksheet.frx");
-            report.SetParameterValue("GroupName", groupName);
-            report.SetParameterValue("UnitName", unitName);
-            report.SetParameterValue("OASStage", templateTitle);
-            report.RegisterData(sortedAnswers, "OASWorksheets");
-
-            return report;
-        }
-
-        public async Task<List<OASWorksheetAnswers>> GenerateOASWorksheetCSV(string selectedUnitId, string selectedStageTemplate, bool hideCompletedMembers)
-        {
-            var templateList = await GetOASTemplate(selectedStageTemplate.Replace("/latest.json", ""));
-            var sortedAnswers = await GenerateOASWorksheetAnswers(selectedUnitId, selectedStageTemplate, hideCompletedMembers, templateList);
-            return sortedAnswers;
-        }
-
-        private async Task<List<OASWorksheetAnswers>> GenerateOASWorksheetAnswers(string selectedUnitId, string selectedStageTemplate, bool hideCompletedMembers, List<OASTemplate> templateList)
+        public async Task<List<OASWorksheetAnswers>> GenerateOASWorksheetAnswers(string selectedUnitId, string selectedStageTemplate, bool hideCompletedMembers, List<OASTemplate> templateList)
         {
             var selectedStage = _storageService.OASStageList.Where(s => s.TemplateLink == selectedStageTemplate).SingleOrDefault();
             var getUnitAchievementsResultsModel = await GetUnitAchievements(selectedUnitId, selectedStage.Stream.ToLower(), selectedStage.Branch, selectedStage.Stage);
@@ -345,6 +315,7 @@ namespace Topo.Services
 
             return sortedAnswers;
         }
+
         private DateTime ConvertAnswerDate(string answerValue, DateTime updatedDate)
         {
             // Question answer dates seem to be either AU or US format. WTF!

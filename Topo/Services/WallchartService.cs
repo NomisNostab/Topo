@@ -1,11 +1,9 @@
-﻿using FastReport;
-using Topo.Models.Wallchart;
+﻿using Topo.Models.Wallchart;
 
 namespace Topo.Services
 {
     public interface IWallchartService
     {
-        Task<Report> GenerateWallchartReport(string selectedUnitId);
         Task<List<WallchartItemModel>> GetWallchartItems(string selectedUnitId);
     }
     public class WallchartService : IWallchartService
@@ -23,32 +21,13 @@ namespace Topo.Services
             _logger = logger;
         }
 
-        public async Task<Report> GenerateWallchartReport(string selectedUnitId)
-        {
-            var wallchartItems = await GetWallchartItems(selectedUnitId);
-            var groupName = _storageService.GroupName;
-            var unitName = _storageService.SelectedUnitName ?? "";
-            var report = new Report();
-            var directory = Directory.GetCurrentDirectory();
-            report.Load(@$"{directory}/Reports/Wallchart.frx");
-            report.SetParameterValue("GroupName", groupName);
-            report.SetParameterValue("UnitName", unitName);
-            report.SetParameterValue("ReportDate", DateTime.Now.ToShortDateString());
-            report.RegisterData(wallchartItems, "Wallchart");
-
-            return report;
-        }
-
         public async Task<List<WallchartItemModel>> GetWallchartItems(string selectedUnitId)
         {
             var cachedWallchartItems = _storageService.CachedWallchartItems.Where(cm => cm.Key == selectedUnitId).FirstOrDefault().Value;
             if (cachedWallchartItems != null)
                 return cachedWallchartItems;
 
-            var unit = _storageService.GetProfilesResult.profiles.FirstOrDefault(u => u.unit.id == selectedUnitId);
-            if (unit == null)
-                throw new IndexOutOfRangeException($"No unit found. You may not have permissions to this section");
-            var section = unit.unit.section;
+            var section = _storageService.SelectedSection;
 
             var wallchartItems = new List<WallchartItemModel>();
             var getGroupLifeResultModel = await _terrainAPIService.GetGroupLifeForUnit(selectedUnitId);
