@@ -4,15 +4,14 @@ namespace Topo.Models.OAS
 {
     public class OASWorksheetAnswers
     {
-        [Key]
-        public int Id { get; set; }
-        public string InputId { get; set; }
-        public string InputTitle { get; set; }
+        public string TemplateTitle { get; set; } = string.Empty;
+        public string InputId { get; set; } = string.Empty;
+        public string InputTitle { get; set; } = string.Empty;
         public int InputTitleSortIndex { get; set; }
-        public string InputLabel { get; set; }
+        public string InputLabel { get; set; } = string.Empty;
         public int InputSortIndex { get; set; }
-        public string MemberId { get; set; }
-        public string MemberName { get; set; }
+        public string MemberId { get; set; } = string.Empty;
+        public string MemberName { get; set; } = string.Empty;
         public DateTime? MemberAnswer { get; set; }
     }
 }

@@ -40,9 +40,16 @@ namespace Topo.Controllers
                 model.SelectedUnitId = _storageService.SelectedUnitId;
             if (_storageService.SelectedUnitName != null)
                 model.SelectedUnitName = _storageService.SelectedUnitName;
-            model.Streams = _oasService.GetOASStreamList();
             if (model.Stages == null)
                 model.Stages = new List<SelectListItem>();
+            var oasStageList = new List<OASStageListModel>();
+            foreach (var stream in _oasService.GetOASStreamList())
+            {
+                var stageList = _oasService.GetOASStageList(stream.Value).Result;
+                oasStageList.AddRange(stageList);
+            }
+            _storageService.OASStageList = oasStageList;
+            model.Stages = _oasService.GetOASStageListItems(_storageService.OASStageList);
             SetViewBag();
             return model;
         }
@@ -61,57 +68,46 @@ namespace Topo.Controllers
         {
             var model = new OASIndexViewModel();
             ModelState.Remove("button");
-            if (oasIndexViewModel.SelectedStream != null && oasIndexViewModel.SelectedStage != null && !oasIndexViewModel.SelectedStage.Contains(oasIndexViewModel.SelectedStream))
-                ModelState.AddModelError("SelectedStage", "Select new stage");
 
-            if (ModelState.IsValid)
+            if (ModelState.IsValid && oasIndexViewModel.SelectedStages.Any())
             {
                 _storageService.SelectedUnitId = oasIndexViewModel.SelectedUnitId;
                 if (_storageService.Units != null)
                     _storageService.SelectedUnitName = _storageService.Units.Where(u => u.Value == oasIndexViewModel.SelectedUnitId)?.FirstOrDefault()?.Text;
                 model = SetUpViewModel();
-                model.Stages = _oasService.GetOASStageListItems(_storageService.OASStageList);
-                model.SelectedStream = oasIndexViewModel.SelectedStream;
-                model.SelectedStage = oasIndexViewModel.SelectedStage;
+                model.SelectedStages = oasIndexViewModel.SelectedStages;
                 if (button == "OASReportPdf")
                 {
-                    return await OASWorkbook(oasIndexViewModel.SelectedUnitId, oasIndexViewModel.SelectedStage, oasIndexViewModel.HideCompletedMembers, Constants.OutputType.pdf);
+                    return await OASWorkbook(oasIndexViewModel.SelectedUnitId, oasIndexViewModel.SelectedStages, oasIndexViewModel.HideCompletedMembers, Constants.OutputType.pdf);
                 }
                 if (button == "OASReportXlsx")
                 {
-                    return await OASWorkbook(oasIndexViewModel.SelectedUnitId, oasIndexViewModel.SelectedStage, oasIndexViewModel.HideCompletedMembers, Constants.OutputType.xlsx);
+                    return await OASWorkbook(oasIndexViewModel.SelectedUnitId, oasIndexViewModel.SelectedStages, oasIndexViewModel.HideCompletedMembers, Constants.OutputType.xlsx);
                 }
             }
             else
             {
                 model = SetUpViewModel();
-
-                if (oasIndexViewModel.SelectedStream != null)
-                {
-                    _storageService.OASStageList = await _oasService.GetOASStageList(oasIndexViewModel.SelectedStream);
-                    model.Stages = _oasService.GetOASStageListItems(_storageService.OASStageList);
-                    model.SelectedStream = oasIndexViewModel.SelectedStream;
-                    model.SelectedStage = "";
-                }
+                model.SelectedStages = null;
             }
             return View(model);
         }
 
-        private async Task<ActionResult> OASWorkbook(string selectedUnitId, string selectedStageTemplate, bool hideCompletedMembers, Constants.OutputType outputType)
+        private async Task<ActionResult> OASWorkbook(string selectedUnitId, string[] selectedStageTemplates, bool hideCompletedMembers, Constants.OutputType outputType)
         {
-            var templateList = await _oasService.GetOASTemplate(selectedStageTemplate.Replace("/latest.json", ""));
-            var templateName = selectedStageTemplate.Replace("/latest.json", "").Replace('/', '_');
-            var templateTitle = templateList.Count > 0 ? templateList[0].TemplateTitle : "";
-            if (hideCompletedMembers)
-                templateTitle += " (in progress)";
-
-            var sortedAnswers = await _oasService.GenerateOASWorksheetAnswers(selectedUnitId, selectedStageTemplate, hideCompletedMembers, templateList);
+            var sortedAnswers = new List<OASWorksheetAnswers>();
+            foreach (var selectedStageTemplate in selectedStageTemplates)
+            {
+                var templateList = await _oasService.GetOASTemplate(selectedStageTemplate.Replace("/latest.json", ""));
+                var sortedTemplateAnswers = await _oasService.GenerateOASWorksheetAnswers(selectedUnitId, selectedStageTemplate, hideCompletedMembers, templateList);
+                sortedAnswers.AddRange(sortedTemplateAnswers);
+            }
 
             var groupName = _storageService.GroupName;
             var unitName = _storageService.SelectedUnitName ?? "";
             var section = _storageService.SelectedSection;
 
-            var workbook = _reportService.GenerateOASWorksheetWorkbook(sortedAnswers, groupName, section, unitName, templateTitle, outputType == Constants.OutputType.pdf);
+            var workbook = _reportService.GenerateOASWorksheetWorkbook(sortedAnswers, groupName, section, unitName, outputType == Constants.OutputType.pdf);
 
             //Stream 
             MemoryStream strm = new MemoryStream();
@@ -122,7 +118,7 @@ namespace Topo.Controllers
                 workbook.SaveAs(strm);
 
                 // return stream in browser
-                return File(strm.ToArray(), "application/vnd.ms-excel", $"OAS_Worksheet_{unitName.Replace(' ', '_')}_{templateName}.xlsx");
+                return File(strm.ToArray(), "application/vnd.ms-excel", $"OAS_Worksheet_{unitName.Replace(' ', '_')}.xlsx");
             }
             else
             {
@@ -137,7 +133,7 @@ namespace Topo.Controllers
                 pdfDocument.Save(strm);
 
                 // return stream in browser
-                return File(strm.ToArray(), "application/pdf", $"OAS_Worksheet_{unitName.Replace(' ', '_')}_{templateName}.pdf");
+                return File(strm.ToArray(), "application/pdf", $"OAS_Worksheet_{unitName.Replace(' ', '_')}.pdf");
             }
         }
 

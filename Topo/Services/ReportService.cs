@@ -21,7 +21,7 @@ namespace Topo.Services
         public IWorkbook GenerateSignInSheetWorkbook(List<MemberListModel> memberListModel, string groupName, string section, string unitName, string eventName);
         public IWorkbook GenerateEventAttendanceWorkbook(EventListModel eventListModel, string groupName, string section, string unitName);
         public IWorkbook GenerateAttendanceReportWorkbook(AttendanceReportModel attendanceReportData, string groupName, string section, string unitName, DateTime fromDate, DateTime toDate, bool forPdfOutput);
-        public IWorkbook GenerateOASWorksheetWorkbook(List<OASWorksheetAnswers> worksheetAnswers, string groupName, string section, string unitName, string templateTitle, bool forPdfOutput);
+        public IWorkbook GenerateOASWorksheetWorkbook(List<OASWorksheetAnswers> worksheetAnswers, string groupName, string section, string unitName, bool forPdfOutput);
         public IWorkbook GenerateSIAWorkbook(List<SIAProjectListModel> siaProjects, string groupName, string section, string unitName, bool forPdfOutput);
         public IWorkbook GenerateMilestoneWorkbook(List<MilestoneSummaryListModel> milestoneSummaries, string groupName, string section, string unitName, bool forPdfOutput);
         public IWorkbook GenerateLogbookWorkbook(List<MemberLogbookReportViewModel> logbookEntries, string groupName, string section, string unitName, bool forPdfOutput);
@@ -112,7 +112,7 @@ namespace Topo.Services
             _images = images;
         }
 
-        private IWorkbook CreateWorkbookWithLogo(string groupName, string section, int lastHeadingCol)
+        private IWorkbook CreateWorkbookWithSheets(int sheetsToCreate)
         {
             //Step 1 : Instantiate the spreadsheet creation engine.
             ExcelEngine excelEngine = new ExcelEngine();
@@ -121,8 +121,21 @@ namespace Topo.Services
             application.DefaultVersion = ExcelVersion.Excel2016;
 
             // Creating new workbook
-            IWorkbook workbook = application.Workbooks.Create(1);
-            IWorksheet sheet = workbook.Worksheets[0];
+            IWorkbook workbook = application.Workbooks.Create(sheetsToCreate);
+
+            //Adding cell style.               
+            IStyle headingStyle = workbook.Styles.Add("headingStyle");
+            headingStyle.Font.Bold = true;
+            headingStyle.Font.Size = 14;
+            headingStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+            headingStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+
+            return workbook;
+        }
+
+        private IWorksheet AddLogoToSheet(IWorkbook workbook, int worksheetIndex, string groupName, string section, int lastHeadingCol)
+        {
+            IWorksheet sheet = workbook.Worksheets[worksheetIndex];
 
             // Add Logo
             var directory = Directory.GetCurrentDirectory();
@@ -133,20 +146,20 @@ namespace Topo.Services
             logo.Width = 100;
             logo.Height = (int)(100 * aspectRatio);
 
-            //Adding cell style.               
-            IStyle headingStyle = workbook.Styles.Add("headingStyle");
-            headingStyle.Font.Bold = true;
-            headingStyle.Font.Size = 14;
-            headingStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-            headingStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
-
             // Add Group Name
             var groupNameCell = sheet.Range[1, 2];
             groupNameCell.Text = groupName;
-            groupNameCell.CellStyle = headingStyle;
+            groupNameCell.CellStyle = workbook.Styles["headingStyle"];
             sheet.Range[1, 2, 1, lastHeadingCol].Merge();
             sheet.SetRowHeight(1, 30);
 
+            return sheet;
+        }
+
+        private IWorkbook CreateWorkbookWithLogo(string groupName, string section, int lastHeadingCol)
+        {
+            var workbook = CreateWorkbookWithSheets(1);
+            AddLogoToSheet(workbook, 0, groupName, section, lastHeadingCol);
             return workbook;
         }
         public IWorkbook GenerateAdditionalAwardsWorkbook(List<AdditionalAwardSpecificationListModel> awardSpecificationsList, List<AdditionalAwardListModel> sortedAdditionalAwardsList, List<string>? distinctAwards, string groupName, string section, string unitName)
@@ -892,107 +905,113 @@ namespace Topo.Services
             return workbook;
         }
 
-        public IWorkbook GenerateOASWorksheetWorkbook(List<OASWorksheetAnswers> worksheetAnswers, string groupName, string section, string unitName, string templateTitle, bool forPdfOutput)
+        public IWorkbook GenerateOASWorksheetWorkbook(List<OASWorksheetAnswers> worksheetAnswers, string groupName, string section, string unitName, bool forPdfOutput)
         {
-            var workbook = CreateWorkbookWithLogo(groupName, section, 10);
-            IWorksheet sheet = workbook.Worksheets[0];
-            int rowNumber = 1;
-            int columnNumber = 1;
-
-            IStyle headingStyle = workbook.Styles["headingStyle"];
-
-            // Add Unit name
-            rowNumber++;
-            var unit = sheet.Range[rowNumber, 2];
-            unit.Text = unitName;
-            unit.CellStyle = headingStyle;
-            sheet.Range[rowNumber, 2, rowNumber, 10].Merge();
-            sheet.SetRowHeight(rowNumber, 25);
-
-            // Add Title
-            rowNumber++;
-            var title = sheet.Range[rowNumber, 2];
-            title.Text = $"{templateTitle} as at {DateTime.Now.ToShortDateString()}";
-            title.CellStyle = headingStyle;
-            sheet.Range[rowNumber, 2, rowNumber, 10].Merge();
-            sheet.SetRowHeight(rowNumber, 25);
-
-            rowNumber++;
-            var pdrText = "";
-            int pdrStartCol = 99;
-            var groupedAnswers = worksheetAnswers.GroupBy(x => x.MemberName).ToList();
-            foreach (var plan in groupedAnswers.FirstOrDefault().OrderBy(ga => ga.InputTitleSortIndex).ThenBy(ga => ga.InputSortIndex).ToList())
+            var worksheetAnswersGroupedByTemplate = worksheetAnswers.GroupBy(wa => wa.TemplateTitle);
+            var workbook = CreateWorkbookWithSheets(worksheetAnswersGroupedByTemplate.Count());
+            var worksheetIndex = 0;
+            foreach (var templatAnswerGroup in worksheetAnswersGroupedByTemplate.OrderBy(a => a.Key))
             {
-                // Plan Do Review
-                columnNumber++;
-                if (pdrText != plan.InputTitle)
-                {
-                    pdrText = plan.InputTitle;
-                    sheet.Range[rowNumber, columnNumber].Text = plan.InputTitle;
-                    sheet.Range[rowNumber, columnNumber].CellStyle.ColorIndex = GetInputTitleColour(plan.InputTitle);
-                    sheet.Range[rowNumber, columnNumber].BorderAround();
-                    sheet.Range[rowNumber, columnNumber].CellStyle.Font.Bold = true;
-                    sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-                    if (pdrStartCol > columnNumber)
-                        pdrStartCol = columnNumber;
-                    else
-                    {
-                        sheet.Range[rowNumber, pdrStartCol, rowNumber, columnNumber - 1].Merge();
-                        sheet.Range[rowNumber, pdrStartCol, rowNumber, columnNumber - 1].BorderAround();
-                        pdrStartCol = columnNumber;
-                    }
-                }
+                IWorksheet sheet = AddLogoToSheet(workbook, worksheetIndex, groupName, section, 10);
+                sheet.Name = templatAnswerGroup.Key;
+                int rowNumber = 1;
+                int columnNumber = 1;
 
-                // iStatement
-                sheet.Range[rowNumber + 1, columnNumber].Text = plan.InputLabel;
-                sheet.Range[rowNumber + 1, columnNumber].BorderAround();
-                sheet.Range[rowNumber + 1, columnNumber].CellStyle.Font.Bold = true;
-                if (forPdfOutput)
+                IStyle headingStyle = workbook.Styles["headingStyle"];
+
+                // Add Unit name
+                rowNumber++;
+                var unit = sheet.Range[rowNumber, 2];
+                unit.Text = unitName;
+                unit.CellStyle = headingStyle;
+                sheet.Range[rowNumber, 2, rowNumber, 10].Merge();
+                sheet.SetRowHeight(rowNumber, 25);
+
+                // Add Title
+                string templateTitle = templatAnswerGroup.Key ?? "";
+                rowNumber++;
+                var title = sheet.Range[rowNumber, 2];
+                title.Text = $"{templateTitle} as at {DateTime.Now.ToShortDateString()}";
+                title.CellStyle = headingStyle;
+                sheet.Range[rowNumber, 2, rowNumber, 10].Merge();
+                sheet.SetRowHeight(rowNumber, 25);
+
+                rowNumber++;
+                var pdrText = "";
+                int pdrStartCol = 99;
+                var groupedAnswers = templatAnswerGroup.GroupBy(x => x.MemberName).ToList();
+                foreach (var plan in groupedAnswers.FirstOrDefault().OrderBy(ga => ga.InputTitleSortIndex).ThenBy(ga => ga.InputSortIndex).ToList())
                 {
+                    // Plan Do Review
+                    columnNumber++;
+                    if (pdrText != plan.InputTitle)
+                    {
+                        pdrText = plan.InputTitle;
+                        sheet.Range[rowNumber, columnNumber].Text = plan.InputTitle;
+                        sheet.Range[rowNumber, columnNumber].CellStyle.Color = GetInputTitleColour(plan.InputTitle);
+                        sheet.Range[rowNumber, columnNumber].BorderAround();
+                        sheet.Range[rowNumber, columnNumber].CellStyle.Font.Bold = true;
+                        sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                        if (pdrStartCol > columnNumber)
+                            pdrStartCol = columnNumber;
+                        else
+                        {
+                            sheet.Range[rowNumber, pdrStartCol, rowNumber, columnNumber - 1].Merge();
+                            sheet.Range[rowNumber, pdrStartCol, rowNumber, columnNumber - 1].BorderAround();
+                            pdrStartCol = columnNumber;
+                        }
+                    }
+
+                    // iStatement
+                    sheet.Range[rowNumber + 1, columnNumber].Text = plan.InputLabel;
+                    sheet.Range[rowNumber + 1, columnNumber].BorderAround();
+                    sheet.Range[rowNumber + 1, columnNumber].CellStyle.Font.Bold = true;
                     sheet.Range[rowNumber + 1, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                     sheet.Range[rowNumber + 1, columnNumber].CellStyle.Rotation = 90;
                     sheet.Range[rowNumber + 1, columnNumber].CellStyle.WrapText = true;
                     sheet.SetRowHeight(rowNumber + 1, 200);
+                    sheet.SetColumnWidth(columnNumber, 10);
                 }
-                sheet.SetColumnWidth(columnNumber, 10);
-            }
 
-            // Member Name and answers
-            rowNumber++;
-            rowNumber++;
-            columnNumber = 0;
-            foreach (var groupedAnswer in groupedAnswers.OrderBy(ga => ga.Key))
-            {
-                columnNumber++;
-                sheet.Range[rowNumber, columnNumber].Text = groupedAnswer.Key;
-                sheet.Range[rowNumber, columnNumber].BorderAround();
-                sheet.Range[rowNumber, columnNumber].CellStyle.Font.Bold = true;
-
-                foreach (var answer in groupedAnswer.OrderBy(ga => ga.InputTitleSortIndex).ThenBy(ga => ga.InputSortIndex))
-                {
-                    columnNumber++;
-                    if (answer.MemberAnswer.HasValue)
-                    {
-                        sheet.Range[rowNumber, columnNumber].DateTime = answer.MemberAnswer.Value;
-                        sheet.Range[rowNumber, columnNumber].CellStyle.ColorIndex = ExcelKnownColors.Sea_green;
-                    }
-                    sheet.Range[rowNumber, columnNumber].BorderAround();
-                }
+                // Member Name and answers
+                rowNumber++;
                 rowNumber++;
                 columnNumber = 0;
+                foreach (var groupedAnswer in groupedAnswers.OrderBy(ga => ga.Key))
+                {
+                    columnNumber++;
+                    sheet.Range[rowNumber, columnNumber].Text = groupedAnswer.Key;
+                    sheet.Range[rowNumber, columnNumber].BorderAround();
+                    sheet.Range[rowNumber, columnNumber].CellStyle.Font.Bold = true;
+
+                    foreach (var answer in groupedAnswer.OrderBy(ga => ga.InputTitleSortIndex).ThenBy(ga => ga.InputSortIndex))
+                    {
+                        columnNumber++;
+                        if (answer.MemberAnswer.HasValue)
+                        {
+                            sheet.Range[rowNumber, columnNumber].DateTime = answer.MemberAnswer.Value;
+                            sheet.Range[rowNumber, columnNumber].CellStyle.Color = Color.DarkSeaGreen;
+                        }
+                        sheet.Range[rowNumber, columnNumber].BorderAround();
+                    }
+                    rowNumber++;
+                    columnNumber = 0;
+                }
+
+                sheet.Range[1, 1, rowNumber, 1].AutofitColumns();
+
+                sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA3;
+                sheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
+                sheet.PageSetup.BottomMargin = 0.25;
+                sheet.PageSetup.TopMargin = 0.25;
+                sheet.PageSetup.LeftMargin = 0.25;
+                sheet.PageSetup.RightMargin = 0.25;
+                sheet.PageSetup.HeaderMargin = 0;
+                sheet.PageSetup.FooterMargin = 0;
+                sheet.PageSetup.IsFitToPage = true;
+
+                worksheetIndex++;
             }
-
-            sheet.Range[1, 1, rowNumber, 1].AutofitColumns();
-
-            sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA3;
-            sheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
-            sheet.PageSetup.BottomMargin = 0.25;
-            sheet.PageSetup.TopMargin = 0.25;
-            sheet.PageSetup.LeftMargin = 0.25;
-            sheet.PageSetup.RightMargin = 0.25;
-            sheet.PageSetup.HeaderMargin = 0;
-            sheet.PageSetup.FooterMargin = 0;
-            sheet.PageSetup.IsFitToPage = true;
 
             return workbook;
         }
@@ -1444,41 +1463,41 @@ namespace Topo.Services
                 SetWallchartCell(sheet.Range[rowNumber, 4], 1, wallchartGroups.participate, wallchartEntry.Milestone1Community);
                 SetWallchartCell(sheet.Range[rowNumber, 5], 1, wallchartGroups.participate, wallchartEntry.Milestone1Creative);
                 SetWallchartCell(sheet.Range[rowNumber, 6], 1, wallchartGroups.participate, wallchartEntry.Milestone1Outdoors);
-                SetWallchartCell(sheet.Range[rowNumber, 7], 1, wallchartGroups.participate,  wallchartEntry.Milestone1PersonalGrowth);
-                SetWallchartCell(sheet.Range[rowNumber, 8], 1, wallchartGroups.assist,  wallchartEntry.Milestone1Assist);
-                SetWallchartCell(sheet.Range[rowNumber, 9], 1, wallchartGroups.lead,  wallchartEntry.Milestone1Lead);
-                SetWallchartCell(sheet.Range[rowNumber, 10], 2, wallchartGroups.participate,  wallchartEntry.Milestone2Community);
-                SetWallchartCell(sheet.Range[rowNumber, 11], 2, wallchartGroups.participate,  wallchartEntry.Milestone2Creative);
-                SetWallchartCell(sheet.Range[rowNumber, 12], 2, wallchartGroups.participate,  wallchartEntry.Milestone2Outdoors);
-                SetWallchartCell(sheet.Range[rowNumber, 13], 2, wallchartGroups.participate,  wallchartEntry.Milestone2PersonalGrowth);
-                SetWallchartCell(sheet.Range[rowNumber, 14], 2, wallchartGroups.assist,  wallchartEntry.Milestone2Assist);
-                SetWallchartCell(sheet.Range[rowNumber, 15], 2, wallchartGroups.lead,  wallchartEntry.Milestone2Lead);
-                SetWallchartCell(sheet.Range[rowNumber, 16], 3, wallchartGroups.participate,  wallchartEntry.Milestone3Community);
-                SetWallchartCell(sheet.Range[rowNumber, 17], 3, wallchartGroups.participate,  wallchartEntry.Milestone3Creative);
-                SetWallchartCell(sheet.Range[rowNumber, 18], 3, wallchartGroups.participate,  wallchartEntry.Milestone3Outdoors);
-                SetWallchartCell(sheet.Range[rowNumber, 19], 3, wallchartGroups.participate,  wallchartEntry.Milestone3PersonalGrowth);
-                SetWallchartCell(sheet.Range[rowNumber, 20], 3, wallchartGroups.assist,  wallchartEntry.Milestone3Assist);
-                SetWallchartCell(sheet.Range[rowNumber, 21], 3, wallchartGroups.lead,  wallchartEntry.Milestone3Lead);
-                SetWallchartCell(sheet.Range[rowNumber, 22], 0, wallchartGroups.oasCore,  wallchartEntry.OASBushcraftStage);
-                SetWallchartCell(sheet.Range[rowNumber, 23], 0, wallchartGroups.oasCore,  wallchartEntry.OASBushwalkingStage);
-                SetWallchartCell(sheet.Range[rowNumber, 24], 0, wallchartGroups.oasCore,  wallchartEntry.OASCampingStage);
-                SetWallchartCell(sheet.Range[rowNumber, 25], 0, wallchartGroups.oasLand,  wallchartEntry.OASAlpineStage);
-                SetWallchartCell(sheet.Range[rowNumber, 26], 0, wallchartGroups.oasLand,  wallchartEntry.OASCyclingStage);
-                SetWallchartCell(sheet.Range[rowNumber, 27], 0, wallchartGroups.oasLand,  wallchartEntry.OASVerticalStage);
-                SetWallchartCell(sheet.Range[rowNumber, 28], 0, wallchartGroups.oasWater,  wallchartEntry.OASAquaticsStage);
-                SetWallchartCell(sheet.Range[rowNumber, 29], 0, wallchartGroups.oasWater,  wallchartEntry.OASBoatingStage);
-                SetWallchartCell(sheet.Range[rowNumber, 30], 0, wallchartGroups.oasWater,  wallchartEntry.OASPaddlingStage);
-                SetWallchartCell(sheet.Range[rowNumber, 31], 0, wallchartGroups.oasProgression,  wallchartEntry.OASStageProgressions);
-                SetWallchartCell(sheet.Range[rowNumber, 32], 0, wallchartGroups.siaOdd,  wallchartEntry.SIAAdventureSport);
-                SetWallchartCell(sheet.Range[rowNumber, 33], 0, wallchartGroups.siaEven,  wallchartEntry.SIAArtsLiterature);
-                SetWallchartCell(sheet.Range[rowNumber, 34], 0, wallchartGroups.siaOdd,  wallchartEntry.SIAEnvironment);
-                SetWallchartCell(sheet.Range[rowNumber, 35], 0, wallchartGroups.siaEven,  wallchartEntry.SIAStemInnovation);
-                SetWallchartCell(sheet.Range[rowNumber, 36], 0, wallchartGroups.siaOdd,  wallchartEntry.SIAGrowthDevelopment);
-                SetWallchartCell(sheet.Range[rowNumber, 37], 0, wallchartGroups.siaEven,  wallchartEntry.SIACreatingABetterWorld);
+                SetWallchartCell(sheet.Range[rowNumber, 7], 1, wallchartGroups.participate, wallchartEntry.Milestone1PersonalGrowth);
+                SetWallchartCell(sheet.Range[rowNumber, 8], 1, wallchartGroups.assist, wallchartEntry.Milestone1Assist);
+                SetWallchartCell(sheet.Range[rowNumber, 9], 1, wallchartGroups.lead, wallchartEntry.Milestone1Lead);
+                SetWallchartCell(sheet.Range[rowNumber, 10], 2, wallchartGroups.participate, wallchartEntry.Milestone2Community);
+                SetWallchartCell(sheet.Range[rowNumber, 11], 2, wallchartGroups.participate, wallchartEntry.Milestone2Creative);
+                SetWallchartCell(sheet.Range[rowNumber, 12], 2, wallchartGroups.participate, wallchartEntry.Milestone2Outdoors);
+                SetWallchartCell(sheet.Range[rowNumber, 13], 2, wallchartGroups.participate, wallchartEntry.Milestone2PersonalGrowth);
+                SetWallchartCell(sheet.Range[rowNumber, 14], 2, wallchartGroups.assist, wallchartEntry.Milestone2Assist);
+                SetWallchartCell(sheet.Range[rowNumber, 15], 2, wallchartGroups.lead, wallchartEntry.Milestone2Lead);
+                SetWallchartCell(sheet.Range[rowNumber, 16], 3, wallchartGroups.participate, wallchartEntry.Milestone3Community);
+                SetWallchartCell(sheet.Range[rowNumber, 17], 3, wallchartGroups.participate, wallchartEntry.Milestone3Creative);
+                SetWallchartCell(sheet.Range[rowNumber, 18], 3, wallchartGroups.participate, wallchartEntry.Milestone3Outdoors);
+                SetWallchartCell(sheet.Range[rowNumber, 19], 3, wallchartGroups.participate, wallchartEntry.Milestone3PersonalGrowth);
+                SetWallchartCell(sheet.Range[rowNumber, 20], 3, wallchartGroups.assist, wallchartEntry.Milestone3Assist);
+                SetWallchartCell(sheet.Range[rowNumber, 21], 3, wallchartGroups.lead, wallchartEntry.Milestone3Lead);
+                SetWallchartCell(sheet.Range[rowNumber, 22], 0, wallchartGroups.oasCore, wallchartEntry.OASBushcraftStage);
+                SetWallchartCell(sheet.Range[rowNumber, 23], 0, wallchartGroups.oasCore, wallchartEntry.OASBushwalkingStage);
+                SetWallchartCell(sheet.Range[rowNumber, 24], 0, wallchartGroups.oasCore, wallchartEntry.OASCampingStage);
+                SetWallchartCell(sheet.Range[rowNumber, 25], 0, wallchartGroups.oasLand, wallchartEntry.OASAlpineStage);
+                SetWallchartCell(sheet.Range[rowNumber, 26], 0, wallchartGroups.oasLand, wallchartEntry.OASCyclingStage);
+                SetWallchartCell(sheet.Range[rowNumber, 27], 0, wallchartGroups.oasLand, wallchartEntry.OASVerticalStage);
+                SetWallchartCell(sheet.Range[rowNumber, 28], 0, wallchartGroups.oasWater, wallchartEntry.OASAquaticsStage);
+                SetWallchartCell(sheet.Range[rowNumber, 29], 0, wallchartGroups.oasWater, wallchartEntry.OASBoatingStage);
+                SetWallchartCell(sheet.Range[rowNumber, 30], 0, wallchartGroups.oasWater, wallchartEntry.OASPaddlingStage);
+                SetWallchartCell(sheet.Range[rowNumber, 31], 0, wallchartGroups.oasProgression, wallchartEntry.OASStageProgressions);
+                SetWallchartCell(sheet.Range[rowNumber, 32], 0, wallchartGroups.siaOdd, wallchartEntry.SIAAdventureSport);
+                SetWallchartCell(sheet.Range[rowNumber, 33], 0, wallchartGroups.siaEven, wallchartEntry.SIAArtsLiterature);
+                SetWallchartCell(sheet.Range[rowNumber, 34], 0, wallchartGroups.siaOdd, wallchartEntry.SIAEnvironment);
+                SetWallchartCell(sheet.Range[rowNumber, 35], 0, wallchartGroups.siaEven, wallchartEntry.SIAStemInnovation);
+                SetWallchartCell(sheet.Range[rowNumber, 36], 0, wallchartGroups.siaOdd, wallchartEntry.SIAGrowthDevelopment);
+                SetWallchartCell(sheet.Range[rowNumber, 37], 0, wallchartGroups.siaEven, wallchartEntry.SIACreatingABetterWorld);
                 SetWallchartCell(sheet.Range[rowNumber, 38], 0, wallchartGroups.leadershipCourse, wallchartEntry.LeadershipCourse);
                 SetWallchartCell(sheet.Range[rowNumber, 39], 0, wallchartGroups.adventurousJourney, wallchartEntry.AdventurousJourney);
                 SetWallchartCell(sheet.Range[rowNumber, 40], 0, wallchartGroups.personalReflection, wallchartEntry.PersonalReflection);
-                SetWallchartCell(sheet.Range[rowNumber, 41], 0, wallchartGroups.intro,  wallchartEntry.PeakAward);
+                SetWallchartCell(sheet.Range[rowNumber, 41], 0, wallchartGroups.intro, wallchartEntry.PeakAward);
                 sheet.Range[rowNumber, 1, rowNumber, 41].BorderAround();
                 sheet.Range[rowNumber, 1, rowNumber, 41].BorderInside();
                 sheet.Range[rowNumber, 2, rowNumber, 41].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
@@ -1535,20 +1554,20 @@ namespace Topo.Services
             }
         }
 
-        private ExcelKnownColors GetInputTitleColour(string inputTitle)
+        private Color GetInputTitleColour(string inputTitle)
         {
             switch (inputTitle)
             {
                 case "Plan":
-                    return ExcelKnownColors.Pale_blue;
+                    return Color.LightBlue;
                 case "Do":
-                    return ExcelKnownColors.Sky_blue;
+                    return Color.SkyBlue;
                 case "Review":
-                    return ExcelKnownColors.Light_blue;
+                    return Color.CornflowerBlue;
                 case "Verify":
-                    return ExcelKnownColors.Blue_grey;
+                    return Color.RoyalBlue;
                 default:
-                    return ExcelKnownColors.None;
+                    return Color.White;
             }
         }
 
