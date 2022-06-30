@@ -85,11 +85,11 @@ namespace Topo.Services
             oasStreams.Add(new SelectListItem("Bushcraft", "bushcraft"));
             oasStreams.Add(new SelectListItem("Bushwalking", "bushwalking"));
             oasStreams.Add(new SelectListItem("Camping", "camping"));
-            oasStreams.Add(new SelectListItem("Alpine", "alpine"));
             oasStreams.Add(new SelectListItem("Aquatics", "aquatics"));
             oasStreams.Add(new SelectListItem("Boating", "boating"));
-            oasStreams.Add(new SelectListItem("Cycling", "cycling"));
             oasStreams.Add(new SelectListItem("Paddling", "paddling"));
+            oasStreams.Add(new SelectListItem("Alpine", "alpine"));
+            oasStreams.Add(new SelectListItem("Cycling", "cycling"));
             oasStreams.Add(new SelectListItem("Vertical", "vertical"));
 
             return oasStreams;
@@ -98,9 +98,21 @@ namespace Topo.Services
         public List<SelectListItem> GetOASStageListItems(List<OASStageListModel> oasStageListModels)
         {
             var oasStages = new List<SelectListItem>();
-            foreach (var stage in oasStageListModels)
+            foreach (var groupedStage in oasStageListModels.GroupBy(s => s.Stream))
             {
-                oasStages.Add(new SelectListItem(stage.SelectListItemText, stage.TemplateLink));
+                var currentGroup = new SelectListGroup
+                {
+                    Name = groupedStage.Key
+                };
+                foreach (var stage in groupedStage)
+                {
+                    oasStages.Add(new SelectListItem
+                    {
+                        Text = stage.SelectListItemText,
+                        Value = stage.TemplateLink,
+                        Group = currentGroup
+                    });
+                }
             }
             return oasStages;
         }
@@ -173,6 +185,9 @@ namespace Topo.Services
             var getUnitAchievementsResultsModel = await GetUnitAchievements(selectedUnitId, selectedStage.Stream.ToLower(), selectedStage.Branch, selectedStage.Stage);
             var members = await _memberListService.GetMembersAsync();
             var sortedMemberList = members.Where(m => m.isAdultLeader == 0).OrderBy(m => m.first_name).ThenBy(m => m.last_name).ToList();
+            var templateTitle = templateList.Count > 0 ? templateList[0].TemplateTitle : "";
+            if (hideCompletedMembers)
+                templateTitle += " (in progress)";
 
             var OASWorksheetAnswers = new List<OASWorksheetAnswers>();
 
@@ -182,6 +197,7 @@ namespace Topo.Services
                 {
                     OASWorksheetAnswers oASWorksheetAnswers = new OASWorksheetAnswers()
                     {
+                        TemplateTitle = templateTitle,
                         InputId = item.InputId,
                         InputTitle = item.InputGroup.Replace(">", ""),
                         InputLabel = item.InputLabel,
@@ -325,7 +341,7 @@ namespace Topo.Services
             try
             {
                 answerDate = DateTime.ParseExact(answerValue, "dd/MM/yyyy", CultureInfo.InvariantCulture); // Date in AU format
-                if (answerDate > updatedDate) 
+                if (answerDate > updatedDate)
                     // Answer date is after when the record was updated, so treat as a US date.
                     answerDate = DateTime.ParseExact(answerValue, "M/dd/yyyy", CultureInfo.InvariantCulture); // Date in US format
                 return answerDate;
