@@ -50,6 +50,7 @@ namespace Topo.Services
                             wallchartItem.Milestone1PersonalGrowth = 6;
                             wallchartItem.Milestone1Assist = 2;
                             wallchartItem.Milestone1Lead = 1;
+                            wallchartItem.Milestone1Awarded = milestone.status_updated;
                         }
                         else
                         {
@@ -71,6 +72,7 @@ namespace Topo.Services
                             wallchartItem.Milestone2PersonalGrowth = 5;
                             wallchartItem.Milestone2Assist = 3;
                             wallchartItem.Milestone2Lead = 2;
+                            wallchartItem.Milestone2Awarded = milestone.status_updated;
                         }
                         else
                         {
@@ -90,6 +92,7 @@ namespace Topo.Services
                         wallchartItem.Milestone3PersonalGrowth = milestone.participates.Where(p => p.challenge_area == "personal_growth").FirstOrDefault()?.total ?? 0;
                         wallchartItem.Milestone3Assist = milestone.total_assists;
                         wallchartItem.Milestone3Lead = milestone.total_leads;
+                        wallchartItem.Milestone3Awarded = milestone.awarded ? milestone.status_updated : null;
                     }
                 }
                 foreach (var oas in result.oas.highest.OrderBy(h => h.stream).ThenBy(h => h.stage))

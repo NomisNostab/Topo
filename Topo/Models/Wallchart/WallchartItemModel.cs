@@ -11,18 +11,21 @@
         public int Milestone1PersonalGrowth { get; set; }
         public int Milestone1Assist { get; set; }
         public int Milestone1Lead { get; set; }
+        public DateTime? Milestone1Awarded { get; set; }
         public int Milestone2Community { get; set; }
         public int Milestone2Outdoors { get; set; }
         public int Milestone2Creative { get; set; }
         public int Milestone2PersonalGrowth { get; set; }
         public int Milestone2Assist { get; set; }
         public int Milestone2Lead { get; set; }
+        public DateTime? Milestone2Awarded { get; set; }
         public int Milestone3Community { get; set; }
         public int Milestone3Outdoors { get; set; }
         public int Milestone3Creative { get; set; }
         public int Milestone3PersonalGrowth { get; set; }
         public int Milestone3Assist { get; set; }
         public int Milestone3Lead { get; set; }
+        public DateTime? Milestone3Awarded { get; set; }
         public int OASBushcraftStage { get; set; }
         public int OASBushwalkingStage { get; set; }
         public int OASCampingStage { get; set; }
