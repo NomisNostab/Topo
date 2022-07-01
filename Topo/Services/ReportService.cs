@@ -21,7 +21,7 @@ namespace Topo.Services
         public IWorkbook GenerateSignInSheetWorkbook(List<MemberListModel> memberListModel, string groupName, string section, string unitName, string eventName);
         public IWorkbook GenerateEventAttendanceWorkbook(EventListModel eventListModel, string groupName, string section, string unitName);
         public IWorkbook GenerateAttendanceReportWorkbook(AttendanceReportModel attendanceReportData, string groupName, string section, string unitName, DateTime fromDate, DateTime toDate, bool forPdfOutput);
-        public IWorkbook GenerateOASWorksheetWorkbook(List<OASWorksheetAnswers> worksheetAnswers, string groupName, string section, string unitName, bool forPdfOutput);
+        public IWorkbook GenerateOASWorksheetWorkbook(List<OASWorksheetAnswers> worksheetAnswers, string groupName, string section, string unitName, bool forPdfOutput, bool showByPatrol = false);
         public IWorkbook GenerateSIAWorkbook(List<SIAProjectListModel> siaProjects, string groupName, string section, string unitName, bool forPdfOutput);
         public IWorkbook GenerateMilestoneWorkbook(List<MilestoneSummaryListModel> milestoneSummaries, string groupName, string section, string unitName, bool forPdfOutput);
         public IWorkbook GenerateLogbookWorkbook(List<MemberLogbookReportViewModel> logbookEntries, string groupName, string section, string unitName, bool forPdfOutput);
@@ -905,9 +905,9 @@ namespace Topo.Services
             return workbook;
         }
 
-        public IWorkbook GenerateOASWorksheetWorkbook(List<OASWorksheetAnswers> worksheetAnswers, string groupName, string section, string unitName, bool forPdfOutput)
+        public IWorkbook GenerateOASWorksheetWorkbook(List<OASWorksheetAnswers> worksheetAnswers, string groupName, string section, string unitName, bool forPdfOutput, bool breakByPatrol = false)
         {
-            var worksheetAnswersGroupedByTemplate = worksheetAnswers.GroupBy(wa => wa.TemplateTitle);
+            var worksheetAnswersGroupedByTemplate = worksheetAnswers.GroupBy(wa => wa.TemplateTitle + (breakByPatrol ? " - " + wa.MemberPatrol : ""));
             var workbook = CreateWorkbookWithSheets(worksheetAnswersGroupedByTemplate.Count());
             var worksheetIndex = 0;
             foreach (var templatAnswerGroup in worksheetAnswersGroupedByTemplate.OrderBy(a => a.Key))

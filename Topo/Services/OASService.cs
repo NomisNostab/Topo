@@ -205,6 +205,7 @@ namespace Topo.Services
                         InputSortIndex = item.Id,
                         MemberId = member.id,
                         MemberName = $"{member.first_name} {member.last_name}",
+                        MemberPatrol = member.patrol_name,
                         MemberAnswer = null
                     };
                     OASWorksheetAnswers.Add(oASWorksheetAnswers);

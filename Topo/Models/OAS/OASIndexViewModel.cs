@@ -16,5 +16,8 @@ namespace Topo.Models.OAS
         [Display(Name = "Hide Completed Members")]
         public bool HideCompletedMembers { get; set; }
 
+        [Display(Name = "Break by Patrol")]
+        public bool BreakByPatrol { get; set; }
+
     }
 }

@@ -13,5 +13,6 @@ namespace Topo.Models.OAS
         public string MemberId { get; set; } = string.Empty;
         public string MemberName { get; set; } = string.Empty;
         public DateTime? MemberAnswer { get; set; }
+        public string MemberPatrol { get; set; } = string.Empty;
     }
 }

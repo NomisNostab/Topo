@@ -31,6 +31,10 @@
             @Html.DisplayNameFor(model => model.HideCompletedMembers) &nbsp;
             @Html.CheckBoxFor(model => model.HideCompletedMembers, new { id = "hideCompletedMembersCheckBoxId" })
         </div>
+        <div class="col-sm-3">
+            @Html.DisplayNameFor(model => model.BreakByPatrol) &nbsp;
+            @Html.CheckBoxFor(model => model.BreakByPatrol, new { id = "breakByPatrolCheckBoxId" })
+        </div>
     </div>
 
 </form>
