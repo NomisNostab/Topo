@@ -2,7 +2,7 @@
 {
     public static class Constants
     {
-        public const string Version = "1.24";
+        public const string Version = "1.25";
 
         public enum OutputType
         {
