@@ -72,9 +72,22 @@ The OAS Report shows for a given unit, stream and stage what each I Statement a 
 
 This can be handy when planning events around OAS streams.
 
-![TopoOAS](https://user-images.githubusercontent.com/65288066/166455113-1829a455-a9eb-4c7c-ab29-4b92a0e9b4b4.png)
+![TopoOASGroupedSelect](https://user-images.githubusercontent.com/65288066/176981885-76a0cb4d-0e3b-4bf1-aa3b-1c76316685ec.png)
 
-Select the Unit, Stream, Stage and click Generate OAS Report to download the report. Use the Hide completed members option to only show in progress members in the report.
+The OAS Stages are grouped by Stream.
+
+![TopoOASFilteredSelect](https://user-images.githubusercontent.com/65288066/176981906-d5fe7973-e09c-47a1-b78d-1e4582bf2be8.png)
+
+The select list can be filtered, all stages containing the filter value will be shown.
+
+![TopoOASFilteredMultipleSelect](https://user-images.githubusercontent.com/65288066/176981816-70f8d817-c27d-4064-95d9-c105b6124d84.png)
+
+Multiple stages can be selected at once by holding the ctrl key when clicking on items.
+
+![TopoOAS](https://user-images.githubusercontent.com/65288066/176982005-5676c724-0929-4bee-a2ad-b53a46731e3b.png)
+
+Select the Unit and Stage(s) and click Generate OAS Report to download the report. Use the Hide completed members option to only show in progress members in the report. One page will be created per selected stage. Use the Break by Patrol option to break each stage into one page per patrol.
+
 
 ![TopoOASReport](https://user-images.githubusercontent.com/65288066/161261855-99dc0f97-115c-45ee-8564-f03f7dbe4451.png)
 
