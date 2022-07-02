@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Text;
 using Topo.Models.AditionalAwards;
+using Topo.Models.Approvals;
 using Topo.Models.Events;
 using Topo.Models.Logbook;
 using Topo.Models.Login;
@@ -35,6 +36,7 @@ namespace Topo.Services
         public Task AssumeProfile(string memberId);
         public Task<GetAditionalAwardsSpecificationsResultModel> GetAditionalAwardSpecifications();
         public Task<GetUnitAchievementsResultModel> GetUnitAdditionalAwardAchievements(string unitId);
+        public Task<GetApprovalsResultModel> GetUnitApprovals(string unitId, string status);
     }
     public class TerrainAPIService : ITerrainAPIService
     {
@@ -369,6 +371,17 @@ namespace Topo.Services
             var getUnitAchievementsResult = DeserializeObject<GetUnitAchievementsResultModel>(result);
 
             return getUnitAchievementsResult ?? new GetUnitAchievementsResultModel();
+        }
+
+        public async Task<GetApprovalsResultModel> GetUnitApprovals(string unitId, string status)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{achievementsAddress}units/{unitId}/submissions?status={status}";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var getApprovalsResult = DeserializeObject<GetApprovalsResultModel>(result);
+
+            return getApprovalsResult ?? new GetApprovalsResultModel();
         }
 
         private async Task<string> SendRequest(HttpMethod httpMethod, string requestUri, string content = "", string xAmzTargetHeader = "")
