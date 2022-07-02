@@ -155,16 +155,11 @@ namespace Topo.Controllers
 
             if (outputType == Topo.Constants.OutputType.pdf)
             {
-                //Stream as Excel file
-                var sheet = workbook.Worksheets[0];
-                sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
-                sheet.PageSetup.Orientation = ExcelPageOrientation.Portrait;
-
                 //Initialize XlsIO renderer.
                 XlsIORenderer renderer = new XlsIORenderer();
 
                 //Convert Excel document into PDF document 
-                PdfDocument pdfDocument = renderer.ConvertToPDF(sheet);
+                PdfDocument pdfDocument = renderer.ConvertToPDF(workbook);
                 pdfDocument.Save(strm);
 
                 // return stream in browser
@@ -201,11 +196,6 @@ namespace Topo.Controllers
 
             if (outputType == Topo.Constants.OutputType.pdf)
             {
-                //Stream as Excel file
-                var sheet = workbook.Worksheets[0];
-                sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
-                sheet.PageSetup.Orientation = ExcelPageOrientation.Portrait;
-
                 //Initialize XlsIO renderer.
                 XlsIORenderer renderer = new XlsIORenderer();
 
