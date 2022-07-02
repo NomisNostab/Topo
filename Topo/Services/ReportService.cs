@@ -1671,16 +1671,20 @@ namespace Topo.Services
         }
         private Color GetMilestoneProgressColour(int currentLevel, participateAssistLead pal, int count)
         {
+            // Skipped milestones have a count of -1
+            if (count < 0)
+                return Color.White;
+
             if (currentLevel == 1)
             {
                 switch (pal)
                 {
                     case participateAssistLead.participate:
-                        return Milestone1ParticipateColours[count];
+                        return Milestone1ParticipateColours[Math.Min(count, 6)];
                     case participateAssistLead.assist:
-                        return Milestone1AssistColours[count];
+                        return Milestone1AssistColours[Math.Min(count, 2)];
                     case participateAssistLead.lead:
-                        return Milestone1LeadColours[count];
+                        return Milestone1LeadColours[Math.Min(count, 1)];
                     default:
                         return Color.White;
                 }
@@ -1691,11 +1695,11 @@ namespace Topo.Services
                 switch (pal)
                 {
                     case participateAssistLead.participate:
-                        return Milestone2ParticipateColours[count];
+                        return Milestone2ParticipateColours[Math.Min(count, 5)];
                     case participateAssistLead.assist:
-                        return Milestone2AssistColours[count];
+                        return Milestone2AssistColours[Math.Min(count, 3)];
                     case participateAssistLead.lead:
-                        return Milestone1AssistColours[count];
+                        return Milestone1AssistColours[Math.Min(count, 2)];
                     default:
                         return Color.White;
                 }
@@ -1708,9 +1712,9 @@ namespace Topo.Services
                     case participateAssistLead.participate:
                         return Milestone3Colours[Math.Min(count, 4)];
                     case participateAssistLead.assist:
-                        return Milestone3Colours[count];
+                        return Milestone3Colours[Math.Min(count, 4)];
                     case participateAssistLead.lead:
-                        return Milestone3Colours[count];
+                        return Milestone3Colours[Math.Min(count, 4)];
                     default:
                         return Color.White;
                 }
