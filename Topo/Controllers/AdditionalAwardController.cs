@@ -112,16 +112,16 @@ namespace Topo.Controllers
                         var workbook = await _additionalAwardService.GenerateAdditionalAwardReport(memberKVP);
                         if (!string.IsNullOrEmpty(button))
                         {
+                            //Stream 
+                            MemoryStream strm = new MemoryStream();
+
                             if (button == "AdditionalAwardReport")
                             {
-                                var sheet = workbook.Worksheets[0];
-                                sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA3;
-                                sheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
                                 //Initialize XlsIO renderer.
                                 XlsIORenderer renderer = new XlsIORenderer();
+
                                 //Convert Excel document into PDF document 
-                                PdfDocument pdfDocument = renderer.ConvertToPDF(sheet);
-                                MemoryStream strm = new MemoryStream();
+                                PdfDocument pdfDocument = renderer.ConvertToPDF(workbook);
                                 pdfDocument.Save(strm);
 
                                 // return stream in browser
@@ -131,8 +131,6 @@ namespace Topo.Controllers
                             if (button == "AdditionalAwardxls")
                             {
                                 //Stream as Excel file
-                                MemoryStream strm = new MemoryStream();
-                                workbook.Version = ExcelVersion.Excel2016;
                                 workbook.SaveAs(strm);
 
                                 // return stream in browser
