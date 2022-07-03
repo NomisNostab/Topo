@@ -439,6 +439,20 @@ namespace Topo.Services
                     sheet.Range[rowNumber, 5].CellStyle.ColorIndex = ExcelKnownColors.Rose;
             }
 
+            rowNumber++;
+            rowNumber++;
+            sheet.Range[rowNumber, 3].Text = "Second last year in section";
+            sheet.Range[rowNumber, 3, rowNumber, 4].Merge();
+            sheet.Range[rowNumber, 5].Text = "";
+            sheet.Range[rowNumber, 5].BorderAround();
+            sheet.Range[rowNumber, 5].CellStyle.ColorIndex = ExcelKnownColors.Yellow;
+            rowNumber++;
+            sheet.Range[rowNumber, 3].Text = "Last year in section";
+            sheet.Range[rowNumber, 3, rowNumber, 4].Merge();
+            sheet.Range[rowNumber, 5].Text = "";
+            sheet.Range[rowNumber, 5].BorderAround();
+            sheet.Range[rowNumber, 5].CellStyle.ColorIndex = ExcelKnownColors.Rose;
+
             sheet.UsedRange.AutofitColumns();
 
             sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
