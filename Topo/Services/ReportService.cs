@@ -632,6 +632,16 @@ namespace Topo.Services
 
             sheet.UsedRange.AutofitColumns();
 
+            sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
+            sheet.PageSetup.Orientation = ExcelPageOrientation.Portrait;
+            sheet.PageSetup.BottomMargin = 0.25;
+            sheet.PageSetup.TopMargin = 0.25;
+            sheet.PageSetup.LeftMargin = 0.25;
+            sheet.PageSetup.RightMargin = 0.25;
+            sheet.PageSetup.HeaderMargin = 0;
+            sheet.PageSetup.FooterMargin = 0;
+            sheet.PageSetup.IsFitToPage = true;
+
             return workbook;
         }
 
