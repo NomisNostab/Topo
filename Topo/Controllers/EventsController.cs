@@ -103,10 +103,7 @@ namespace Topo.Controllers
             XlsIORenderer renderer = new XlsIORenderer();
 
             //Convert Excel document into PDF document 
-            var sheet = workbook.Worksheets[0];
-            sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
-            sheet.PageSetup.Orientation = ExcelPageOrientation.Portrait;
-            PdfDocument pdfDocument = renderer.ConvertToPDF(sheet);
+            PdfDocument pdfDocument = renderer.ConvertToPDF(workbook);
             pdfDocument.Save(strm);
 
             // return stream in browser
@@ -153,9 +150,7 @@ namespace Topo.Controllers
                 XlsIORenderer renderer = new XlsIORenderer();
 
                 //Convert Excel document into PDF document 
-                var sheet = workbook.Worksheets[0];
-
-                PdfDocument pdfDocument = renderer.ConvertToPDF(sheet);
+                PdfDocument pdfDocument = renderer.ConvertToPDF(workbook);
                 pdfDocument.Save(strm);
 
                 // return stream in browser

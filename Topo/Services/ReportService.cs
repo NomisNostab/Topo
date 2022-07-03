@@ -228,6 +228,17 @@ namespace Topo.Services
                 rowNumber++;
             }
             sheet.UsedRange.AutofitColumns();
+
+            sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA3;
+            sheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
+            sheet.PageSetup.BottomMargin = 0.25;
+            sheet.PageSetup.TopMargin = 0.25;
+            sheet.PageSetup.LeftMargin = 0.25;
+            sheet.PageSetup.RightMargin = 0.25;
+            sheet.PageSetup.HeaderMargin = 0;
+            sheet.PageSetup.FooterMargin = 0;
+            sheet.PageSetup.IsFitToPage = true;
+
             return workbook;
         }
 
@@ -351,6 +362,16 @@ namespace Topo.Services
 
             sheet.UsedRange.AutofitColumns();
 
+            sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
+            sheet.PageSetup.Orientation = ExcelPageOrientation.Portrait;
+            sheet.PageSetup.BottomMargin = 0.25;
+            sheet.PageSetup.TopMargin = 0.25;
+            sheet.PageSetup.LeftMargin = 0.25;
+            sheet.PageSetup.RightMargin = 0.25;
+            sheet.PageSetup.HeaderMargin = 0;
+            sheet.PageSetup.FooterMargin = 0;
+            sheet.PageSetup.IsFitToPage = true;
+
             return workbook;
         }
 
@@ -418,7 +439,30 @@ namespace Topo.Services
                     sheet.Range[rowNumber, 5].CellStyle.ColorIndex = ExcelKnownColors.Rose;
             }
 
+            rowNumber++;
+            rowNumber++;
+            sheet.Range[rowNumber, 3].Text = "Second last year in section";
+            sheet.Range[rowNumber, 3, rowNumber, 4].Merge();
+            sheet.Range[rowNumber, 5].Text = "";
+            sheet.Range[rowNumber, 5].BorderAround();
+            sheet.Range[rowNumber, 5].CellStyle.ColorIndex = ExcelKnownColors.Yellow;
+            rowNumber++;
+            sheet.Range[rowNumber, 3].Text = "Last year in section";
+            sheet.Range[rowNumber, 3, rowNumber, 4].Merge();
+            sheet.Range[rowNumber, 5].Text = "";
+            sheet.Range[rowNumber, 5].BorderAround();
+            sheet.Range[rowNumber, 5].CellStyle.ColorIndex = ExcelKnownColors.Rose;
+
             sheet.UsedRange.AutofitColumns();
+
+            sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
+            sheet.PageSetup.Orientation = ExcelPageOrientation.Portrait;
+            sheet.PageSetup.BottomMargin = 0.25;
+            sheet.PageSetup.TopMargin = 0.25;
+            sheet.PageSetup.LeftMargin = 0.25;
+            sheet.PageSetup.RightMargin = 0.25;
+            sheet.PageSetup.HeaderMargin = 0;
+            sheet.PageSetup.FooterMargin = 0;
 
             return workbook;
         }
@@ -495,6 +539,17 @@ namespace Topo.Services
                 rowNumber++;
 
                 sheet.UsedRange.AutofitColumns();
+
+                sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
+                sheet.PageSetup.Orientation = ExcelPageOrientation.Portrait;
+                sheet.PageSetup.BottomMargin = 0.25;
+                sheet.PageSetup.TopMargin = 0.25;
+                sheet.PageSetup.LeftMargin = 0.25;
+                sheet.PageSetup.RightMargin = 0.25;
+                sheet.PageSetup.HeaderMargin = 0;
+                sheet.PageSetup.FooterMargin = 0;
+                sheet.PageSetup.IsFitToPage = true;
+
                 sheetIndex++;
             }
 
@@ -599,6 +654,16 @@ namespace Topo.Services
             }
 
             sheet.UsedRange.AutofitColumns();
+
+            sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
+            sheet.PageSetup.Orientation = ExcelPageOrientation.Portrait;
+            sheet.PageSetup.BottomMargin = 0.25;
+            sheet.PageSetup.TopMargin = 0.25;
+            sheet.PageSetup.LeftMargin = 0.25;
+            sheet.PageSetup.RightMargin = 0.25;
+            sheet.PageSetup.HeaderMargin = 0;
+            sheet.PageSetup.FooterMargin = 0;
+            sheet.PageSetup.IsFitToPage = true;
 
             return workbook;
         }
@@ -1650,16 +1715,20 @@ namespace Topo.Services
         }
         private Color GetMilestoneProgressColour(int currentLevel, participateAssistLead pal, int count)
         {
+            // Skipped milestones have a count of -1
+            if (count < 0)
+                return Color.White;
+
             if (currentLevel == 1)
             {
                 switch (pal)
                 {
                     case participateAssistLead.participate:
-                        return Milestone1ParticipateColours[count];
+                        return Milestone1ParticipateColours[Math.Min(count, 6)];
                     case participateAssistLead.assist:
-                        return Milestone1AssistColours[count];
+                        return Milestone1AssistColours[Math.Min(count, 2)];
                     case participateAssistLead.lead:
-                        return Milestone1LeadColours[count];
+                        return Milestone1LeadColours[Math.Min(count, 1)];
                     default:
                         return Color.White;
                 }
@@ -1670,11 +1739,11 @@ namespace Topo.Services
                 switch (pal)
                 {
                     case participateAssistLead.participate:
-                        return Milestone2ParticipateColours[count];
+                        return Milestone2ParticipateColours[Math.Min(count, 5)];
                     case participateAssistLead.assist:
-                        return Milestone2AssistColours[count];
+                        return Milestone2AssistColours[Math.Min(count, 3)];
                     case participateAssistLead.lead:
-                        return Milestone1AssistColours[count];
+                        return Milestone1AssistColours[Math.Min(count, 2)];
                     default:
                         return Color.White;
                 }
@@ -1687,9 +1756,9 @@ namespace Topo.Services
                     case participateAssistLead.participate:
                         return Milestone3Colours[Math.Min(count, 4)];
                     case participateAssistLead.assist:
-                        return Milestone3Colours[count];
+                        return Milestone3Colours[Math.Min(count, 4)];
                     case participateAssistLead.lead:
-                        return Milestone3Colours[count];
+                        return Milestone3Colours[Math.Min(count, 4)];
                     default:
                         return Color.White;
                 }
