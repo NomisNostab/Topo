@@ -37,6 +37,8 @@ namespace Topo.Services
         public Task<GetAditionalAwardsSpecificationsResultModel> GetAditionalAwardSpecifications();
         public Task<GetUnitAchievementsResultModel> GetUnitAdditionalAwardAchievements(string unitId);
         public Task<GetApprovalsResultModel> GetUnitApprovals(string unitId, string status);
+        public Task<GetMemberAchievementResultModel> GetMemberAchievementResult(string member_id, string achievement_id, string achievement_type);
+        public Task<GetSIAResultModel> GetSIAResultForMember(string memberId, string achievementId);
     }
     public class TerrainAPIService : ITerrainAPIService
     {
@@ -291,6 +293,17 @@ namespace Topo.Services
             return getSIAResultsModel ?? new GetSIAResultsModel();
         }
 
+        public async Task<GetSIAResultModel> GetSIAResultForMember(string memberId, string achievementId)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{achievementsAddress}members/{memberId}/achievements/{achievementId}?type=special_interest_area";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var getSIAResultModel = DeserializeObject<GetSIAResultModel>(result);
+
+            return getSIAResultModel ?? new GetSIAResultModel();
+        }
+
         public async Task<GetGroupLifeResultModel> GetGroupLifeForUnit(string unitId)
         {
             await RefreshTokenAsync();
@@ -382,6 +395,17 @@ namespace Topo.Services
             var getApprovalsResult = DeserializeObject<GetApprovalsResultModel>(result);
 
             return getApprovalsResult ?? new GetApprovalsResultModel();
+        }
+
+        public async Task<GetMemberAchievementResultModel> GetMemberAchievementResult(string member_id, string achievement_id, string achievement_type)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{achievementsAddress}members/{member_id}/achievements/{achievement_id}?type={achievement_type}";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var getMemberAchievementResultModel = DeserializeObject<GetMemberAchievementResultModel>(result);
+
+            return getMemberAchievementResultModel ?? new GetMemberAchievementResultModel();
         }
 
         private async Task<string> SendRequest(HttpMethod httpMethod, string requestUri, string content = "", string xAmzTargetHeader = "")

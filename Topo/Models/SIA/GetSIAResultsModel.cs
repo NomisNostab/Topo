@@ -45,6 +45,7 @@
         public string success_of_SIA { get; set; } = string.Empty;
         public string how_develop { get; set; } = string.Empty;
         public string strengths_improvements { get; set; } = string.Empty;
+        public string[] which_goals { get; set; } = new string[0];
     }
 
     public class Imported

@@ -183,7 +183,7 @@ namespace Topo.Services
         {
             var selectedStage = _storageService.OASStageList.Where(s => s.TemplateLink == selectedStageTemplate).SingleOrDefault();
             var getUnitAchievementsResultsModel = await GetUnitAchievements(selectedUnitId, selectedStage.Stream.ToLower(), selectedStage.Branch, selectedStage.Stage);
-            var members = await _memberListService.GetMembersAsync();
+            var members = await _memberListService.GetMembersAsync(selectedUnitId);
             var sortedMemberList = members.Where(m => m.isAdultLeader == 0).OrderBy(m => m.first_name).ThenBy(m => m.last_name).ToList();
             var templateTitle = templateList.Count > 0 ? templateList[0].TemplateTitle : "";
             if (hideCompletedMembers)

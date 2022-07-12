@@ -79,7 +79,7 @@ namespace Topo.Services
             var eventListModel = new EventListModel();
             var getEventResultModel = await _terrainAPIService.GetEventAsync(eventId);
             var eventAttendance = new List<EventAttendance>();
-            var members = await _memberListService.GetMembersAsync();
+            var members = await _memberListService.GetMembersAsync(_storageService.SelectedUnitId);
             foreach (var member in members)
             {
                 eventAttendance.Add(new EventAttendance
@@ -117,7 +117,7 @@ namespace Topo.Services
             var attendanceReport = new AttendanceReportModel();
             var attendanceReportItems = new List<AttendanceReportItemModel>();
             await SetCalendar(selectedCalendar);
-            var members = await _memberListService.GetMembersAsync();
+            var members = await _memberListService.GetMembersAsync(_storageService.SelectedUnitId);
             //
             var programEvents = await GetEventsForDates(fromDate, toDate);
             foreach (var programEvent in programEvents.OrderBy(pe => pe.StartDateTime))

@@ -42,7 +42,7 @@ namespace Topo.Controllers
             if (_storageService.SelectedUnitId != null)
             {
                 model.SelectedUnitId = _storageService.SelectedUnitId;
-                var allMembers = await _memberListService.GetMembersAsync();
+                var allMembers = await _memberListService.GetMembersAsync(_storageService.SelectedUnitId);
                 model.Members = allMembers.Where(m => m.isAdultLeader == 0).OrderBy(m => m.first_name).ThenBy(m => m.last_name).ToList();
             }
             if (_storageService.SelectedUnitName != null)
@@ -90,7 +90,7 @@ namespace Topo.Controllers
 
         private async Task<ActionResult> GeneratePatrolReport(bool includeLeaders, Topo.Constants.OutputType outputType)
         {
-            var model = await _memberListService.GetMembersAsync();
+            var model = await _memberListService.GetMembersAsync(_storageService.SelectedUnitId);
             var reportDownloadName = "Patrol_List";
             var groupName = _storageService.GroupName;
             var unitName = _storageService.SelectedUnitName ?? "";
@@ -140,7 +140,7 @@ namespace Topo.Controllers
 
         private async Task<ActionResult> GenerateMemberList(Topo.Constants.OutputType outputType)
         {
-            var model = await _memberListService.GetMembersAsync();
+            var model = await _memberListService.GetMembersAsync(_storageService.SelectedUnitId);
             var groupName = _storageService.GroupName;
             var unitName = _storageService.SelectedUnitName ?? "";
             var unit = _storageService.GetProfilesResult.profiles.FirstOrDefault(u => u.unit.name == unitName);
@@ -182,7 +182,7 @@ namespace Topo.Controllers
 
         private async Task<ActionResult> GeneratePatrolSheets(Topo.Constants.OutputType outputType)
         {
-            var model = await _memberListService.GetMembersAsync();
+            var model = await _memberListService.GetMembersAsync(_storageService.SelectedUnitId);
             var reportDownloadName = "Patrol_Sheets";
             var groupName = _storageService.GroupName;
             var unitName = _storageService.SelectedUnitName ?? "";

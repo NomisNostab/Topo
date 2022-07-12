@@ -92,7 +92,7 @@ namespace Topo.Controllers
                 throw new IndexOutOfRangeException($"No unit found with name {unitName}. You may not have permissions to this section");
             var section = unit.unit.section;
 
-            var model = await _memberListService.GetMembersAsync();
+            var model = await _memberListService.GetMembersAsync(_storageService.SelectedUnitId);
 
             var workbook = _reportService.GenerateSignInSheetWorkbook(model, groupName, section, unitName, selectedEvent);
 

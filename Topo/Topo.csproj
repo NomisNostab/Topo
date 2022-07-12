@@ -31,13 +31,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.8" />
-		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.5" />
+		<PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.9" />
+		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.6" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-		<PackageReference Include="NLog" Version="5.0.0" />
+		<PackageReference Include="NLog" Version="5.0.1" />
 		<PackageReference Include="NLog.Web.AspNetCore" Version="5.0.0" />
-		<PackageReference Include="Syncfusion.XlsIO.Net.Core" Version="20.1.0.57" />
-		<PackageReference Include="Syncfusion.XlsIORenderer.Net.Core" Version="20.1.0.57" />
+		<PackageReference Include="Syncfusion.EJ2.AspNet.Core" Version="20.2.0.36" />
+		<PackageReference Include="Syncfusion.XlsIO.Net.Core" Version="20.2.0.36" />
+		<PackageReference Include="Syncfusion.XlsIORenderer.Net.Core" Version="20.2.0.36" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -54,36 +55,6 @@
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 		<None Update="Images\Venturer Scouts Full Col Vertical.jpg">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Reports\Attendance.frx">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Reports\Logbook.frx">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Reports\Milestone.frx">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Reports\MilestoneSummary.frx">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Reports\OASWorksheet.frx">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Reports\Patrols.frx">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Reports\PatrolSheets.frx">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Reports\SIAProjectReport.frx">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Reports\SignInSheet.frx">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Reports\Wallchart.frx">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>

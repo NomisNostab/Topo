@@ -1,0 +1,72 @@
+﻿@model Topo.Models.Approvals.ApprovalsListViewModel
+
+@{
+    ViewData["Title"] = "Member List Page";
+}
+
+<form class="row g-3" asp-action="Index">
+
+    <div class="mt-3 mb-3 row">
+        <label class="col-sm-3 col-form-label">Please select a Unit to view:</label>
+        <div class="col-sm-2 ">
+            @Html.DropDownListFor(m => m.SelectedUnitId, Model.Units, "Select Unit", new { @class ="form-select", onchange = "this.form.submit();" })
+            <span asp-validation-for="SelectedUnitId" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="mt-3 mb-3 row">
+        <label class="col-sm-2 col-form-label"> @Html.DisplayNameFor(m => m.ApprovalSearchFromDate)</label>
+        <div class="col-sm-2">
+            @Html.EditorFor(m => m.ApprovalSearchFromDate, new { htmlAttributes = new { @class = "form-control", onchange = "this.form.submit();" } })
+            <span asp-validation-for="ApprovalSearchFromDate" class="text-danger"></span>
+        </div>
+        <label class="col-sm-2 col-form-label"> @Html.DisplayNameFor(m => m.ApprovalSearchToDate)</label>
+        <div class="col-sm-2">
+            @Html.EditorFor(m => m.ApprovalSearchToDate, new { htmlAttributes = new { @class = "form-control", onchange = "this.form.submit();" } })
+            <span asp-validation-for="ApprovalSearchToDate" class="text-danger"></span>
+        </div>
+    </div>
+
+    <ejs-grid id="Grid" allowGrouping="true" actionComplete="actionComplete" allowFiltering="true" actionBegin="actionBegin">
+        <e-data-manager json="@Model.Approvals.ToArray()" adaptor="RemoteSaveAdaptor" updateUrl="/Approvals/Update"></e-data-manager>
+        <e-grid-groupsettings columns="@(new string[] {"achievement_name"})"></e-grid-groupsettings>
+        <e-grid-editSettings allowEditing="true" mode="Dialog"></e-grid-editSettings>
+        <e-grid-columns>
+            <e-grid-column field="achievement_id" headerText="Name" isPrimaryKey="true" visible="false"></e-grid-column>
+            <e-grid-column field="member_display_name" headerText="Name" allowEditing="false"></e-grid-column>
+            <e-grid-column field="achievement_name" headerText="Achievement" allowEditing="false"></e-grid-column>
+            <e-grid-column field="submission_outcome" headerText="Outcome" allowEditing="false"></e-grid-column>
+            <e-grid-column field="submission_status" headerText="Status" allowEditing="false"></e-grid-column>
+            <e-grid-column field="awarded_date" headerText="Awarded" format="dd/MM/yyyy" editType="datepickeredit" edit=@ViewBag.dpParams allowEditing="false"></e-grid-column>
+            <e-grid-column field="presented_date" headerText="Presented" format="dd/MM/yyyy" editType="datepickeredit" edit=@ViewBag.dpParams validationRules="@(new { required=true})"></e-grid-column>
+        </e-grid-columns>
+    </ejs-grid>
+
+    <div class="mt-3 mb-3 row">
+        <div class="col-sm-3">
+            <button type="submit" name="button" value="ApprovalsListPdf" class="btn btn-primary">Generate Approvals list (pdf)</button>
+        </div>
+        <div class="col-sm-3">
+            <button type="submit" name="button" value="ApprovalsListXlsx" class="btn btn-success">Generate Approvals list (xlsx)</button>
+        </div>
+    </div>
+
+</form>
+
+<script>
+
+    function actionComplete(args) {
+        if ((args.requestType === 'beginEdit')) {
+            var dialog = args.dialog;
+            // change the header of the dialog
+            dialog.header = args.rowData['member_display_name'];
+        }
+    }
+
+        function actionBegin (args) { 
+            if (args.requestType == "filterchoicerequest" || args.requestType === 'filtersearchbegin') { 
+                // you can set filter choice count based on your datasource count, by default count 1000 
+                args['filterChoiceCount'] = 30000;      
+            } 
+        } 
+
+</script>

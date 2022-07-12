@@ -23,6 +23,9 @@
 
     public class Achievement_Meta
     {
+        public string branch { get; set; } = string.Empty;
+        public int stage { get; set; }
+        public string stream { get; set; } = string.Empty;
     }
 
     public class Submission
@@ -31,6 +34,7 @@
         public string type { get; set; } = string.Empty;
         public DateTime date { get; set; }
         public string status { get; set; } = string.Empty;
+        public string outcome { get; set; } = string.Empty;
         public Actioned_By[] actioned_by { get; set; } = new Actioned_By[0];
     }
 
