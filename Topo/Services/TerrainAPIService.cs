@@ -248,8 +248,9 @@ namespace Topo.Services
             await RefreshTokenAsync();
             string requestUri = $"{achievementsAddress}units/{unit}/achievements?type=outdoor_adventure_skill&stream={stream}&branch={branch}&stage={stage}";
             var responseContentResult = await SendRequest(HttpMethod.Get, requestUri);
-
             // Remove uploaded files from response before deserialising
+            responseContentResult = responseContentResult.Replace("\"file_uploader\": [],", "");
+            responseContentResult = responseContentResult.Replace("\"file_uploader\": []", "");
             var fileUploaderStart = responseContentResult.IndexOf("\"file_uploader\":");
             while (fileUploaderStart > 0)
             {
@@ -410,4 +411,5 @@ namespace Topo.Services
         }
 
     }
+
 }
