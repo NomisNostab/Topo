@@ -20,5 +20,12 @@ namespace Topo.Models.Approvals
         [DataType(DataType.Date, ErrorMessage = "Date only")]
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         public DateTime ApprovalSearchToDate { get; set; } = DateTime.Now;
+
+        public string SelectedMembers { get; set; } = string.Empty;
+        public string SelectedMembersOperator { get; set; } = string.Empty;
+        public string SelectedGroupingColumn { get; set; } = string.Empty;
+        
+        [Display(Name = "Only show awards to be presented")]
+        public bool ToBePresented { get; set; }
     }
 }

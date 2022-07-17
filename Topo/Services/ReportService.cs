@@ -2,6 +2,7 @@
 using Syncfusion.XlsIO;
 using Topo.Images;
 using Topo.Models.AditionalAwards;
+using Topo.Models.Approvals;
 using Topo.Models.Events;
 using Topo.Models.Logbook;
 using Topo.Models.MemberList;
@@ -26,6 +27,7 @@ namespace Topo.Services
         public IWorkbook GenerateMilestoneWorkbook(List<MilestoneSummaryListModel> milestoneSummaries, string groupName, string section, string unitName, bool forPdfOutput);
         public IWorkbook GenerateLogbookWorkbook(List<MemberLogbookReportViewModel> logbookEntries, string groupName, string section, string unitName, bool forPdfOutput);
         public IWorkbook GenerateWallchartWorkbook(List<WallchartItemModel> wallchartEntries, string groupName, string section, string unitName, bool forPdfOutput);
+        public IWorkbook GenerateApprovalsWorkbook(List<ApprovalsListModel> selectedApprovals, string groupName, string section, string unitName, DateTime approvalSearchFromDate, DateTime approvalSearchToDate, bool groupByMember, bool forPdfOutput);
     }
     public class ReportService : IReportService
     {
@@ -615,6 +617,8 @@ namespace Topo.Services
                 sheet.Range[rowNumber, 7].BorderAround();
                 sheet.Range[rowNumber, 8].Text = member.first_name;
                 sheet.Range[rowNumber, 8].BorderAround();
+                sheet.Range[rowNumber, 9].Text = "";
+                sheet.Range[rowNumber, 9].BorderAround();
             }
 
             rowNumber++;
@@ -1600,6 +1604,84 @@ namespace Topo.Services
 
             sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
             sheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
+            sheet.PageSetup.BottomMargin = 0.25;
+            sheet.PageSetup.TopMargin = 0.25;
+            sheet.PageSetup.LeftMargin = 0.25;
+            sheet.PageSetup.RightMargin = 0.25;
+            sheet.PageSetup.HeaderMargin = 0;
+            sheet.PageSetup.FooterMargin = 0;
+            sheet.PageSetup.IsFitToPage = true;
+
+            return workbook;
+        }
+
+
+        public IWorkbook GenerateApprovalsWorkbook(List<ApprovalsListModel> selectedApprovals, string groupName, string section, string unitName, DateTime approvalSearchFromDate, DateTime approvalSearchToDate, bool groupByMember, bool forPdfOutput)
+        {
+            var workbook = CreateWorkbookWithLogo(groupName, section, 8);
+            IWorksheet sheet = workbook.Worksheets[0];
+            int rowNumber = 1;
+            int averageStartRow = 0;
+            int averageEndRow = 0;
+
+            IStyle headingStyle = workbook.Styles["headingStyle"];
+
+            // Add Unit name
+            rowNumber++;
+            var unit = sheet.Range[rowNumber, 2];
+            unit.Text = unitName;
+            unit.CellStyle = headingStyle;
+            sheet.Range[rowNumber, 2, rowNumber, 8].Merge();
+            sheet.SetRowHeight(rowNumber, 40);
+
+            // Add Title
+            rowNumber++;
+            var title = sheet.Range[rowNumber, 2];
+            title.Text = $"Award Approvals between {approvalSearchFromDate.ToShortDateString()} and {approvalSearchToDate.ToShortDateString()}";
+            title.CellStyle = headingStyle;
+            sheet.Range[rowNumber, 2, rowNumber, 8].Merge();
+            sheet.SetRowHeight(rowNumber, 30);
+
+            var groupedApprovals = new List<IGrouping<string, ApprovalsListModel>>();
+            if (groupByMember)
+                groupedApprovals = selectedApprovals.GroupBy(a => a.member_display_name).ToList();
+            else
+                groupedApprovals = selectedApprovals.GroupBy(a => a.achievement_name).ToList();
+
+            foreach (var approvalGroup in groupedApprovals.OrderBy(a => a.Key))
+            {
+                rowNumber++;
+                sheet.Range[rowNumber, 1].Text = approvalGroup.Key;
+                sheet.Range[rowNumber, 1, rowNumber, 4].Merge();
+                if (rowNumber == 4)
+                {
+                    sheet.Range[rowNumber, 6].Text = "Awarded";
+                    sheet.Range[rowNumber, 6].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignRight;
+                    sheet.Range[rowNumber, 7].Text = "Presented";
+                    sheet.Range[rowNumber, 7].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignRight;
+                }
+                sheet.Range[rowNumber, 1, rowNumber, 7].CellStyle.Font.Bold = true;
+
+                sheet.SetRowHeight(rowNumber, 20);
+
+                foreach (var approval in approvalGroup.OrderBy(a => a.member_display_name).ThenBy(a => a.achievement_name))
+                {
+                    rowNumber++;
+                    sheet.Range[rowNumber, 2].Text = groupByMember ? approval.achievement_name : approval.member_display_name;
+                    sheet.Range[rowNumber, 3].Text = approval.submission_type;
+                    sheet.Range[rowNumber, 4].Text = approval.submission_status;
+                    sheet.Range[rowNumber, 5].Text = approval.submission_outcome;
+                    if (approval.awarded_date.HasValue)
+                        sheet.Range[rowNumber, 6].DateTime = approval.awarded_date.Value;
+                    if (approval.presented_date.HasValue)
+                        sheet.Range[rowNumber, 7].DateTime = approval.presented_date.Value;
+                }
+            }
+
+            sheet.Range[4, 2, rowNumber, 7].AutofitColumns();
+
+            sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
+            sheet.PageSetup.Orientation = ExcelPageOrientation.Portrait;
             sheet.PageSetup.BottomMargin = 0.25;
             sheet.PageSetup.TopMargin = 0.25;
             sheet.PageSetup.LeftMargin = 0.25;

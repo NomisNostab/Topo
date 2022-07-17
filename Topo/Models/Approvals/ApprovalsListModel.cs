@@ -11,6 +11,7 @@
         public string achievement_name { get; set; } = string.Empty;
         public string submission_status { get; set; } = string.Empty;
         public string submission_outcome { get; set; } = string.Empty;
+        public string submission_type { get; set; } = string.Empty;
         public DateTime submission_date { get; set; }
         public DateTime? awarded_date { get; set; }
         public DateTime? presented_date { get; set; }

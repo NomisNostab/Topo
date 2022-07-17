@@ -64,6 +64,7 @@ namespace Topo.Services
                         member_last_name = approval.member.last_name,
                         achievement_id = approval.achievement.id,
                         achievement_type = approval.achievement.type,
+                        submission_type = myTI.ToTitleCase(approval.submission.type),
                         submission_status = myTI.ToTitleCase(approval.submission.status),
                         submission_outcome = myTI.ToTitleCase(approval.submission.outcome),
                         submission_date = approval.submission.date,
@@ -96,6 +97,7 @@ namespace Topo.Services
                         member_last_name = member?.last_name ?? "",
                         achievement_id = additionalAward.id,
                         achievement_type = additionalAward.achievement_meta.additional_award_id,
+                        submission_type = "Review",
                         submission_status = "Finalised",
                         submission_outcome = myTI.ToTitleCase(additionalAward.status),
                         submission_date = awardStatusDate,
@@ -121,6 +123,9 @@ namespace Topo.Services
                     name = "intro to section";
                     break;
                 case "milestone":
+                    var memberMilestoneAchievementResult = await _terrainAPIService.GetMemberAchievementResult(member_id, achievement_id, achievement_type);
+                    name = $"milestone {memberMilestoneAchievementResult.achievement_meta.stage}";
+                    break;
                 case "outdoor_adventure_skill":
                     var memberAchievementResult = await _terrainAPIService.GetMemberAchievementResult(member_id, achievement_id, achievement_type);
                     var templateParts = memberAchievementResult.template.Split("/");
@@ -166,7 +171,9 @@ namespace Topo.Services
         public void UpdateApproval (string unitId, ApprovalsListModel approval)
         {
             var savedApprovalItems = ReadApprovalListFromFileSystem(unitId);
-            savedApprovalItems.Where(a => a.achievement_id == approval.achievement_id).First().presented_date = approval.presented_date;
+            var approvalItem = savedApprovalItems.Where(a => a.achievement_id == approval.achievement_id && a.submission_type == approval.submission_type).FirstOrDefault();
+            if (approvalItem != null)
+                approvalItem.presented_date = approval.presented_date;
             WriteApprovalsListToFileSystem(savedApprovalItems.OrderBy(a => a.submission_date).ToList(), unitId);
         }
     }

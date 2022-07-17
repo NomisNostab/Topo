@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Syncfusion.Pdf;
+using Syncfusion.XlsIORenderer;
 using System.Text.Json;
 using Topo.Models.Approvals;
 using Topo.Services;
@@ -30,6 +32,7 @@ namespace Topo.Controllers
             {
                 model.SelectedUnitId = _storageService.SelectedUnitId;
                 model.Approvals = await _approvalsService.GetApprovalListItems(_storageService.SelectedUnitId);
+                model.SelectedGroupingColumn = "achievement_name";
             }
             if (_storageService.SelectedUnitName != null)
                 model.SelectedUnitName = _storageService.SelectedUnitName;
@@ -57,6 +60,9 @@ namespace Topo.Controllers
         {
             var model = new ApprovalsListViewModel();
             ModelState.Remove("button");
+            ModelState.Remove("SelectedMembers");
+            ModelState.Remove("SelectedMembersOperator");
+            ModelState.Remove("SelectedGroupingColumn");
             if (ModelState.IsValid)
             {
                 _storageService.SelectedUnitId = memberListViewModel.SelectedUnitId;
@@ -64,9 +70,56 @@ namespace Topo.Controllers
                     _storageService.SelectedUnitName = _storageService.Units.Where(u => u.Value == memberListViewModel.SelectedUnitId)?.FirstOrDefault()?.Text;
                 model = await SetUpViewModel();
                 model.Approvals = model.Approvals?.Where(a => a.submission_date >= memberListViewModel.ApprovalSearchFromDate && a.submission_date <= memberListViewModel.ApprovalSearchToDate).ToList() ?? new List<ApprovalsListModel>();
+                if (memberListViewModel.ToBePresented)
+                    model.Approvals = model.Approvals.Where(a => !a.presented_date.HasValue).ToList();
                 ViewBag.dataSource = model.Approvals.ToList();
                 if (!string.IsNullOrEmpty(button))
                 {
+                    var selectedMembers = (memberListViewModel.SelectedMembers ?? "").Split(",");
+                    var selectedMembersOperator = memberListViewModel.SelectedMembersOperator ?? "";
+                    var selectedApprovals = new List<ApprovalsListModel>();
+                    if (selectedMembersOperator == "equal")
+                        selectedApprovals = model.Approvals.Where(t2 => selectedMembers.Count(m => m == t2.member_display_name) != 0).ToList();
+                    else
+                        selectedApprovals = model.Approvals.Where(t2 => selectedMembers.Count(m => m == t2.member_display_name) == 0).ToList();
+
+                    Constants.OutputType outputType;
+                    if (button == "ApprovalsListPdf")
+                        outputType = Constants.OutputType.pdf;
+                    else
+                        outputType = Constants.OutputType.xlsx;
+
+                    var groupName = _storageService.GroupName;
+                    var unitName = _storageService.SelectedUnitName ?? "";
+                    var section = _storageService.SelectedSection;
+                    var groupByMember = (memberListViewModel.SelectedGroupingColumn ?? "achievement_name") == "member_display_name";
+                    var workbook = _reportService.GenerateApprovalsWorkbook(selectedApprovals, groupName, section, unitName, memberListViewModel.ApprovalSearchFromDate, memberListViewModel.ApprovalSearchToDate, groupByMember: groupByMember, forPdfOutput: outputType == Constants.OutputType.pdf);
+
+                    //Stream 
+                    MemoryStream strm = new MemoryStream();
+
+                    if (outputType == Constants.OutputType.xlsx)
+                    {
+                        //Stream as Excel file
+                        workbook.SaveAs(strm);
+
+                        // return stream in browser
+                        return File(strm.ToArray(), "application/vnd.ms-excel", $"Approvals_Report_{unitName.Replace(' ', '_')}.xlsx");
+                    }
+                    else
+                    {
+                        //Stream as Excel file
+
+                        //Initialize XlsIO renderer.
+                        XlsIORenderer renderer = new XlsIORenderer();
+
+                        //Convert Excel document into PDF document 
+                        PdfDocument pdfDocument = renderer.ConvertToPDF(workbook);
+                        pdfDocument.Save(strm);
+
+                        // return stream in browser
+                        return File(strm.ToArray(), "application/pdf", $"Approvals_Report_{unitName.Replace(' ', '_')}.pdf");
+                    }
                 }
             }
             else
