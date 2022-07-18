@@ -93,7 +93,7 @@ namespace Topo.Services
                 });
             }
 
-            if (getEventResultModel != null && getEventResultModel.attendance != null && getEventResultModel.attendance.attendee_members != null)
+            if (getEventResultModel != null && getEventResultModel.attendance != null && getEventResultModel.attendance.attendee_members != null && getEventResultModel.attendance.attendee_members.Any())
             {
                 eventListModel.Id = eventId;
                 eventListModel.EventName = getEventResultModel.title;
@@ -108,6 +108,24 @@ namespace Topo.Services
                 eventListModel.attendees = eventAttendance.ToArray();
                 return eventListModel;
             }
+
+            // for older events participant_members seems to be used  not attendee_members
+            if (getEventResultModel != null && getEventResultModel.attendance != null && getEventResultModel.attendance.participant_members != null && getEventResultModel.attendance.participant_members.Any())
+            {
+                eventListModel.Id = eventId;
+                eventListModel.EventName = getEventResultModel.title;
+                eventListModel.StartDateTime = getEventResultModel.start_datetime;
+                foreach (var attended in getEventResultModel.attendance.participant_members)
+                {
+                    if (eventAttendance.Any(a => a.member_number == attended.member_number))
+                    {
+                        eventAttendance.Where(a => a.member_number == attended.member_number).Single().attended = true;
+                    }
+                }
+                eventListModel.attendees = eventAttendance.ToArray();
+                return eventListModel;
+            }
+
             return new EventListModel();
         }
 
@@ -162,7 +180,7 @@ namespace Topo.Services
             {
                 var attendanceCount = memberSummaries.Where(ms => ms.MemberId == attendanceItem.MemberId).FirstOrDefault()?.AttendanceCount ?? 0;
                 var totalEvents = memberSummaries.Where(ms => ms.MemberId == attendanceItem.MemberId).FirstOrDefault()?.TotalEvents ?? 0;
-                var attendanceRate = (decimal)attendanceCount / totalEvents * 100m;
+                var attendanceRate = totalEvents == 0 ? 0 : (decimal)attendanceCount / totalEvents * 100m;
                 attendanceItem.MemberNameAndRate = $"{attendanceItem.MemberName} ({Math.Round(attendanceRate, 0)}%)";
             }
 
