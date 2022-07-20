@@ -33,7 +33,7 @@ try
     builder.Services.AddScoped<IAdditionalAwardService, AdditionalAwardService>();
     builder.Services.AddScoped<IImages, Images>();
     builder.Services.AddScoped<IReportService, ReportService>();
-    Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Mgo+DSMBPh8sVXJ0S0d+XE9AcVRDX3xKf0x/TGpQb19xflBPallYVBYiSV9jS3xTc0drWXhceXZcQ2ZcUQ==;Mgo+DSMBMAY9C3t2VVhhQlFaclhJXGFWfVJpTGpQdk5xdV9DaVZUTWY/P1ZhSXxRdkBhUX9Zcn1XT2VbUEQ=");
+    Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Mgo+DSMBMAY9C3t2VVhiQlFadVdJXGFWfVJpTGpQdk5xdV9DaVZUTWY/P1ZhSXxRdkJiUX9YdHZRRGheVkQ=");
 
     // NLog: Setup NLog for Dependency injection
     builder.Logging.ClearProviders();
