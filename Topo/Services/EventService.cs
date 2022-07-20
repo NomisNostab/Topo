@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using Newtonsoft.Json;
+using System.Globalization;
 using Topo.Images;
 using Topo.Models.Events;
 
@@ -8,6 +9,7 @@ namespace Topo.Services
     {
         public Task<List<CalendarListModel>> GetCalendars();
         public Task SetCalendar(string calendarId);
+        public Task ResetCalendar();
         public Task<List<EventListModel>> GetEventsForDates(DateTime fromDate, DateTime toDate);
         public Task<EventListModel> GetAttendanceForEvent(string eventId);
         public Task<AttendanceReportModel> GenerateAttendanceReportData(DateTime fromDate, DateTime toDate, string selectedCalendar);
@@ -47,16 +49,25 @@ namespace Topo.Services
 
         public async Task SetCalendar(string calendarId)
         {
-            foreach (var calendar in _storageService.GetCalendarsResult.own_calendars)
+            //Deep copy calendar to allow reset
+            var serialisedCalendar = JsonConvert.SerializeObject(_storageService.GetCalendarsResult);
+            var calendars = JsonConvert.DeserializeObject<GetCalendarsResultModel>(serialisedCalendar);
+
+            foreach (var calendar in calendars.own_calendars)
             {
                 calendar.selected = calendar.id == calendarId;
             }
 
-            foreach (var calendar in _storageService.GetCalendarsResult.other_calendars)
+            foreach (var calendar in calendars.other_calendars)
             {
                 calendar.selected = false;
             }
 
+            await _terrainAPIService.PutCalendarsAsync(GetUser(), calendars);
+        }
+
+        public async Task ResetCalendar()
+        {
             await _terrainAPIService.PutCalendarsAsync(GetUser(), _storageService.GetCalendarsResult);
         }
 
@@ -144,6 +155,7 @@ namespace Topo.Services
             var members = await _memberListService.GetMembersAsync();
             //
             var programEvents = await GetEventsForDates(fromDate, toDate);
+            await ResetCalendar();
             foreach (var programEvent in programEvents.OrderBy(pe => pe.StartDateTime))
             {
                 var eventListModel = await GetAttendanceForEvent(programEvent.Id);
