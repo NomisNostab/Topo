@@ -51,6 +51,12 @@ namespace Topo.Services
             {
                 calendar.selected = calendar.id == calendarId;
             }
+
+            foreach (var calendar in _storageService.GetCalendarsResult.other_calendars)
+            {
+                calendar.selected = false;
+            }
+
             await _terrainAPIService.PutCalendarsAsync(GetUser(), _storageService.GetCalendarsResult);
         }
 
