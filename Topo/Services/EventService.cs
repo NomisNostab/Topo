@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using Newtonsoft.Json;
+using System.Globalization;
 using Topo.Images;
 using Topo.Models.Events;
 
@@ -8,6 +9,7 @@ namespace Topo.Services
     {
         public Task<List<CalendarListModel>> GetCalendars();
         public Task SetCalendar(string calendarId);
+        public Task ResetCalendar();
         public Task<List<EventListModel>> GetEventsForDates(DateTime fromDate, DateTime toDate);
         public Task<EventListModel> GetAttendanceForEvent(string eventId);
         public Task<AttendanceReportModel> GenerateAttendanceReportData(DateTime fromDate, DateTime toDate, string selectedCalendar);
@@ -47,10 +49,25 @@ namespace Topo.Services
 
         public async Task SetCalendar(string calendarId)
         {
-            foreach (var calendar in _storageService.GetCalendarsResult.own_calendars)
+            //Deep copy calendar to allow reset
+            var serialisedCalendar = JsonConvert.SerializeObject(_storageService.GetCalendarsResult);
+            var calendars = JsonConvert.DeserializeObject<GetCalendarsResultModel>(serialisedCalendar);
+
+            foreach (var calendar in calendars.own_calendars)
             {
                 calendar.selected = calendar.id == calendarId;
             }
+
+            foreach (var calendar in calendars.other_calendars)
+            {
+                calendar.selected = false;
+            }
+
+            await _terrainAPIService.PutCalendarsAsync(GetUser(), calendars);
+        }
+
+        public async Task ResetCalendar()
+        {
             await _terrainAPIService.PutCalendarsAsync(GetUser(), _storageService.GetCalendarsResult);
         }
 
@@ -93,7 +110,7 @@ namespace Topo.Services
                 });
             }
 
-            if (getEventResultModel != null && getEventResultModel.attendance != null && getEventResultModel.attendance.attendee_members != null)
+            if (getEventResultModel != null && getEventResultModel.attendance != null && getEventResultModel.attendance.attendee_members != null && getEventResultModel.attendance.attendee_members.Any())
             {
                 eventListModel.Id = eventId;
                 eventListModel.EventName = getEventResultModel.title;
@@ -108,6 +125,24 @@ namespace Topo.Services
                 eventListModel.attendees = eventAttendance.ToArray();
                 return eventListModel;
             }
+
+            // for older events participant_members seems to be used  not attendee_members
+            if (getEventResultModel != null && getEventResultModel.attendance != null && getEventResultModel.attendance.participant_members != null && getEventResultModel.attendance.participant_members.Any())
+            {
+                eventListModel.Id = eventId;
+                eventListModel.EventName = getEventResultModel.title;
+                eventListModel.StartDateTime = getEventResultModel.start_datetime;
+                foreach (var attended in getEventResultModel.attendance.participant_members)
+                {
+                    if (eventAttendance.Any(a => a.member_number == attended.member_number))
+                    {
+                        eventAttendance.Where(a => a.member_number == attended.member_number).Single().attended = true;
+                    }
+                }
+                eventListModel.attendees = eventAttendance.ToArray();
+                return eventListModel;
+            }
+
             return new EventListModel();
         }
 
@@ -120,6 +155,7 @@ namespace Topo.Services
             var members = await _memberListService.GetMembersAsync(_storageService.SelectedUnitId);
             //
             var programEvents = await GetEventsForDates(fromDate, toDate);
+            await ResetCalendar();
             foreach (var programEvent in programEvents.OrderBy(pe => pe.StartDateTime))
             {
                 var eventListModel = await GetAttendanceForEvent(programEvent.Id);
@@ -162,7 +198,7 @@ namespace Topo.Services
             {
                 var attendanceCount = memberSummaries.Where(ms => ms.MemberId == attendanceItem.MemberId).FirstOrDefault()?.AttendanceCount ?? 0;
                 var totalEvents = memberSummaries.Where(ms => ms.MemberId == attendanceItem.MemberId).FirstOrDefault()?.TotalEvents ?? 0;
-                var attendanceRate = (decimal)attendanceCount / totalEvents * 100m;
+                var attendanceRate = totalEvents == 0 ? 0 : (decimal)attendanceCount / totalEvents * 100m;
                 attendanceItem.MemberNameAndRate = $"{attendanceItem.MemberName} ({Math.Round(attendanceRate, 0)}%)";
             }
 

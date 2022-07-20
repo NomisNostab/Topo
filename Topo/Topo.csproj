@@ -32,13 +32,12 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.9" />
-		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.6" />
+		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.7" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 		<PackageReference Include="NLog" Version="5.0.1" />
 		<PackageReference Include="NLog.Web.AspNetCore" Version="5.0.0" />
-		<PackageReference Include="Syncfusion.EJ2.AspNet.Core" Version="20.2.0.36" />
-		<PackageReference Include="Syncfusion.XlsIO.Net.Core" Version="20.2.0.36" />
-		<PackageReference Include="Syncfusion.XlsIORenderer.Net.Core" Version="20.2.0.36" />
+		<PackageReference Include="Syncfusion.XlsIO.Net.Core" Version="20.2.0.38" />
+		<PackageReference Include="Syncfusion.XlsIORenderer.Net.Core" Version="20.2.0.38" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -72,6 +72,7 @@ namespace Topo.Controllers
                 var events = await _eventService.GetEventsForDates(eventViewModel.CalendarSearchFromDate, eventViewModel.CalendarSearchToDate);
                 viewModel.Events = events;
                 _storageService.Events = events.Select(e => new SelectListItem { Text = e.EventDisplay, Value = e.Id }).ToList();
+                await _eventService.ResetCalendar();
             }
             viewModel.Calendars = _storageService.Calendars;
             viewModel.SelectedCalendar = eventViewModel.SelectedCalendar;
