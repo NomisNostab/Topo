@@ -7,5 +7,6 @@
         public string AwardName { get; set; } = string.Empty;
         public int AwardSortIndex { get; set; } = 0;
         public DateTime? AwardDate { get; set; }
+        public DateTime? PresentedDate { get; set; }
     }
 }

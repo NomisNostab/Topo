@@ -109,7 +109,7 @@ namespace Topo.Controllers
                             memberKVP.Add(new KeyValuePair<string, string>(member, memberName ?? ""));
                         }
                         _logger.LogInformation($"memberKVP.Count: {memberKVP.Count()}");
-                        var workbook = await _additionalAwardService.GenerateAdditionalAwardReport(memberKVP);
+                        var workbook = await _additionalAwardService.GenerateAdditionalAwardReport(additionalAwardIndexViewModel.SelectedUnitId, memberKVP);
                         if (!string.IsNullOrEmpty(button))
                         {
                             //Stream 

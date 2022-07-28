@@ -225,7 +225,14 @@ namespace Topo.Services
                 {
                     columnNumber = distinctAwards.IndexOf(x.AwardId) + 1;
                     var cell = sheet.Range[rowNumber, columnNumber + 1];
-                    cell.Text = x.AwardDate.Value.ToString("dd/MM/yy");
+                    cell.DateTime = x.AwardDate.Value;
+                    cell.CellStyle.Color = Color.Orange;
+                    if (x.PresentedDate.HasValue)
+                    {
+                        cell.DateTime = x.PresentedDate.Value;
+                        cell.CellStyle.Color = Color.LightGreen;
+                    }
+                    cell.NumberFormat = "dd/MM/yy";
                 }
                 rowNumber++;
             }

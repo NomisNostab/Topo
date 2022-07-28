@@ -27,5 +27,8 @@ namespace Topo.Models.Approvals
         
         [Display(Name = "Only show awards to be presented")]
         public bool ToBePresented { get; set; }
+
+        [Display(Name = "Only show awards that are presented")] 
+        public bool IsPresented { get; set; }
     }
 }

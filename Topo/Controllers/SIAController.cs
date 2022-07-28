@@ -121,7 +121,7 @@ namespace Topo.Controllers
                         else
                             outputType = Constants.OutputType.xlsx;
 
-                        var reportData = await _SIAService.GenerateSIAReportData(memberKVP, section);
+                        var reportData = await _SIAService.GenerateSIAReportData(memberKVP, section, siaIndexViewModel.SelectedUnitId);
                         var workbook = _reportService.GenerateSIAWorkbook(reportData, groupName, section, unitName, outputType == Constants.OutputType.pdf);
 
                         //Stream 

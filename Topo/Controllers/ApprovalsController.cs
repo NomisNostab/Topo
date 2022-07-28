@@ -69,9 +69,13 @@ namespace Topo.Controllers
                 if (_storageService.Units != null)
                     _storageService.SelectedUnitName = _storageService.Units.Where(u => u.Value == memberListViewModel.SelectedUnitId)?.FirstOrDefault()?.Text;
                 model = await SetUpViewModel();
-                model.Approvals = model.Approvals?.Where(a => a.submission_date >= memberListViewModel.ApprovalSearchFromDate && a.submission_date <= memberListViewModel.ApprovalSearchToDate).ToList() ?? new List<ApprovalsListModel>();
+                model.ToBePresented = memberListViewModel.ToBePresented;
+                model.IsPresented = memberListViewModel.IsPresented;
+                model.Approvals = model.Approvals?.Where(a => a.submission_date >= memberListViewModel.ApprovalSearchFromDate && a.submission_date <= memberListViewModel.ApprovalSearchToDate.AddDays(1)).ToList() ?? new List<ApprovalsListModel>();
                 if (memberListViewModel.ToBePresented)
-                    model.Approvals = model.Approvals.Where(a => !a.presented_date.HasValue).ToList();
+                    model.Approvals = model.Approvals.Where(a => !string.IsNullOrEmpty(a.submission_outcome) && !a.presented_date.HasValue).ToList();
+                if (memberListViewModel.IsPresented)
+                    model.Approvals = model.Approvals.Where(a => a.presented_date.HasValue && a.presented_date != a.awarded_date).ToList();
                 ViewBag.dataSource = model.Approvals.ToList();
                 if (!string.IsNullOrEmpty(button))
                 {

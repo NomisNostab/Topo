@@ -151,10 +151,19 @@ namespace Topo.Services
             var finalisedApprovals = await GetApprovalList(unitId, "finalised");
             var additionalAwards = await GetAdditionalAwardList(unitId);
             var allTerrainApprovals = finalisedApprovals.Concat(pendingApprovals).Concat(additionalAwards).OrderBy(a => a.submission_date);
-            var lastSavedApprovalDate = savedApprovalItems.OrderByDescending(a => a.submission_date).FirstOrDefault()?.submission_date ?? DateTime.MinValue;
-            var newSubmissions = allTerrainApprovals.Where(a => a.submission_date > lastSavedApprovalDate).ToList();
+            // Remove pending approvals from savedApprovalItems
+            var oldPendingApprovalItems = savedApprovalItems.Where(s => s.submission_status.ToLower() == "pending").ToList();
+            if (oldPendingApprovalItems != null && oldPendingApprovalItems.Any())
+            {
+                foreach(var pendingItem in oldPendingApprovalItems)
+                {
+                    savedApprovalItems.Remove(pendingItem);
+                }
+            }
+            // Get items in allTerrainApprovals that are not in savedApprovalItems, these are new since last time
+            var newSubmissions = allTerrainApprovals.Where(all => savedApprovalItems.Count(x => x.achievement_id == all.achievement_id) == 0).ToList();
 
-            foreach(var newApproval in newSubmissions)
+            foreach (var newApproval in newSubmissions)
             {
                 newApproval.achievement_name = await GetAchievementName(newApproval.member_id, newApproval.achievement_id, newApproval.achievement_type);
                 if (initialLoad)
@@ -172,8 +181,8 @@ namespace Topo.Services
         {
             var savedApprovalItems = ReadApprovalListFromFileSystem(unitId);
             var approvalItem = savedApprovalItems.Where(a => a.achievement_id == approval.achievement_id && a.submission_type == approval.submission_type).FirstOrDefault();
-            if (approvalItem != null)
-                approvalItem.presented_date = approval.presented_date;
+            if (approvalItem != null && approval.presented_date.HasValue)
+                approvalItem.presented_date = approval.presented_date.Value.ToLocalTime();
             WriteApprovalsListToFileSystem(savedApprovalItems.OrderBy(a => a.submission_date).ToList(), unitId);
         }
     }
