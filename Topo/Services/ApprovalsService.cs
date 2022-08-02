@@ -181,8 +181,10 @@ namespace Topo.Services
         {
             var savedApprovalItems = ReadApprovalListFromFileSystem(unitId);
             var approvalItem = savedApprovalItems.Where(a => a.achievement_id == approval.achievement_id && a.submission_type == approval.submission_type).FirstOrDefault();
-            if (approvalItem != null && approval.presented_date.HasValue)
-                approvalItem.presented_date = approval.presented_date.Value.ToLocalTime();
+            if (approvalItem != null)
+            {
+                approvalItem.presented_date = approval.presented_date.HasValue ? approval.presented_date.Value.ToLocalTime() : null;
+            }
             WriteApprovalsListToFileSystem(savedApprovalItems.OrderBy(a => a.submission_date).ToList(), unitId);
         }
     }

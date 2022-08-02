@@ -1536,9 +1536,15 @@ namespace Topo.Services
                 sheet.Range[rowNumber, 1].Text = wallchartEntry.MemberName;
                 SetWallchartCell(sheet.Range[rowNumber, 2], 0, wallchartGroups.intro, wallchartEntry.IntroToScouting);
                 SetWallchartCell(sheet.Range[rowNumber, 3], 0, wallchartGroups.intro, wallchartEntry.IntroToSection);
-                if (wallchartEntry.Milestone1Awarded.HasValue)
+                if (wallchartEntry.Milestone1Presented.HasValue)
                 {
-                    sheet.Range[rowNumber, 4].DateTime = wallchartEntry.Milestone1Awarded.Value;
+                    sheet.Range[rowNumber, 4].DateTime = wallchartEntry.Milestone1Presented.Value;
+                    sheet.Range[rowNumber, 4, rowNumber, 9].Merge();
+                    sheet.Range[rowNumber, 4, rowNumber, 9].CellStyle.Color = Milestone1LeadColours[1];
+                }
+                else if (wallchartEntry.Milestone1Awarded.HasValue)
+                {
+                    sheet.Range[rowNumber, 4].Text = $"{wallchartEntry.Milestone1Awarded.Value.ToShortDateString()}*";
                     sheet.Range[rowNumber, 4, rowNumber, 9].Merge();
                     sheet.Range[rowNumber, 4, rowNumber, 9].CellStyle.Color = Milestone1LeadColours[1];
                 }
@@ -1551,9 +1557,16 @@ namespace Topo.Services
                     SetWallchartCell(sheet.Range[rowNumber, 8], 1, wallchartGroups.assist, wallchartEntry.Milestone1Assist);
                     SetWallchartCell(sheet.Range[rowNumber, 9], 1, wallchartGroups.lead, wallchartEntry.Milestone1Lead);
                 }
-                if (wallchartEntry.Milestone2Awarded.HasValue)
+
+                if (wallchartEntry.Milestone2Presented.HasValue)
                 {
-                    sheet.Range[rowNumber, 10].DateTime = wallchartEntry.Milestone2Awarded.Value;
+                    sheet.Range[rowNumber, 10].DateTime = wallchartEntry.Milestone2Presented.Value;
+                    sheet.Range[rowNumber, 10, rowNumber, 15].Merge();
+                    sheet.Range[rowNumber, 10, rowNumber, 15].CellStyle.Color = Milestone1LeadColours[1];
+                }
+                else if (wallchartEntry.Milestone2Awarded.HasValue)
+                {
+                    sheet.Range[rowNumber, 10].Text = $"{wallchartEntry.Milestone2Awarded.Value.ToShortDateString()}*";
                     sheet.Range[rowNumber, 10, rowNumber, 15].Merge();
                     sheet.Range[rowNumber, 10, rowNumber, 15].CellStyle.Color = Milestone1LeadColours[1];
                 }
@@ -1566,9 +1579,16 @@ namespace Topo.Services
                     SetWallchartCell(sheet.Range[rowNumber, 14], 2, wallchartGroups.assist, wallchartEntry.Milestone2Assist);
                     SetWallchartCell(sheet.Range[rowNumber, 15], 2, wallchartGroups.lead, wallchartEntry.Milestone2Lead);
                 }
-                if (wallchartEntry.Milestone3Awarded.HasValue)
+
+                if (wallchartEntry.Milestone3Presented.HasValue)
                 {
-                    sheet.Range[rowNumber, 16].DateTime = wallchartEntry.Milestone3Awarded.Value;
+                    sheet.Range[rowNumber, 16].DateTime = wallchartEntry.Milestone3Presented.Value;
+                    sheet.Range[rowNumber, 16, rowNumber, 21].Merge();
+                    sheet.Range[rowNumber, 16, rowNumber, 21].CellStyle.Color = Milestone1LeadColours[1];
+                }
+                else if (wallchartEntry.Milestone3Awarded.HasValue)
+                {
+                    sheet.Range[rowNumber, 16].Text = $"{wallchartEntry.Milestone3Awarded.Value.ToShortDateString()}*";
                     sheet.Range[rowNumber, 16, rowNumber, 21].Merge();
                     sheet.Range[rowNumber, 16, rowNumber, 21].CellStyle.Color = Milestone1LeadColours[1];
                 }
