@@ -17,7 +17,6 @@ try
 
     // Add services to the container.
     builder.Services.AddControllersWithViews();
-
     // Register DI services
     builder.Services.AddSingleton<StorageService>();
 
@@ -33,6 +32,7 @@ try
     builder.Services.AddScoped<IAdditionalAwardService, AdditionalAwardService>();
     builder.Services.AddScoped<IImages, Images>();
     builder.Services.AddScoped<IReportService, ReportService>();
+    builder.Services.AddScoped<IApprovalsService, ApprovalsService>();
     Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Mgo+DSMBMAY9C3t2VVhiQlFadVdJXGFWfVJpTGpQdk5xdV9DaVZUTWY/P1ZhSXxRdkJiUX9YdHZRRGheVkQ=");
 
     // NLog: Setup NLog for Dependency injection

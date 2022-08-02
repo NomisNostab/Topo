@@ -40,7 +40,7 @@ namespace Topo.Controllers
             if (_storageService.SelectedUnitId != null)
             {
                 model.SelectedUnitId = _storageService.SelectedUnitId;
-                var allMembers = await _memberListService.GetMembersAsync();
+                var allMembers = await _memberListService.GetMembersAsync(_storageService.SelectedUnitId);
                 var members = allMembers.Where(m => m.isAdultLeader == 0).OrderBy(m => m.first_name).ThenBy(m => m.last_name).ToList();
                 foreach (var member in members)
                 {
@@ -121,7 +121,7 @@ namespace Topo.Controllers
                         else
                             outputType = Constants.OutputType.xlsx;
 
-                        var reportData = await _SIAService.GenerateSIAReportData(memberKVP, section);
+                        var reportData = await _SIAService.GenerateSIAReportData(memberKVP, section, siaIndexViewModel.SelectedUnitId);
                         var workbook = _reportService.GenerateSIAWorkbook(reportData, groupName, section, unitName, outputType == Constants.OutputType.pdf);
 
                         //Stream 

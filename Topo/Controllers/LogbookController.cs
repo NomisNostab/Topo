@@ -38,7 +38,7 @@ namespace Topo.Controllers
             if (_storageService.SelectedUnitId != null)
             {
                 model.SelectedUnitId = _storageService.SelectedUnitId;
-                var allMembers = await _memberListService.GetMembersAsync();
+                var allMembers = await _memberListService.GetMembersAsync(_storageService.SelectedUnitId);
                 var members = allMembers.Where(m => includeLeaders || m.isAdultLeader == 0).OrderBy(m => m.first_name).ThenBy(m => m.last_name).ToList();
                 foreach (var member in members)
                 {

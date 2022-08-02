@@ -6,7 +6,7 @@ namespace Topo.Services
 {
     public interface IAdditionalAwardService
     {
-        public Task<IWorkbook> GenerateAdditionalAwardReport(List<KeyValuePair<string, string>> selectedMembers);
+        public Task<IWorkbook> GenerateAdditionalAwardReport(string selectedUnitId, List<KeyValuePair<string, string>> selectedMembers);
     }
     public class AdditionalAwardService : IAdditionalAwardService
     {
@@ -14,17 +14,19 @@ namespace Topo.Services
         private readonly ITerrainAPIService _terrainAPIService;
         private readonly ILogger<ISIAService> _logger;
         private readonly IReportService _reportService;
+        private readonly IApprovalsService _approvalsService;
 
         public AdditionalAwardService(ITerrainAPIService terrainAPIService,
             StorageService storageService, ILogger<ISIAService> logger,
-            IReportService reportService)
+            IReportService reportService, IApprovalsService approvalsService)
         {
             _terrainAPIService = terrainAPIService;
             _storageService = storageService;
             _logger = logger;
             _reportService = reportService;
+            _approvalsService = approvalsService;
         }
-        public async Task<IWorkbook> GenerateAdditionalAwardReport(List<KeyValuePair<string, string>> selectedMembers)
+        public async Task<IWorkbook> GenerateAdditionalAwardReport(string selectedUnitId, List<KeyValuePair<string, string>> selectedMembers)
         {
             var groupName = _storageService.GroupName;
             var unitName = _storageService.SelectedUnitName ?? "";
@@ -44,7 +46,8 @@ namespace Topo.Services
                     .ToList();
                 _storageService.AdditionalAwardSpecifications = awardSpecificationsList;
             }
-            var unitAchievementsResult = await _terrainAPIService.GetUnitAdditionalAwardAchievements(_storageService.SelectedUnitId ?? "");
+            var unitAchievementsResult = await _terrainAPIService.GetUnitAdditionalAwardAchievements(selectedUnitId ?? "");
+            var approvedAwards = await _approvalsService.GetApprovalListItems(selectedUnitId ?? "");
             var additionalAwardsList = new List<AdditionalAwardListModel>();
             var lastMemberProcessed = "";
             var memberName = "";
@@ -68,13 +71,23 @@ namespace Topo.Services
                     var awardStatusDate = result.status_updated;
                     if (result.imported != null)
                         awardStatusDate = DateTime.ParseExact(result.imported.date_awarded, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                    var award = approvedAwards.Where(a => a.achievement_id == result.id && a.submission_type.ToLower() == "review").FirstOrDefault();
+                    DateTime? awardPresentedDate = new DateTime?();
+                    if (award != null)
+                    {
+                        if (award.presented_date.HasValue)
+                        {
+                            awardPresentedDate = award.presented_date.Value.ToLocalTime();
+                        }
+                    }
                     additionalAwardsList.Add(new AdditionalAwardListModel
                     {
                         MemberName = memberName,
                         AwardId = awardSpecification?.id ?? "",
                         AwardName = awardSpecification?.name ?? "",
                         AwardSortIndex = awardSpecification?.additionalAwardSortIndex ?? 0,
-                        AwardDate = awardStatusDate
+                        AwardDate = awardStatusDate,
+                        PresentedDate = awardPresentedDate ?? null
                     });
                 }
             }
