@@ -397,7 +397,7 @@ namespace Topo.Services
             var title = sheet.Range[rowNumber, 2];
             title.Text = $"Members as at {DateTime.Now.ToShortDateString()}";
             title.CellStyle = headingStyle;
-            sheet.Range[rowNumber, 2, rowNumber, 7].Merge();
+            sheet.Range[rowNumber, 2, rowNumber, 8].Merge();
             sheet.SetRowHeight(rowNumber, 30);
 
             // Add Unit name
@@ -405,12 +405,11 @@ namespace Topo.Services
             var unit = sheet.Range[rowNumber, 2];
             unit.Text = unitName;
             unit.CellStyle = headingStyle;
-            sheet.Range[rowNumber, 2, rowNumber, 7].Merge();
+            sheet.Range[rowNumber, 2, rowNumber, 8].Merge();
             sheet.SetRowHeight(rowNumber, 40);
 
             // Add Header
             rowNumber++;
-            sheet.Range[rowNumber, 2, rowNumber, 7].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
             sheet.Range[rowNumber, 2].Text = "First Name";
             sheet.Range[rowNumber, 2].BorderAround();
             sheet.Range[rowNumber, 3].Text = "Last Name";
@@ -423,6 +422,9 @@ namespace Topo.Services
             sheet.Range[rowNumber, 6].BorderAround();
             sheet.Range[rowNumber, 7].Text = "Duty";
             sheet.Range[rowNumber, 7].BorderAround();
+            sheet.Range[rowNumber, 8].Text = "Patrol";
+            sheet.Range[rowNumber, 8].BorderAround();
+            sheet.Range[rowNumber, 2, rowNumber, 8].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
 
             foreach (var member in sortedMemberList)
             {
@@ -439,6 +441,8 @@ namespace Topo.Services
                 sheet.Range[rowNumber, 6].BorderAround();
                 sheet.Range[rowNumber, 7].Text = member.patrol_duty;
                 sheet.Range[rowNumber, 7].BorderAround();
+                sheet.Range[rowNumber, 8].Text = member.patrol_name;
+                sheet.Range[rowNumber, 8].BorderAround();
 
                 var dateDiff = DateTime.Now - member.date_of_birth;
                 var approxYears = dateDiff.Days / 365.0;

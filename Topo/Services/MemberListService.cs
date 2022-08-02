@@ -46,8 +46,8 @@ namespace Topo.Services
                         age = GetAgeFromBirthdate(m.date_of_birth),
                         unit_council = m.unit.unit_council,
                         patrol_name = m.patrol == null ? "" : m.patrol.name,
-                        patrol_duty = m.patrol == null ? "" : GetPatrolDuty(m.unit.duty, m.patrol.duty),
-                        patrol_order = m.patrol == null ? 3 : GetPatrolOrder(m.unit.duty, m.patrol.duty),
+                        patrol_duty = GetPatrolDuty(m.unit.duty, m.patrol?.duty ?? ""),
+                        patrol_order = GetPatrolOrder(m.unit.duty, m.patrol?.duty ?? ""),
                         isAdultLeader = m.unit.duty == "adult_leader" ? 1 : 0,
                         status = m.status
                     })
