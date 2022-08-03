@@ -38,6 +38,13 @@ namespace Topo.Services
             var getGroupLifeResultModel = await _terrainAPIService.GetGroupLifeForUnit(selectedUnitId);
             foreach (var result in getGroupLifeResultModel.results)
             {
+                await _terrainAPIService.RevokeAssumedProfiles();
+                await _terrainAPIService.AssumeProfile(result.member_id);
+                var getMemberLogbookMetrics = await _terrainAPIService.GetMemberLogbookMetrics(result.member_id);
+                await _terrainAPIService.RevokeAssumedProfiles();
+                var totalNightsCamped = getMemberLogbookMetrics.results.Where(r => r.name == "total_nights_camped").FirstOrDefault()?.value ?? 0;
+                var totalKmsHiked = (getMemberLogbookMetrics.results.Where(r => r.name == "total_distance_hiked").FirstOrDefault()?.value ?? 0) / 1000.0f;
+
                 var wallchartItem = new WallchartItemModel();
                 wallchartItem.MemberName = result.name;
                 wallchartItem.IntroToScouting = result.intro_to_scouts;
@@ -136,6 +143,8 @@ namespace Topo.Services
                             break;
                     }
                 }
+                wallchartItem.NightsCamped = (int)totalNightsCamped;
+                wallchartItem.KMsHiked = (int)totalKmsHiked;
                 wallchartItem.OASStageProgressions = result.oas.total_progressions;
                 var siaResultModel = await _terrainAPIService.GetSIAResultsForMember(result.member_id);
                 var awardedSIAProjects = siaResultModel.results.Where(r => r.section == section && r.status == "awarded");

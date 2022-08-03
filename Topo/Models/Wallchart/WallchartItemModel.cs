@@ -38,6 +38,8 @@
         public int OASAquaticsStage { get; set; }
         public int OASBoatingStage { get; set; }
         public int OASPaddlingStage { get; set; }
+        public int NightsCamped { get; set; }
+        public int KMsHiked { get; set; }
         public int OASStageProgressions { get; set; }
         public int SIAAdventureSport { get; set; }
         public int SIAArtsLiterature { get; set; }
