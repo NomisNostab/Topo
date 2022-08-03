@@ -83,9 +83,10 @@ namespace Topo.Services
                     EventName = e.title,
                     StartDateTime = e.start_datetime,
                     EndDateTime = e.end_datetime,
-                    ChallengeArea = myTI.ToTitleCase(e.challenge_area.Replace("_", " "))
+                    ChallengeArea = myTI.ToTitleCase(e.challenge_area.Replace("_", " ")),
+                    EventStatus = myTI.ToTitleCase(e.status)
                 })
-                    .ToList();
+                .ToList();
                 return events;
             }
             return new List<EventListModel>();
@@ -172,7 +173,8 @@ namespace Topo.Services
                         EventChallengeArea = programEvent.ChallengeArea,
                         EventStartDate = programEvent.StartDateTime,
                         Attended = attended ? 1 : 0,
-                        IsAdultMember = member.isAdultLeader
+                        IsAdultMember = member.isAdultLeader,
+                        EventStatus = programEvent.EventStatus
                     });
                 }
             }

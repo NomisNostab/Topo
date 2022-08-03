@@ -824,7 +824,7 @@ namespace Topo.Services
                 if (forPdfOutput)
                 {
                     // Name
-                    sheet.Range[rowNumber, columnNumber].Text = eventAttendance.EventNameDisplay;
+                    sheet.Range[rowNumber, columnNumber].Text = $"{eventAttendance.EventNameDisplay} ({eventAttendance.EventStatus})";
                     sheet.Range[rowNumber, columnNumber].CellStyle.ColorIndex = GetChallengeAreaColour(eventAttendance.EventChallengeArea);
                     sheet.Range[rowNumber, columnNumber].BorderAround();
                     sheet.Range[rowNumber, columnNumber].CellStyle.Rotation = 90;
@@ -845,10 +845,15 @@ namespace Topo.Services
                     sheet.Range[rowNumber + 1, columnNumber].CellStyle.ColorIndex = GetChallengeAreaColour(eventAttendance.EventChallengeArea);
                     sheet.Range[rowNumber + 1, columnNumber].BorderAround();
 
-                    // Name
-                    sheet.Range[rowNumber + 2, columnNumber].Text = eventAttendance.EventName;
+                    // State
+                    sheet.Range[rowNumber + 2, columnNumber].Text = eventAttendance.EventStatus;
                     sheet.Range[rowNumber + 2, columnNumber].CellStyle.ColorIndex = GetChallengeAreaColour(eventAttendance.EventChallengeArea);
                     sheet.Range[rowNumber + 2, columnNumber].BorderAround();
+
+                    // Name
+                    sheet.Range[rowNumber + 3, columnNumber].Text = eventAttendance.EventName;
+                    sheet.Range[rowNumber + 3, columnNumber].CellStyle.ColorIndex = GetChallengeAreaColour(eventAttendance.EventChallengeArea);
+                    sheet.Range[rowNumber + 3, columnNumber].BorderAround();
                 }
             }
 
@@ -858,7 +863,7 @@ namespace Topo.Services
             }
             else
             {
-                rowNumber = rowNumber + 2;
+                rowNumber = rowNumber + 3;
             }
             columnNumber++;
             sheet.Range[rowNumber, columnNumber].Text = "Total";
