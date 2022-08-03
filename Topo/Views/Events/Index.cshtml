@@ -51,6 +51,9 @@
             <div class="col-md-4">
                 <strong>@Html.DisplayNameFor(model => model.Events.FirstOrDefault().EventName)</strong>
             </div>
+            <div class="col-md-1">
+                <strong>@Html.DisplayNameFor(model => model.Events.FirstOrDefault().EventStatus)</strong>
+            </div>
             <div class="col-md-2">
                 <strong>@Html.DisplayNameFor(model => model.Events.FirstOrDefault().ChallengeArea)</strong>
             </div>
@@ -66,6 +69,9 @@
                 <div class="col-md-4">
                     @Html.HiddenFor(model => item.Id)
                     @Html.DisplayFor(model => item.EventName)
+                </div>
+                <div class="col-md-1">
+                    @Html.DisplayFor(model => item.EventStatus)
                 </div>
                 <div class="col-md-2">
                     @Html.DisplayFor(model => item.ChallengeArea)

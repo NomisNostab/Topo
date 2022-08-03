@@ -20,6 +20,9 @@ namespace Topo.Models.Events
         public string EventDate => StartDateTime.ToShortDateString();
 
         public EventAttendance[] attendees = new EventAttendance[0];
+
+        [Display(Name = "Status")]
+        public string EventStatus { get; set; } = string.Empty;
     }
 
     public class EventAttendance

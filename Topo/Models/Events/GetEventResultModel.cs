@@ -13,6 +13,7 @@ namespace Topo.Models.Events
         public string challenge_area { get; set; }
         public DateTime start_datetime { get; set; }
         public DateTime end_datetime { get; set; }
+        public Upload[] uploads { get; set; }
         public Attendance attendance { get; set; }
         public Invitee[] invitees { get; set; }
         public Review review { get; set; }
@@ -33,42 +34,14 @@ namespace Topo.Models.Events
 
     public class Attendance
     {
-        public Leader_Members[] leader_members { get; set; }
-        public Assistant_Members[] assistant_members { get; set; }
-        public Participant_Members[] participant_members { get; set; }
-        public Attendee_Members[] attendee_members { get; set; }
+        public Attendance_Members[] leader_members { get; set; }
+        public Attendance_Members[] assistant_members { get; set; }
+        public Attendance_Members[] participant_members { get; set; }
+        public Attendance_Members[] attendee_members { get; set; }
     }
 
-    public class Leader_Members
+    public class Attendance_Members
     {
-        public string id { get; set; }
-        public string first_name { get; set; }
-        public string last_name { get; set; }
-        public string member_number { get; set; }
-        public string patrol_name { get; set; }
-    }
-
-    public class Assistant_Members
-    {
-        public string id { get; set; }
-        public string first_name { get; set; }
-        public string last_name { get; set; }
-        public string member_number { get; set; }
-        public string patrol_name { get; set; }
-    }
-
-    public class Participant_Members
-    {
-        public string id { get; set; }
-        public string first_name { get; set; }
-        public string last_name { get; set; }
-        public string member_number { get; set; }
-        public string patrol_name { get; set; }
-    }
-
-    public class Attendee_Members
-    {
-
         public string id { get; set; }
         public string first_name { get; set; }
         public string last_name { get; set; }
@@ -127,6 +100,16 @@ namespace Topo.Models.Events
         public string last_name { get; set; }
         public string member_number { get; set; }
         public string patrol_name { get; set; }
+    }
+
+    public class Upload
+    {
+        public string id { get; set; }
+        public string filename { get; set; }
+        public string bucket { get; set; }
+        public string key { get; set; }
+        public string url { get; set; }
+        public DateTime uploaded_on { get; set; }
     }
 
     public class Invitee
