@@ -142,11 +142,15 @@ namespace Topo.Services
             // Add Logo
             var directory = Directory.GetCurrentDirectory();
             var logoName = _images.GetLogoForSection(section);
-            FileStream imageStream = new FileStream($@"{directory}/Images/{logoName}", FileMode.Open, FileAccess.Read);
-            IPictureShape logo = sheet.Pictures.AddPicture(1, 1, imageStream);
-            var aspectRatio = (double)logo.Height / logo.Width;
-            logo.Width = 100;
-            logo.Height = (int)(100 * aspectRatio);
+            var logoFullPathName = $@"{directory}/Images/{logoName}";
+            if (File.Exists(logoFullPathName))
+            {
+                FileStream imageStream = new FileStream($@"{directory}/Images/{logoName}", FileMode.Open, FileAccess.Read);
+                IPictureShape logo = sheet.Pictures.AddPicture(1, 1, imageStream);
+                var aspectRatio = (double)logo.Height / logo.Width;
+                logo.Width = 100;
+                logo.Height = (int)(100 * aspectRatio);
+            }
 
             // Add Group Name
             var groupNameCell = sheet.Range[1, 2];
