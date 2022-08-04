@@ -43,6 +43,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\Images\Images.csproj" />
+	  <ProjectReference Include="..\Models\Models.csproj" />
+	  <ProjectReference Include="..\Services\Services.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Update="Images\Cub Scouts Full Col Vertical.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>

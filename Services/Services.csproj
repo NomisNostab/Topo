@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Syncfusion.EJ2.AspNet.Core" Version="20.2.0.38" />
+    <PackageReference Include="Syncfusion.Licensing" Version="20.2.0.38" />
+    <PackageReference Include="Syncfusion.XlsIO.Net.Core" Version="20.2.0.38" />
+    <PackageReference Include="Syncfusion.XlsIORenderer.Net.Core" Version="20.2.0.38" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Images\Images.csproj" />
+    <ProjectReference Include="..\Models\Models.csproj" />
+  </ItemGroup>
+
+</Project>
