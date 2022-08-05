@@ -143,3 +143,41 @@ Click Generate Additional Awards xls to download the report in Excel format.
 
 ![TopoAdditionalAwardsExcel](https://user-images.githubusercontent.com/65288066/170489286-f8804cc1-d79e-4868-b84d-e711554cb65c.png)
 
+### Approvals Report
+The Approvals Report and Page will list both pending and approved achievements from the Approvals page in Terrain.
+
+Select the date range the achievement was awarded in Terrain. When you click out of the date field the list will refresh.
+
+The full name of the achievement is shown, the status of the achievement, when it was awarded and when the badge was presented.
+
+The presented date will be initialised to the awarded date the very first time the page is used. From then on any new approvals will have an empty presented date. Double click on the row to enter the date the badge was presented. The saved dates are only stored on the machine they were entered, not in Terrain, so they won't be shared between unit leaders of the same unit.
+
+![ApprovalsPage1](https://user-images.githubusercontent.com/65288066/183020193-604dbff9-085f-48c8-b409-c1e48ab1134e.png)
+
+The view can be grouped by member name instead of achievement by clicking on the x next to Achievement above the row headings and then dragging the Name row heading up.
+
+![ApprovalsPageGrouping1](https://user-images.githubusercontent.com/65288066/183021126-30af53f8-aba3-4a98-918f-96c91a348a3f.png)
+
+![ApprovalsPageGrouping2](https://user-images.githubusercontent.com/65288066/183021170-357e176c-ec18-4197-af21-bedc7309e0a9.png)
+
+![ApprovalsPageGrouping3](https://user-images.githubusercontent.com/65288066/183021202-72d9c934-d9fa-4956-b136-f5efafe76bd3.png)
+
+![ApprovalsPage2](https://user-images.githubusercontent.com/65288066/183021230-1aaa11ae-b6e4-41ed-a9ee-a24330f27c98.png)
+
+Double click anywhere on a row to show an edit window where you can enter the date the badge was presented.
+
+![ApprovalsPageEditPresented](https://user-images.githubusercontent.com/65288066/183021443-9966d5b7-4c1f-442b-b99f-bb0c2cb6b78b.png)
+
+The list of names can be filtered with an Excel style filter. Click on the filter icon to show the filter window and select the members to show.
+
+![ApprovalsPageEditPresented](https://user-images.githubusercontent.com/65288066/183022052-f50d853f-f1c3-49a6-9c45-5b5b7e73a3a0.png)
+
+The Only show awards to be presented option will limit the list to those rows without a presentd date, this is the list you would use to work out who needs to be given what badge on a night.
+
+The Only show awards that are presented option will limit the list to those rows with a presentd date.
+
+The report will reflect all of the filter and grouping options set on the page.
+
+![ApprovalsReport](https://user-images.githubusercontent.com/65288066/183022924-a66078df-daf3-4d17-a5c5-2c498cd0280b.png)
+
+
