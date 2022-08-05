@@ -1,6 +1,5 @@
 using NLog;
 using NLog.Web;
-using Topo.Images;
 using Topo.Services;
 
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
@@ -30,7 +29,6 @@ try
     builder.Services.AddScoped<ILogbookService, LogbookService>();
     builder.Services.AddScoped<IWallchartService, WallchartService>();
     builder.Services.AddScoped<IAdditionalAwardService, AdditionalAwardService>();
-    builder.Services.AddScoped<IImages, Images>();
     builder.Services.AddScoped<IReportService, ReportService>();
     builder.Services.AddScoped<IApprovalsService, ApprovalsService>();
     Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Mgo+DSMBMAY9C3t2VVhiQlFadVdJXGFWfVJpTGpQdk5xdV9DaVZUTWY/P1ZhSXxRdkJiUX9YdHZRRGheVkQ=");

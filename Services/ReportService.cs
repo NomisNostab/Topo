@@ -1,6 +1,5 @@
 ﻿using Syncfusion.Drawing;
 using Syncfusion.XlsIO;
-using Topo.Images;
 using Topo.Models.AditionalAwards;
 using Topo.Models.Approvals;
 using Topo.Models.Events;
@@ -107,11 +106,8 @@ namespace Topo.Services
             Color.FromArgb(156, 242, 80)
         };
 
-        private readonly IImages _images;
-
-        public ReportService(IImages images)
+        public ReportService()
         {
-            _images = images;
         }
 
         private IWorkbook CreateWorkbookWithSheets(int sheetsToCreate)
@@ -141,11 +137,11 @@ namespace Topo.Services
 
             // Add Logo
             var directory = Directory.GetCurrentDirectory();
-            var logoName = _images.GetLogoForSection(section);
+            var logoName = GetLogoForSection(section);
             var logoFullPathName = $@"{directory}/Images/{logoName}";
             if (File.Exists(logoFullPathName))
             {
-                FileStream imageStream = new FileStream($@"{directory}/Images/{logoName}", FileMode.Open, FileAccess.Read);
+                FileStream imageStream = new FileStream(logoFullPathName, FileMode.Open, FileAccess.Read);
                 IPictureShape logo = sheet.Pictures.AddPicture(1, 1, imageStream);
                 var aspectRatio = (double)logo.Height / logo.Width;
                 logo.Width = 100;
@@ -160,6 +156,30 @@ namespace Topo.Services
             sheet.SetRowHeight(1, 30);
 
             return sheet;
+        }
+
+        public string GetLogoForSection(string section)
+        {
+            var logoName = "";
+            switch (section)
+            {
+                case "joey":
+                    logoName = "Joey Scouts Full Col Vertical.jpg";
+                    break;
+                case "cub":
+                    logoName = "Cub Scouts Full Col Vertical.png";
+                    break;
+                case "scout":
+                    logoName = "Scouts Full Col Vertical.jpg";
+                    break;
+                case "venturer":
+                    logoName = "Venturer Scouts Full Col Vertical.jpg";
+                    break;
+                case "rover":
+                    logoName = "Rover Scouts Full Col Vertical.jpg";
+                    break;
+            }
+            return logoName;
         }
 
         private IWorkbook CreateWorkbookWithLogo(string groupName, string section, int lastHeadingCol)
@@ -521,13 +541,16 @@ namespace Topo.Services
 
                 // Add Logo
                 var directory = Directory.GetCurrentDirectory();
-                var logoName = _images.GetLogoForSection(section);
-                FileStream imageStream = new FileStream($@"{directory}/Images/{logoName}", FileMode.Open, FileAccess.Read);
-                IPictureShape logo = sheet.Pictures.AddPicture(rowNumber, 1, imageStream);
-                var aspectRatio = (double)logo.Height / logo.Width;
-                logo.Width = 100;
-                logo.Height = (int)(100 * aspectRatio);
-                sheet.SetColumnWidthInPixels(1, 100);
+                var logoName = GetLogoForSection(section);
+                var logoFullPathName = $@"{directory}/Images/{logoName}";
+                if (File.Exists(logoFullPathName))
+                {
+                    FileStream imageStream = new FileStream(logoFullPathName, FileMode.Open, FileAccess.Read);
+                    IPictureShape logo = sheet.Pictures.AddPicture(rowNumber, 1, imageStream);
+                    var aspectRatio = (double)logo.Height / logo.Width;
+                    logo.Width = 100;
+                    logo.Height = (int)(100 * aspectRatio);
+                }
 
                 // Add Patrol Name
                 sheet.Range[rowNumber, 2].Text = patrol.Key;
@@ -660,7 +683,7 @@ namespace Topo.Services
                 sheet.Range[rowNumber, 2].BorderAround();
                 sheet.Range[rowNumber, 3].Text = "";
                 sheet.Range[rowNumber, 3].BorderAround();
-                sheet.Range[rowNumber, 4].Text = "";
+                sheet.Range[rowNumber, 4].Text = member.patrol_duty;
                 sheet.Range[rowNumber, 4].BorderAround();
                 sheet.Range[rowNumber, 5].Text = "";
                 sheet.Range[rowNumber, 5].BorderAround();
