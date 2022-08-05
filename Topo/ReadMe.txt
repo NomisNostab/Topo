@@ -23,3 +23,11 @@ When you are finished, close the browser window, go back to the terminal window 
 
 The download and code can found at
 https://github.com/NomisNostab/Topo/releases
+
+Troubleshooting
+
+To get the log files to help in fixing a crash:
+1. Stop and start Topo.
+2. Do whatever you did to make Topo crash
+3. Stop Topo
+4. In the Topo folder find the file nlog-Topo-all.log and email it to simon.batson@nsw.scouts.com.au
