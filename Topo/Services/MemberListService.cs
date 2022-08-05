@@ -1,9 +1,5 @@
-﻿using Newtonsoft.Json;
-using System.Text;
+﻿using System.Globalization;
 using Topo.Models.MemberList;
-using Syncfusion.XlsIO;
-using Topo.Images;
-using System.Globalization;
 
 namespace Topo.Services
 {
@@ -16,13 +12,11 @@ namespace Topo.Services
     {
         private readonly StorageService _storageService;
         private readonly ITerrainAPIService _terrainAPIService;
-        private readonly IImages _images;
 
-        public MemberListService(StorageService storageService, ITerrainAPIService terrainAPIService, IImages images)
+        public MemberListService(StorageService storageService, ITerrainAPIService terrainAPIService)
         {
             _storageService = storageService;
             _terrainAPIService = terrainAPIService;
-            _images = images;
         }
 
         public async Task<List<MemberListModel>> GetMembersAsync(string unitId)
@@ -81,6 +75,8 @@ namespace Topo.Services
 
         private string GetPatrolDuty(string unitDuty, string patrolDuty)
         {
+            if (unitDuty == "adult_leader")
+                return "SL";
             if (unitDuty == "unit_leader")
                 return "UL";
             if (patrolDuty == "assistant_patrol_leader")

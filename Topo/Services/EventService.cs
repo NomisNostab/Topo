@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using System.Globalization;
-using Topo.Images;
 using Topo.Models.Events;
 
 namespace Topo.Services
@@ -20,13 +19,11 @@ namespace Topo.Services
         private readonly StorageService _storageService;
         private readonly ITerrainAPIService _terrainAPIService;
         private readonly IMemberListService _memberListService;
-        private readonly IImages _images;
-        public EventService(StorageService storageService, ITerrainAPIService terrainAPIService, IMemberListService memberListService, IImages images)
+        public EventService(StorageService storageService, ITerrainAPIService terrainAPIService, IMemberListService memberListService)
         {
             _storageService = storageService;
             _terrainAPIService = terrainAPIService;
             _memberListService = memberListService;
-            _images = images;
         }
 
         public async Task<List<CalendarListModel>> GetCalendars()
