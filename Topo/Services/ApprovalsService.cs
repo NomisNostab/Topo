@@ -124,16 +124,23 @@ namespace Topo.Services
                     break;
                 case "milestone":
                     var memberMilestoneAchievementResult = await _terrainAPIService.GetMemberAchievementResult(member_id, achievement_id, achievement_type);
-                    name = $"milestone {memberMilestoneAchievementResult.achievement_meta.stage}";
+                    name = memberMilestoneAchievementResult != null ? $"milestone {memberMilestoneAchievementResult.achievement_meta.stage}" : "milestone";
                     break;
                 case "outdoor_adventure_skill":
                     var memberAchievementResult = await _terrainAPIService.GetMemberAchievementResult(member_id, achievement_id, achievement_type);
-                    var templateParts = memberAchievementResult.template.Split("/");
-                    name = string.Join(" ", templateParts);
+                    if (memberAchievementResult != null)
+                    {
+                        var templateParts = memberAchievementResult.template.Split("/");
+                        name = string.Join(" ", templateParts);
+                    }
+                    else
+                    {
+                        name = "outdoor adventure skill";
+                    }
                     break;
                 case "special_interest_area":
                     var siaResult = await _terrainAPIService.GetSIAResultForMember(member_id, achievement_id);
-                    name = $"{siaResult.answers.special_interest_area_selection.Replace("_", " ")} {siaResult.answers.project_name}" ;
+                    name = siaResult != null ? $"{siaResult.answers.special_interest_area_selection.Replace("_", " ")} {siaResult.answers.project_name}" : "SIA" ;
                     break;
                 default:
                     name = achievement_type.Replace("_", " ");
