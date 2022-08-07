@@ -124,23 +124,26 @@ namespace Topo.Services
                     break;
                 case "milestone":
                     var memberMilestoneAchievementResult = await _terrainAPIService.GetMemberAchievementResult(member_id, achievement_id, achievement_type);
-                    name = memberMilestoneAchievementResult != null ? $"milestone {memberMilestoneAchievementResult.achievement_meta.stage}" : "milestone";
+                    name = memberMilestoneAchievementResult != null ? $"milestone {memberMilestoneAchievementResult.achievement_meta.stage}" : "milestone not found";
                     break;
                 case "outdoor_adventure_skill":
                     var memberAchievementResult = await _terrainAPIService.GetMemberAchievementResult(member_id, achievement_id, achievement_type);
-                    if (memberAchievementResult != null)
+                    if (memberAchievementResult != null && !string.IsNullOrEmpty(memberAchievementResult.template))
                     {
                         var templateParts = memberAchievementResult.template.Split("/");
                         name = string.Join(" ", templateParts);
                     }
                     else
                     {
-                        name = "outdoor adventure skill";
+                        name = "outdoor adventure skill not found";
                     }
                     break;
                 case "special_interest_area":
                     var siaResult = await _terrainAPIService.GetSIAResultForMember(member_id, achievement_id);
-                    name = siaResult != null ? $"{siaResult.answers.special_interest_area_selection.Replace("_", " ")} {siaResult.answers.project_name}" : "SIA" ;
+                    if (siaResult != null && siaResult.answers != null && !string.IsNullOrEmpty(siaResult.answers.special_interest_area_selection) && !string.IsNullOrEmpty(siaResult.answers.project_name))
+                        name = $"{siaResult.answers.special_interest_area_selection.Replace("_", " ")} {siaResult.answers.project_name}";
+                    else
+                        name = "SIA Not Found";
                     break;
                 default:
                     name = achievement_type.Replace("_", " ");
