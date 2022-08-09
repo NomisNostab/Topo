@@ -9,6 +9,7 @@ namespace Topo.Services
     {
         Task<List<ApprovalsListModel>> GetApprovalListItems(string unitId);
         void UpdateApproval(string unitId, ApprovalsListModel approval);
+        List<ApprovalsListModel> ReadApprovalListFromFileSystem(string unitId);
     }
     public class ApprovalsService : IApprovalsService
     {
@@ -21,7 +22,7 @@ namespace Topo.Services
             _memberService = memberService;
         }
 
-        private List<ApprovalsListModel> ReadApprovalListFromFileSystem(string unitId)
+        public List<ApprovalsListModel> ReadApprovalListFromFileSystem(string unitId)
         {
             var list = new List<ApprovalsListModel>();
             string path = Environment.ExpandEnvironmentVariables(@"%LOCALAPPDATA%\Topo");
