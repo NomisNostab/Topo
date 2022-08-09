@@ -10,16 +10,14 @@ namespace Topo.Services
     public class WallchartService : IWallchartService
     {
         private readonly StorageService _storageService;
-        private readonly IMemberListService _memberListService;
         private readonly ITerrainAPIService _terrainAPIService;
         private readonly ILogger<IWallchartService> _logger;
         private readonly IApprovalsService _approvalService;
-        private List<ApprovalsListModel> approvals;
+        private List<ApprovalsListModel> approvals = new List<ApprovalsListModel>();
 
-        public WallchartService(StorageService storageService, IMemberListService memberListService, ITerrainAPIService terrainAPIService, ILogger<IWallchartService> logger, IApprovalsService approvalService)
+        public WallchartService(StorageService storageService, ITerrainAPIService terrainAPIService, ILogger<IWallchartService> logger, IApprovalsService approvalService)
         {
             _storageService = storageService;
-            _memberListService = memberListService;
             _terrainAPIService = terrainAPIService;
             _logger = logger;
             _approvalService = approvalService;
@@ -32,16 +30,15 @@ namespace Topo.Services
                 return cachedWallchartItems;
 
             var section = _storageService.SelectedSection;
-            approvals = await _approvalService.GetApprovalListItems(selectedUnitId);
+            approvals = _approvalService.ReadApprovalListFromFileSystem(selectedUnitId);
+            await _terrainAPIService.RevokeAssumedProfiles();
 
             var wallchartItems = new List<WallchartItemModel>();
             var getGroupLifeResultModel = await _terrainAPIService.GetGroupLifeForUnit(selectedUnitId);
             foreach (var result in getGroupLifeResultModel.results)
             {
-                await _terrainAPIService.RevokeAssumedProfiles();
                 await _terrainAPIService.AssumeProfile(result.member_id);
                 var getMemberLogbookMetrics = await _terrainAPIService.GetMemberLogbookMetrics(result.member_id);
-                await _terrainAPIService.RevokeAssumedProfiles();
                 var totalNightsCamped = getMemberLogbookMetrics.results.Where(r => r.name == "total_nights_camped").FirstOrDefault()?.value ?? 0;
                 var totalKmsHiked = (getMemberLogbookMetrics.results.Where(r => r.name == "total_distance_hiked").FirstOrDefault()?.value ?? 0) / 1000.0f;
 
@@ -178,6 +175,8 @@ namespace Topo.Services
                 wallchartItem.PersonalReflection = result.personal_reflection;
                 wallchartItem.PeakAward = Math.Round(result.peak_award.total / 100d, 2);
                 wallchartItems.Add(wallchartItem);
+
+                await _terrainAPIService.RevokeAssumedProfiles();
             }
             _storageService.CachedWallchartItems.Add(new KeyValuePair<string, List<WallchartItemModel>>(selectedUnitId, wallchartItems));
             return wallchartItems;
