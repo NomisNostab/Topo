@@ -65,6 +65,9 @@
 		<None Update="Images\Venturer Scouts Full Col Vertical.jpg">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<None Update="ReadMe.txt">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
 
 </Project>

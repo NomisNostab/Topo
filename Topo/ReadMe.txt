@@ -1,4 +1,5 @@
 To install.
+Windows:
 Create a folder in your Documents folder called Topo.
 Copy the contents of Topo folder to the Documents/Topo folder.
 
@@ -14,6 +15,25 @@ This will open a terminal window showing
 	info: Microsoft.Hosting.Lifetime[0]
 		  Content root path: C:\Users\simon\source\repos\Topo\Topo\bin\Release\net6.0\publish\
 or similar.	  
+
+Linux:
+Create a folder called Topo.
+Extract the topo-linix.zip file to the Topo folder.
+cd to the Topo folder.
+Mark Topo for execution
+simon@OFFICE-DELL:~/Downloads/topo$ chmod +x Topo
+
+Run Topo
+simon@OFFICE-DELL:~/Downloads/topo$ ./Topo
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5000
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: /home/simon/Downloads/topo/
+
 
 To log into the Reporting application, ctrl-click on http://localhost:5000 to open in your browser.
 You could also open a browser and put http://localhost:5000 into the address bar.

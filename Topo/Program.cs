@@ -8,7 +8,8 @@ logger.Info($"Version {Topo.Constants.Version}");
 try
 {
     // Create AppData folder
-    string path = Environment.ExpandEnvironmentVariables(@"%LOCALAPPDATA%\Topo");
+    string path = Topo.Constants.AppLocalPath;
+    logger.Info("AppLocalPath: " + path);
     if (!Directory.Exists(path))
         Directory.CreateDirectory(path);
 
