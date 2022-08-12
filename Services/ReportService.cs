@@ -27,6 +27,7 @@ namespace Topo.Services
         public IWorkbook GenerateLogbookWorkbook(List<MemberLogbookReportViewModel> logbookEntries, string groupName, string section, string unitName, bool forPdfOutput);
         public IWorkbook GenerateWallchartWorkbook(List<WallchartItemModel> wallchartEntries, string groupName, string section, string unitName, bool forPdfOutput);
         public IWorkbook GenerateApprovalsWorkbook(List<ApprovalsListModel> selectedApprovals, string groupName, string section, string unitName, DateTime approvalSearchFromDate, DateTime approvalSearchToDate, bool groupByMember, bool forPdfOutput);
+        public IWorkbook CreateWorkbookWithSheets(int sheetsToCreate);
     }
     public class ReportService : IReportService
     {
@@ -110,7 +111,7 @@ namespace Topo.Services
         {
         }
 
-        private IWorkbook CreateWorkbookWithSheets(int sheetsToCreate)
+        public IWorkbook CreateWorkbookWithSheets(int sheetsToCreate)
         {
             //Step 1 : Instantiate the spreadsheet creation engine.
             ExcelEngine excelEngine = new ExcelEngine();
