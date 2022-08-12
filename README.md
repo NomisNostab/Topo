@@ -2,25 +2,46 @@
 Topo is a helper application to assist scout leaders in getting meaningful reports out of the Scouts Australia Terrain applicatiom.
 ## Installation
 ### Windows
-Download the latest Topo-win.zip file from the [releases](https://github.com/NomisNostab/Topo/releases) page.
+Download the latest topo-win.zip file from the [releases](https://github.com/NomisNostab/Topo/releases) page.
 
 Create a folder in your Documents folder called Topo.
 
 Unzip the Topo-win.zip file to the Documents/Topo folder.
-### OSX
-Download the latest Topo-osx.zip file from the [releases](https://github.com/NomisNostab/Topo/releases) page.
+### Linux
+Download the latest topo-linux.zip file from the [releases](https://github.com/NomisNostab/Topo/releases) page.
 
-Unzip to your desired location
+Create a folder called Topo.
+
+Extract the topo-linix.zip file to the Topo folder.
+
+cd to the Topo folder.
+
+Mark Topo for execution
+
+`chmod +x Topo`
+
+### OSX (Not tested by me)
+Download the latest topo-osx.zip file from the [releases](https://github.com/NomisNostab/Topo/releases) page.
+
+Follow the Linux instructions.
 
 ## Running the Server App
+### Windows
 To run the app server, double click the Topo.exe file.
+
+If you get an error when using the reporting app, run the app server by right clicking on the Topo.exe file and select Run as Administrator.
+
+### Linux
+To run the server app, in the Topo folder `.\Topo`
+
+### OSX
+To run the server app, in the Topo folder `.\Topo`
+
 This will open a terminal window similar to
 
 ![TopoServerApp](https://user-images.githubusercontent.com/65288066/161207943-1112f345-5fa0-4029-ae4b-06ca799ede5d.png)
 
 When you are finished you can either type Ctrl+c in the window or close the window.
-
-If you get an error when using the reporting app, run the app server by right clicking on the Topo.exe file and select Run as Administrator.
 
 ## Using the Reporting App
 To access the Reporting application, ctrl-click on http://localhost:5000 to open in your browser.
