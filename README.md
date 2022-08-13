@@ -49,12 +49,9 @@ Then Security and Privacy
 
 Click Allow Anyway for Topo
 
-![4-SecurityPrivacy](https://user-images.githubusercontent.com/65288066/184464961-5e95ca64-5e9b-4008-ae08-7acec0805e5b.png)
-
-Click Open in Warning
-
 ![5-TopoWarning](https://user-images.githubusercontent.com/65288066/184464988-508801f3-6e31-4907-9cad-e129ef47af3e.png)
 
+Click Open in Warning
 
 Start Topo server using port 5010 to stop conflict with AirPlay
 
