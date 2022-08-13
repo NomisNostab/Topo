@@ -25,8 +25,8 @@ namespace Topo.Services
         public List<ApprovalsListModel> ReadApprovalListFromFileSystem(string unitId)
         {
             var list = new List<ApprovalsListModel>();
-            string path = Environment.ExpandEnvironmentVariables(@"%LOCALAPPDATA%\Topo");
-            using (StreamReader r = new StreamReader($@"{path}\{unitId}_ApprovalsList.json", new FileStreamOptions() { Mode = FileMode.OpenOrCreate }))
+            string path = Constants.AppLocalPath;
+            using (StreamReader r = new StreamReader($@"{path}/{unitId}_ApprovalsList.json", new FileStreamOptions() { Mode = FileMode.OpenOrCreate }))
             {
                 string json = r.ReadToEnd();
                 list = JsonConvert.DeserializeObject<List<ApprovalsListModel>>(json);
@@ -38,8 +38,8 @@ namespace Topo.Services
         private void WriteApprovalsListToFileSystem(List<ApprovalsListModel> approvalsList, string unitId)
         {
             //open file stream
-            string path = Environment.ExpandEnvironmentVariables(@"%LOCALAPPDATA%\Topo");
-            using (StreamWriter file = File.CreateText($@"{path}\{unitId}_ApprovalsList.json"))
+            string path = Constants.AppLocalPath;
+            using (StreamWriter file = File.CreateText($@"{path}/{unitId}_ApprovalsList.json"))
             {
                 JsonSerializer serializer = new JsonSerializer();
                 //serialize object directly into file stream

@@ -36,6 +36,8 @@
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 		<PackageReference Include="NLog" Version="5.0.1" />
 		<PackageReference Include="NLog.Web.AspNetCore" Version="5.0.0" />
+		<PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.0" />
+		<PackageReference Include="SkiaSharp.NativeAssets.macOS" Version="2.88.0" />
 		<PackageReference Include="Syncfusion.EJ2.AspNet.Core" Version="20.2.0.38" />
 		<PackageReference Include="Syncfusion.Licensing" Version="20.2.0.38" />
 		<PackageReference Include="Syncfusion.XlsIO.Net.Core" Version="20.2.0.38" />
@@ -61,6 +63,9 @@
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 		<None Update="Images\Venturer Scouts Full Col Vertical.jpg">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="ReadMe.txt">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>

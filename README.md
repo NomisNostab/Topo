@@ -2,32 +2,107 @@
 Topo is a helper application to assist scout leaders in getting meaningful reports out of the Scouts Australia Terrain applicatiom.
 ## Installation
 ### Windows
-Download the latest Topo-win.zip file from the [releases](https://github.com/NomisNostab/Topo/releases) page.
+Download the latest topo-win.zip file from the [releases](https://github.com/NomisNostab/Topo/releases) page.
 
 Create a folder in your Documents folder called Topo.
 
 Unzip the Topo-win.zip file to the Documents/Topo folder.
-### OSX
-Download the latest Topo-osx.zip file from the [releases](https://github.com/NomisNostab/Topo/releases) page.
+### Linux
+Download the latest topo-linux.zip file from the [releases](https://github.com/NomisNostab/Topo/releases) page.
 
-Unzip to your desired location
+Create a folder called Topo.
+
+Extract the topo-linix.zip file to the Topo folder.
+
+cd to the Topo folder.
+
+Mark Topo as executable
+
+`chmod +x Topo`
+
+### OSX (Not tested by me)
+Download the latest topo-osx.zip file from the [releases](https://github.com/NomisNostab/Topo/releases) page.
+
+Open terminal in that folder.
+
+Mark Topo as executable
+
+`chmod +x Topo`
+
+Start Topo server using port 5010 to stop conflict with AirPlay
+
+`./Topo --urls "http://localhost:5010"`
+
+This should give an error.
+
+![2-TopoError](https://user-images.githubusercontent.com/65288066/184464857-ee37339b-d0d7-45d3-9906-8680750127c3.png)
+
+Trust Topo app
+
+Got to System Preferences
+
+![3-SystemPref](https://user-images.githubusercontent.com/65288066/184464905-f61517de-322b-4343-9c3c-4657566d37b2.png)
+
+Then Security and Privacy
+
+![4-SecurityPrivacy](https://user-images.githubusercontent.com/65288066/184464912-31662cd0-4a1e-4f44-ba7c-e415caf908e5.png)
+
+Click Allow Anyway for Topo
+
+![5-TopoWarning](https://user-images.githubusercontent.com/65288066/184464988-508801f3-6e31-4907-9cad-e129ef47af3e.png)
+
+Click Open in Warning
+
+Start Topo server using port 5010 to stop conflict with AirPlay
+
+`./Topo --urls "http://localhost:5010"`
+
+Run Topo Reporting app by going to http://localhost:5010 login using your Terrain credentials.
+
+Run a report, you will get an error.
+
+![7-TopoReportError](https://user-images.githubusercontent.com/65288066/184465014-2d6ff38d-c615-41f9-bd5c-d97cac824ad8.png)
+
+Trust the "libSkiaSharp.dylib" as before.
+
+![8-AllowSkia](https://user-images.githubusercontent.com/65288066/184465032-5531b806-1f00-416e-840b-a9288dc99600.png)
+
+Click Allow Anyway.
+
+Stop and start the Topo server.
+
+Run Topo Reporting app by going to http://localhost:5010 login using your Terrain credentials and run a report, you should get a report generated.
 
 ## Running the Server App
+### Windows
 To run the app server, double click the Topo.exe file.
+
+If you get an error when using the reporting app, run the app server by right clicking on the Topo.exe file and select Run as Administrator.
+
+### Linux
+To run the server app, in the Topo folder `./Topo`
+
+### OSX
+To run the server app, in the Topo folder `./Topo --urls "http://localhost:5010"`
+
 This will open a terminal window similar to
 
 ![TopoServerApp](https://user-images.githubusercontent.com/65288066/161207943-1112f345-5fa0-4029-ae4b-06ca799ede5d.png)
 
 When you are finished you can either type Ctrl+c in the window or close the window.
 
-If you get an error when using the reporting app, run the app server by right clicking on the Topo.exe file and select Run as Administrator.
+**Remember that the Topo server must be running in a terminal window for the Topo reporting browser app to work.**
 
 ## Using the Reporting App
+### Windows and Linux
 To access the Reporting application, ctrl-click on http://localhost:5000 to open in your browser.
 You could also open a browser and put http://localhost:5000 into the address bar.
 
-![TopoHomeNotLoggedIn](https://user-images.githubusercontent.com/65288066/161263668-009cfa43-5929-4a9b-b317-aab2ae740a94.png)
+### Mac
+To access the Reporting application, ctrl-click on http://localhost:5010 to open in your browser.
+You could also open a browser and put http://localhost:5010 into the address bar.
 
+![TopoHomeNotLoggedIn](https://user-images.githubusercontent.com/65288066/161263668-009cfa43-5929-4a9b-b317-aab2ae740a94.png)
 
 ### Logging In
 Click Login, enter your current Terrain credentials and click Sign in

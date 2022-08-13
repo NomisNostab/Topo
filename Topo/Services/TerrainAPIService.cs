@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Runtime.InteropServices;
 using System.Text;
 using Topo.Models.AditionalAwards;
 using Topo.Models.Approvals;
@@ -70,8 +71,8 @@ namespace Topo.Services
 
         public async Task<AuthenticationResultModel?> LoginAsync(string? branch, string? username, string? password)
         {
-            string path = Environment.ExpandEnvironmentVariables(@"%LOCALAPPDATA%\Topo");
-            var clientIdFileName = $@"{path}\ClientId.txt";
+            string path = Constants.AppLocalPath;
+            var clientIdFileName = $@"{path}/ClientId.txt";
             var savedClientId = "";
             if (!File.Exists(clientIdFileName))
             {
