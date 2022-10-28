@@ -78,11 +78,11 @@ namespace Topo.Controllers
                 model.SelectedStages = oasIndexViewModel.SelectedStages;
                 if (button == "OASReportPdf")
                 {
-                    return await OASWorkbook(oasIndexViewModel.SelectedUnitId, oasIndexViewModel.SelectedStages, oasIndexViewModel.HideCompletedMembers, Constants.OutputType.pdf, oasIndexViewModel.BreakByPatrol);
+                    return await OASWorkbook(oasIndexViewModel.SelectedUnitId, oasIndexViewModel.SelectedStages, oasIndexViewModel.HideCompletedMembers, Constants.OutputType.pdf, oasIndexViewModel.BreakByPatrol, oasIndexViewModel.FormatLikeTerrain);
                 }
                 if (button == "OASReportXlsx")
                 {
-                    return await OASWorkbook(oasIndexViewModel.SelectedUnitId, oasIndexViewModel.SelectedStages, oasIndexViewModel.HideCompletedMembers, Constants.OutputType.xlsx, oasIndexViewModel.BreakByPatrol);
+                    return await OASWorkbook(oasIndexViewModel.SelectedUnitId, oasIndexViewModel.SelectedStages, oasIndexViewModel.HideCompletedMembers, Constants.OutputType.xlsx, oasIndexViewModel.BreakByPatrol, oasIndexViewModel.FormatLikeTerrain);
                 }
             }
             else
@@ -93,7 +93,7 @@ namespace Topo.Controllers
             return View(model);
         }
 
-        private async Task<ActionResult> OASWorkbook(string selectedUnitId, string[] selectedStageTemplates, bool hideCompletedMembers, Constants.OutputType outputType, bool breakByPatrol)
+        private async Task<ActionResult> OASWorkbook(string selectedUnitId, string[] selectedStageTemplates, bool hideCompletedMembers, Constants.OutputType outputType, bool breakByPatrol, bool formatLikeTerrain)
         {
             var sortedAnswers = new List<OASWorksheetAnswers>();
             foreach (var selectedStageTemplate in selectedStageTemplates)
@@ -107,7 +107,7 @@ namespace Topo.Controllers
             var unitName = _storageService.SelectedUnitName ?? "";
             var section = _storageService.SelectedSection;
 
-            var workbook = _reportService.GenerateOASWorksheetWorkbook(sortedAnswers, groupName, section, unitName, outputType == Constants.OutputType.pdf, breakByPatrol);
+            var workbook = _reportService.GenerateOASWorksheetWorkbook(sortedAnswers, groupName, section, unitName, outputType == Constants.OutputType.pdf, formatLikeTerrain, breakByPatrol);
 
             //Stream 
             MemoryStream strm = new MemoryStream();
