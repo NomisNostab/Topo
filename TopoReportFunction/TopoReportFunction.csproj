@@ -11,9 +11,12 @@
     <PublishReadyToRun>true</PublishReadyToRun>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Amazon.Lambda.APIGatewayEvents" Version="2.5.0" />
     <PackageReference Include="Amazon.Lambda.Core" Version="2.1.0" />
     <PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.3.0" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" Version="2.8.2.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Models\Models.csproj" />
@@ -23,6 +26,12 @@
     <Folder Include="Images\" />
   </ItemGroup>
   <ItemGroup>
+    <None Update="Fonts\carlito.regular.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Fonts\Ubuntu-R.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Images\Cub Scouts Full Col Vertical.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

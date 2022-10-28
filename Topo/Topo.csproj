@@ -50,6 +50,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Update="Fonts\carlito.regular.ttf">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Fonts\Ubuntu-R.ttf">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Update="Images\Cub Scouts Full Col Vertical.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>

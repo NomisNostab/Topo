@@ -1,5 +1,6 @@
 ﻿using Syncfusion.Drawing;
 using Syncfusion.XlsIO;
+using Syncfusion.XlsIO.Implementation;
 using Topo.Models.AditionalAwards;
 using Topo.Models.Approvals;
 using Topo.Models.Events;
@@ -119,6 +120,9 @@ namespace Topo.Services
             IApplication application = excelEngine.Excel;
             application.DefaultVersion = ExcelVersion.Excel2016;
 
+            //Initializes the SubstituteFont event to perform font substitution in Excel-to-PDF conversion.
+            application.SubstituteFont += new SubstituteFontEventHandler(SubstituteFont);
+
             // Creating new workbook
             IWorkbook workbook = application.Workbooks.Create(sheetsToCreate);
 
@@ -130,6 +134,12 @@ namespace Topo.Services
             headingStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
 
             return workbook;
+        }
+
+        private static void SubstituteFont(object sender, SubstituteFontEventArgs args)
+        {
+            var directory = Directory.GetCurrentDirectory();
+            args.AlternateFontStream = File.OpenRead($@"{directory}/Fonts/carlito.regular.ttf");
         }
 
         private IWorksheet AddLogoToSheet(IWorkbook workbook, int worksheetIndex, string groupName, string section, int lastHeadingCol)
@@ -513,6 +523,8 @@ namespace Topo.Services
             IApplication application = excelEngine.Excel;
             application.DefaultVersion = ExcelVersion.Excel2016;
 
+            //Initializes the SubstituteFont event to perform font substitution in Excel-to-PDF conversion.
+            application.SubstituteFont += new SubstituteFontEventHandler(SubstituteFont);
 
             var groupedMembersList = sortedPatrolList.Where(pl => pl.isAdultLeader == 0).GroupBy(pl => pl.patrol_name).ToList();
 
