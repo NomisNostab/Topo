@@ -5,7 +5,7 @@ namespace Topo
 {
     public static class Constants
     {
-        public const string Version = "1.31";
+        public const string Version = "1.32";
 
         public enum OutputType
         {
