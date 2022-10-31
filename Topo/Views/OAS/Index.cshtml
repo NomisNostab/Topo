@@ -20,13 +20,7 @@
             <span asp-validation-for="SelectedStages" class="text-danger"></span>
         </div>
     </div>
-    <div class="mt-3 mb-3 row">
-        <div class="col-sm-2">
-            <button type="submit" name="button" value="OASReportPdf" class="btn btn-primary">OAS Worksheet (pdf)</button> &nbsp;
-        </div>
-        <div class="col-sm-2">
-            <button type="submit" name="button" value="OASReportXlsx" class="btn btn-success">OAS Worksheet (xlsx)</button> &nbsp;
-        </div>
+     <div class="mt-3 mb-3 row">
         <div class="col-sm-3">
             @Html.DisplayNameFor(model => model.HideCompletedMembers) &nbsp;
             @Html.CheckBoxFor(model => model.HideCompletedMembers, new { id = "hideCompletedMembersCheckBoxId" })
@@ -35,8 +29,19 @@
             @Html.DisplayNameFor(model => model.BreakByPatrol) &nbsp;
             @Html.CheckBoxFor(model => model.BreakByPatrol, new { id = "breakByPatrolCheckBoxId" })
         </div>
+        <div class="col-sm-3">
+            @Html.DisplayNameFor(model => model.FormatLikeTerrain) &nbsp;
+            @Html.CheckBoxFor(model => model.FormatLikeTerrain, new { id = "formatLikeTerrainCheckBoxId" })
+        </div>
     </div>
-
+    <div class="mt-3 mb-3 row">
+        <div class="col-sm-2">
+            <button type="submit" name="button" value="OASReportPdf" class="btn btn-primary">OAS Worksheet (pdf)</button> &nbsp;
+        </div>
+        <div class="col-sm-2">
+            <button type="submit" name="button" value="OASReportXlsx" class="btn btn-success">OAS Worksheet (xlsx)</button> &nbsp;
+        </div>
+    </div>
 </form>
 
 @section Scripts {

@@ -22,7 +22,7 @@ namespace Topo.Services
         public IWorkbook GenerateSignInSheetWorkbook(List<MemberListModel> memberListModel, string groupName, string section, string unitName, string eventName);
         public IWorkbook GenerateEventAttendanceWorkbook(EventListModel eventListModel, string groupName, string section, string unitName);
         public IWorkbook GenerateAttendanceReportWorkbook(AttendanceReportModel attendanceReportData, string groupName, string section, string unitName, DateTime fromDate, DateTime toDate, bool forPdfOutput);
-        public IWorkbook GenerateOASWorksheetWorkbook(List<OASWorksheetAnswers> worksheetAnswers, string groupName, string section, string unitName, bool forPdfOutput, bool showByPatrol = false);
+        public IWorkbook GenerateOASWorksheetWorkbook(List<OASWorksheetAnswers> worksheetAnswers, string groupName, string section, string unitName, bool forPdfOutput, bool formatLikeTerrain, bool showByPatrol = false);
         public IWorkbook GenerateSIAWorkbook(List<SIAProjectListModel> siaProjects, string groupName, string section, string unitName, bool forPdfOutput);
         public IWorkbook GenerateMilestoneWorkbook(List<MilestoneSummaryListModel> milestoneSummaries, string groupName, string section, string unitName, bool forPdfOutput);
         public IWorkbook GenerateLogbookWorkbook(List<MemberLogbookReportViewModel> logbookEntries, string groupName, string section, string unitName, bool forPdfOutput);
@@ -1030,7 +1030,141 @@ namespace Topo.Services
             return workbook;
         }
 
-        public IWorkbook GenerateOASWorksheetWorkbook(List<OASWorksheetAnswers> worksheetAnswers, string groupName, string section, string unitName, bool forPdfOutput, bool breakByPatrol = false)
+        private void GenerateOASWorksheetBodyLikeTerrain(IWorksheet sheet, IList<IGrouping<string, OASWorksheetAnswers>> groupedAnswers, ref int rowNumber, ref int columnNumber)
+        {
+            var pdrText = "";
+            var titleRow = rowNumber;
+            int pdrStartRow = 99;
+            foreach (var plan in groupedAnswers.FirstOrDefault().OrderBy(ga => ga.InputTitleSortIndex).ThenBy(ga => ga.InputSortIndex).ToList())
+            {
+                // Plan Do Review
+                rowNumber++;
+                if (pdrText != plan.InputTitle)
+                {
+                    pdrText = plan.InputTitle;
+                    sheet.Range[rowNumber, columnNumber].Text = plan.InputTitle;
+                    sheet.Range[rowNumber, columnNumber].CellStyle.Color = GetInputTitleColour(plan.InputTitle);
+                    sheet.Range[rowNumber, columnNumber].BorderAround();
+                    sheet.Range[rowNumber, columnNumber].CellStyle.Rotation = 0;
+                    sheet.Range[rowNumber, columnNumber].CellStyle.Font.Bold = true;
+                    sheet.Range[rowNumber, columnNumber].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+                    if (pdrStartRow > rowNumber)
+                        pdrStartRow = rowNumber;
+                    else
+                    {
+                        sheet.Range[pdrStartRow, columnNumber, rowNumber - 1, columnNumber].Merge();
+                        sheet.Range[pdrStartRow, columnNumber, rowNumber - 1, columnNumber].BorderAround();
+                        pdrStartRow = rowNumber;
+                    }
+                }
+
+                // iStatement
+                sheet.Range[rowNumber, columnNumber + 1].Text = plan.InputLabel;
+                sheet.Range[rowNumber, columnNumber + 1].BorderAround();
+                sheet.Range[rowNumber, columnNumber + 1].CellStyle.Font.Bold = true;
+                sheet.Range[rowNumber, columnNumber + 1].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                sheet.Range[rowNumber, columnNumber + 1].CellStyle.Rotation = 0;
+                sheet.Range[rowNumber, columnNumber + 1].CellStyle.WrapText = true;
+                sheet.SetColumnWidth(columnNumber + 1, 50);
+                sheet.AutofitRow(rowNumber);
+            }
+
+            // Member Name and answers
+            columnNumber++;
+            sheet.Range[titleRow + 1, columnNumber + 1].FreezePanes();
+            rowNumber = titleRow;
+            foreach (var groupedAnswer in groupedAnswers.OrderBy(ga => ga.Key))
+            {
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].Text = groupedAnswer.Key;
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                sheet.Range[rowNumber, columnNumber].CellStyle.Font.Bold = true;
+                sheet.Range[rowNumber, columnNumber].CellStyle.Rotation = 90;
+                sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+
+                foreach (var answer in groupedAnswer.OrderBy(ga => ga.InputTitleSortIndex).ThenBy(ga => ga.InputSortIndex))
+                {
+                    rowNumber++;
+                    if (answer.MemberAnswer.HasValue)
+                    {
+                        sheet.Range[rowNumber, columnNumber].DateTime = answer.MemberAnswer.Value;
+                        sheet.Range[rowNumber, columnNumber].CellStyle.Color = Color.DarkSeaGreen;
+                    }
+                    sheet.Range[rowNumber, columnNumber].BorderAround();
+                }
+                rowNumber = titleRow;
+                sheet.AutofitColumn(columnNumber);
+            }
+
+//            sheet.Range[1, 1, rowNumber, columnNumber].AutofitColumns();
+
+        }
+        private void GenerateOASWorksheetBodyOriginal(IWorksheet sheet, IList<IGrouping<string, OASWorksheetAnswers>> groupedAnswers, ref int rowNumber, ref int columnNumber)
+        {
+            var pdrText = "";
+            int pdrStartCol = 99;
+            foreach (var plan in groupedAnswers.FirstOrDefault().OrderBy(ga => ga.InputTitleSortIndex).ThenBy(ga => ga.InputSortIndex).ToList())
+            {
+                // Plan Do Review
+                columnNumber++;
+                if (pdrText != plan.InputTitle)
+                {
+                    pdrText = plan.InputTitle;
+                    sheet.Range[rowNumber, columnNumber].Text = plan.InputTitle;
+                    sheet.Range[rowNumber, columnNumber].CellStyle.Color = GetInputTitleColour(plan.InputTitle);
+                    sheet.Range[rowNumber, columnNumber].BorderAround();
+                    sheet.Range[rowNumber, columnNumber].CellStyle.Font.Bold = true;
+                    sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                    if (pdrStartCol > columnNumber)
+                        pdrStartCol = columnNumber;
+                    else
+                    {
+                        sheet.Range[rowNumber, pdrStartCol, rowNumber, columnNumber - 1].Merge();
+                        sheet.Range[rowNumber, pdrStartCol, rowNumber, columnNumber - 1].BorderAround();
+                        pdrStartCol = columnNumber;
+                    }
+                }
+
+                // iStatement
+                sheet.Range[rowNumber + 1, columnNumber].Text = plan.InputLabel;
+                sheet.Range[rowNumber + 1, columnNumber].BorderAround();
+                sheet.Range[rowNumber + 1, columnNumber].CellStyle.Font.Bold = true;
+                sheet.Range[rowNumber + 1, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                sheet.Range[rowNumber + 1, columnNumber].CellStyle.Rotation = 90;
+                sheet.Range[rowNumber + 1, columnNumber].CellStyle.WrapText = true;
+                sheet.SetRowHeight(rowNumber + 1, 200);
+                sheet.SetColumnWidth(columnNumber, 10);
+            }
+
+            // Member Name and answers
+            rowNumber++;
+            rowNumber++;
+            columnNumber = 0;
+            foreach (var groupedAnswer in groupedAnswers.OrderBy(ga => ga.Key))
+            {
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].Text = groupedAnswer.Key;
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                sheet.Range[rowNumber, columnNumber].CellStyle.Font.Bold = true;
+
+                foreach (var answer in groupedAnswer.OrderBy(ga => ga.InputTitleSortIndex).ThenBy(ga => ga.InputSortIndex))
+                {
+                    columnNumber++;
+                    if (answer.MemberAnswer.HasValue)
+                    {
+                        sheet.Range[rowNumber, columnNumber].DateTime = answer.MemberAnswer.Value;
+                        sheet.Range[rowNumber, columnNumber].CellStyle.Color = Color.DarkSeaGreen;
+                    }
+                    sheet.Range[rowNumber, columnNumber].BorderAround();
+                }
+                rowNumber++;
+                columnNumber = 0;
+            }
+
+            sheet.Range[1, 1, rowNumber, 1].AutofitColumns();
+        }
+
+        public IWorkbook GenerateOASWorksheetWorkbook(List<OASWorksheetAnswers> worksheetAnswers, string groupName, string section, string unitName, bool forPdfOutput, bool formatLikeTerrain, bool breakByPatrol = false)
         {
             var worksheetAnswersGroupedByTemplate = worksheetAnswers.GroupBy(wa => wa.TemplateTitle + (breakByPatrol ? " - " + wa.MemberPatrol : ""));
             var workbook = CreateWorkbookWithSheets(worksheetAnswersGroupedByTemplate.Count());
@@ -1062,68 +1196,12 @@ namespace Topo.Services
                 sheet.SetRowHeight(rowNumber, 25);
 
                 rowNumber++;
-                var pdrText = "";
-                int pdrStartCol = 99;
-                var groupedAnswers = templatAnswerGroup.GroupBy(x => x.MemberName).ToList();
-                foreach (var plan in groupedAnswers.FirstOrDefault().OrderBy(ga => ga.InputTitleSortIndex).ThenBy(ga => ga.InputSortIndex).ToList())
-                {
-                    // Plan Do Review
-                    columnNumber++;
-                    if (pdrText != plan.InputTitle)
-                    {
-                        pdrText = plan.InputTitle;
-                        sheet.Range[rowNumber, columnNumber].Text = plan.InputTitle;
-                        sheet.Range[rowNumber, columnNumber].CellStyle.Color = GetInputTitleColour(plan.InputTitle);
-                        sheet.Range[rowNumber, columnNumber].BorderAround();
-                        sheet.Range[rowNumber, columnNumber].CellStyle.Font.Bold = true;
-                        sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-                        if (pdrStartCol > columnNumber)
-                            pdrStartCol = columnNumber;
-                        else
-                        {
-                            sheet.Range[rowNumber, pdrStartCol, rowNumber, columnNumber - 1].Merge();
-                            sheet.Range[rowNumber, pdrStartCol, rowNumber, columnNumber - 1].BorderAround();
-                            pdrStartCol = columnNumber;
-                        }
-                    }
+                IList<IGrouping<string, OASWorksheetAnswers>> groupedAnswers = templatAnswerGroup.GroupBy(x => x.MemberName).ToList();
 
-                    // iStatement
-                    sheet.Range[rowNumber + 1, columnNumber].Text = plan.InputLabel;
-                    sheet.Range[rowNumber + 1, columnNumber].BorderAround();
-                    sheet.Range[rowNumber + 1, columnNumber].CellStyle.Font.Bold = true;
-                    sheet.Range[rowNumber + 1, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-                    sheet.Range[rowNumber + 1, columnNumber].CellStyle.Rotation = 90;
-                    sheet.Range[rowNumber + 1, columnNumber].CellStyle.WrapText = true;
-                    sheet.SetRowHeight(rowNumber + 1, 200);
-                    sheet.SetColumnWidth(columnNumber, 10);
-                }
-
-                // Member Name and answers
-                rowNumber++;
-                rowNumber++;
-                columnNumber = 0;
-                foreach (var groupedAnswer in groupedAnswers.OrderBy(ga => ga.Key))
-                {
-                    columnNumber++;
-                    sheet.Range[rowNumber, columnNumber].Text = groupedAnswer.Key;
-                    sheet.Range[rowNumber, columnNumber].BorderAround();
-                    sheet.Range[rowNumber, columnNumber].CellStyle.Font.Bold = true;
-
-                    foreach (var answer in groupedAnswer.OrderBy(ga => ga.InputTitleSortIndex).ThenBy(ga => ga.InputSortIndex))
-                    {
-                        columnNumber++;
-                        if (answer.MemberAnswer.HasValue)
-                        {
-                            sheet.Range[rowNumber, columnNumber].DateTime = answer.MemberAnswer.Value;
-                            sheet.Range[rowNumber, columnNumber].CellStyle.Color = Color.DarkSeaGreen;
-                        }
-                        sheet.Range[rowNumber, columnNumber].BorderAround();
-                    }
-                    rowNumber++;
-                    columnNumber = 0;
-                }
-
-                sheet.Range[1, 1, rowNumber, 1].AutofitColumns();
+                if (formatLikeTerrain)
+                    GenerateOASWorksheetBodyLikeTerrain(sheet, groupedAnswers, ref rowNumber, ref columnNumber);
+                else
+                    GenerateOASWorksheetBodyOriginal(sheet, groupedAnswers, ref rowNumber, ref columnNumber);
 
                 sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA3;
                 sheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
@@ -1140,6 +1218,7 @@ namespace Topo.Services
 
             return workbook;
         }
+
 
         public IWorkbook GenerateSIAWorkbook(List<SIAProjectListModel> siaProjects, string groupName, string section, string unitName, bool forPdfOutput)
         {

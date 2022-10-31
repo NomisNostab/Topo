@@ -19,5 +19,8 @@ namespace Topo.Models.OAS
         [Display(Name = "Break by Patrol")]
         public bool BreakByPatrol { get; set; }
 
+        [Display(Name = "Format Like Terrain")]
+        public bool FormatLikeTerrain { get; set; }
+
     }
 }
