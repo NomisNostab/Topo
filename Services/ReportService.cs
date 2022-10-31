@@ -1032,9 +1032,9 @@ namespace Topo.Services
                     sheet.Range[rowNumber, columnNumber].Text = plan.InputTitle;
                     sheet.Range[rowNumber, columnNumber].CellStyle.Color = GetInputTitleColour(plan.InputTitle);
                     sheet.Range[rowNumber, columnNumber].BorderAround();
-                    sheet.Range[rowNumber, columnNumber].CellStyle.Rotation = 90;
+                    sheet.Range[rowNumber, columnNumber].CellStyle.Rotation = 0;
                     sheet.Range[rowNumber, columnNumber].CellStyle.Font.Bold = true;
-                    sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                    sheet.Range[rowNumber, columnNumber].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
                     if (pdrStartRow > rowNumber)
                         pdrStartRow = rowNumber;
                     else
@@ -1066,6 +1066,8 @@ namespace Topo.Services
                 sheet.Range[rowNumber, columnNumber].Text = groupedAnswer.Key;
                 sheet.Range[rowNumber, columnNumber].BorderAround();
                 sheet.Range[rowNumber, columnNumber].CellStyle.Font.Bold = true;
+                sheet.Range[rowNumber, columnNumber].CellStyle.Rotation = 90;
+                sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
 
                 foreach (var answer in groupedAnswer.OrderBy(ga => ga.InputTitleSortIndex).ThenBy(ga => ga.InputSortIndex))
                 {
