@@ -41,8 +41,9 @@ namespace Topo.Models.ReportGeneration
         public string EventName { get; set; } = string.Empty;
         public DateTime FromDate { get; set; }
         public DateTime ToDate { get; set; }
-        public bool BreakByPatrol { get; set; }
-        public bool GroupByMember { get; set; }
+        public bool BreakByPatrol { get; set; } = false ;
+        public bool GroupByMember { get; set; } = false;
+        public bool FormatLikeTerrain { get; set; } = false ;
     }
 }
 // sortedMemberList, groupName, section, unitName

@@ -206,7 +206,8 @@ public class Function
         if (reportData != null)
         {
             var workbook = reportService.GenerateOASWorksheetWorkbook(reportData, reportGenerationRequest.GroupName, reportGenerationRequest.Section
-                , reportGenerationRequest.UnitName, reportGenerationRequest.OutputType == OutputType.PDF, reportGenerationRequest.BreakByPatrol);
+                , reportGenerationRequest.UnitName, reportGenerationRequest.OutputType == OutputType.PDF, reportGenerationRequest.FormatLikeTerrain
+                , reportGenerationRequest.BreakByPatrol);
             return workbook;
         }
         return reportService.CreateWorkbookWithSheets(1);
