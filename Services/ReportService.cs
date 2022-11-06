@@ -449,17 +449,15 @@ namespace Topo.Services
             sheet.Range[rowNumber, 2].BorderAround();
             sheet.Range[rowNumber, 3].Text = "Last Name";
             sheet.Range[rowNumber, 3].BorderAround();
-            sheet.Range[rowNumber, 4].Text = "Birthday";
+            sheet.Range[rowNumber, 4].Text = "Age";
             sheet.Range[rowNumber, 4].BorderAround();
-            sheet.Range[rowNumber, 5].Text = "Age";
+            sheet.Range[rowNumber, 5].Text = "Member";
             sheet.Range[rowNumber, 5].BorderAround();
-            sheet.Range[rowNumber, 6].Text = "Member";
+            sheet.Range[rowNumber, 6].Text = "Duty";
             sheet.Range[rowNumber, 6].BorderAround();
-            sheet.Range[rowNumber, 7].Text = "Duty";
+            sheet.Range[rowNumber, 7].Text = "Patrol";
             sheet.Range[rowNumber, 7].BorderAround();
-            sheet.Range[rowNumber, 8].Text = "Patrol";
-            sheet.Range[rowNumber, 8].BorderAround();
-            sheet.Range[rowNumber, 2, rowNumber, 8].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
+            sheet.Range[rowNumber, 2, rowNumber, 7].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
 
             foreach (var member in sortedMemberList)
             {
@@ -468,38 +466,35 @@ namespace Topo.Services
                 sheet.Range[rowNumber, 2].BorderAround();
                 sheet.Range[rowNumber, 3].Text = member.last_name;
                 sheet.Range[rowNumber, 3].BorderAround();
-                sheet.Range[rowNumber, 4].Text = member.date_of_birth.ToShortDateString();
+                sheet.Range[rowNumber, 4].Text = member.age;
                 sheet.Range[rowNumber, 4].BorderAround();
-                sheet.Range[rowNumber, 5].Text = member.age;
+                sheet.Range[rowNumber, 5].Text = member.member_number;
                 sheet.Range[rowNumber, 5].BorderAround();
-                sheet.Range[rowNumber, 6].Text = member.member_number;
+                sheet.Range[rowNumber, 6].Text = member.patrol_duty;
                 sheet.Range[rowNumber, 6].BorderAround();
-                sheet.Range[rowNumber, 7].Text = member.patrol_duty;
+                sheet.Range[rowNumber, 7].Text = member.patrol_name;
                 sheet.Range[rowNumber, 7].BorderAround();
-                sheet.Range[rowNumber, 8].Text = member.patrol_name;
-                sheet.Range[rowNumber, 8].BorderAround();
 
-                var dateDiff = DateTime.Now - member.date_of_birth;
-                var approxYears = dateDiff.Days / 365.0;
-                if (approxYears > UnitMaxAge(section) - 2)
-                    sheet.Range[rowNumber, 5].CellStyle.ColorIndex = ExcelKnownColors.Yellow;
-                if (approxYears > UnitMaxAge(section) - 1)
-                    sheet.Range[rowNumber, 5].CellStyle.ColorIndex = ExcelKnownColors.Rose;
+                decimal.TryParse(member.age, out decimal approxYears);
+                if (member.age.StartsWith((UnitMaxAge(section) - 2).ToString()))
+                    sheet.Range[rowNumber, 4].CellStyle.ColorIndex = ExcelKnownColors.Yellow;
+                if (member.age.StartsWith(UnitMaxAge(section).ToString()) || member.age.StartsWith((UnitMaxAge(section) - 1).ToString()))
+                    sheet.Range[rowNumber, 4].CellStyle.ColorIndex = ExcelKnownColors.Rose;
             }
 
             rowNumber++;
             rowNumber++;
-            sheet.Range[rowNumber, 3].Text = "Second last year in section";
-            sheet.Range[rowNumber, 3, rowNumber, 4].Merge();
-            sheet.Range[rowNumber, 5].Text = "";
-            sheet.Range[rowNumber, 5].BorderAround();
-            sheet.Range[rowNumber, 5].CellStyle.ColorIndex = ExcelKnownColors.Yellow;
+            sheet.Range[rowNumber, 2].Text = "Second last year in section";
+            sheet.Range[rowNumber, 2, rowNumber, 3].Merge();
+            sheet.Range[rowNumber, 4].Text = "";
+            sheet.Range[rowNumber, 4].BorderAround();
+            sheet.Range[rowNumber, 4].CellStyle.ColorIndex = ExcelKnownColors.Yellow;
             rowNumber++;
-            sheet.Range[rowNumber, 3].Text = "Last year in section";
-            sheet.Range[rowNumber, 3, rowNumber, 4].Merge();
-            sheet.Range[rowNumber, 5].Text = "";
-            sheet.Range[rowNumber, 5].BorderAround();
-            sheet.Range[rowNumber, 5].CellStyle.ColorIndex = ExcelKnownColors.Rose;
+            sheet.Range[rowNumber, 2].Text = "Last year in section";
+            sheet.Range[rowNumber, 2, rowNumber, 3].Merge();
+            sheet.Range[rowNumber, 4].Text = "";
+            sheet.Range[rowNumber, 4].BorderAround();
+            sheet.Range[rowNumber, 4].CellStyle.ColorIndex = ExcelKnownColors.Rose;
 
             sheet.UsedRange.AutofitColumns();
 
