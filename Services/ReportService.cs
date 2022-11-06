@@ -331,13 +331,11 @@ namespace Topo.Services
                     sheet.Range[rowNumber, 1].BorderAround();
                     sheet.Range[rowNumber, 2].Text = member.last_name;
                     sheet.Range[rowNumber, 2].BorderAround();
-                    sheet.Range[rowNumber, 3].Text = member.member_number;
+                    sheet.Range[rowNumber, 3].Text = member.patrol_duty;
                     sheet.Range[rowNumber, 3].BorderAround();
-                    sheet.Range[rowNumber, 4].Text = member.patrol_duty;
-                    sheet.Range[rowNumber, 4].BorderAround();
                     if (!string.IsNullOrEmpty(member.patrol_duty))
                     {
-                        sheet.Range[rowNumber, 1, rowNumber, 4].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
+                        sheet.Range[rowNumber, 1, rowNumber, 3].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
                     }
                 }
                 rowNumber++;
@@ -366,10 +364,8 @@ namespace Topo.Services
                 sheet.Range[rowNumber, 6].BorderAround();
                 sheet.Range[rowNumber, 7].Text = member.last_name;
                 sheet.Range[rowNumber, 7].BorderAround();
-                sheet.Range[rowNumber, 8].Text = member.member_number;
+                sheet.Range[rowNumber, 8].Text = member.patrol_duty;
                 sheet.Range[rowNumber, 8].BorderAround();
-                sheet.Range[rowNumber, 9].Text = member.patrol_duty;
-                sheet.Range[rowNumber, 9].BorderAround();
             }
             rowNumber++;
 
@@ -397,10 +393,8 @@ namespace Topo.Services
                     sheet.Range[rowNumber, 6].BorderAround();
                     sheet.Range[rowNumber, 7].Text = member.last_name;
                     sheet.Range[rowNumber, 7].BorderAround();
-                    sheet.Range[rowNumber, 8].Text = member.member_number;
+                    sheet.Range[rowNumber, 8].Text = member.patrol_duty;
                     sheet.Range[rowNumber, 8].BorderAround();
-                    sheet.Range[rowNumber, 9].Text = member.patrol_duty;
-                    sheet.Range[rowNumber, 9].BorderAround();
                 }
             }
 
@@ -575,13 +569,11 @@ namespace Topo.Services
                     sheet.Range[rowNumber, 2].BorderAround();
                     sheet.Range[rowNumber, 3].Text = member.last_name;
                     sheet.Range[rowNumber, 3].BorderAround();
-                    sheet.Range[rowNumber, 4].Text = member.member_number;
+                    sheet.Range[rowNumber, 4].Text = member.patrol_duty;
                     sheet.Range[rowNumber, 4].BorderAround();
-                    sheet.Range[rowNumber, 5].Text = member.patrol_duty;
-                    sheet.Range[rowNumber, 5].BorderAround();
                     if (!string.IsNullOrEmpty(member.patrol_duty))
                     {
-                        sheet.Range[rowNumber, 2, rowNumber, 5].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
+                        sheet.Range[rowNumber, 2, rowNumber, 4].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
                     }
                 }
                 rowNumber++;
@@ -633,74 +625,68 @@ namespace Topo.Services
             // Add Header
             rowNumber++;
             sheet.Range[rowNumber, 1].Text = "Name";
-            sheet.Range[rowNumber, 2].Text = "Number";
-            sheet.Range[rowNumber, 3].Text = "Patrol";
-            sheet.Range[rowNumber, 4].Text = "Role";
-            sheet.Range[rowNumber, 5].Text = "Registered";
-            sheet.Range[rowNumber, 6].Text = "Paid";
-            sheet.Range[rowNumber, 7].Text = "Attended";
-            sheet.Range[rowNumber, 5, rowNumber, 7].CellStyle.Rotation = 90;
-            sheet.Range[rowNumber, 5, rowNumber, 7].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-            sheet.Range[rowNumber, 8].Text = "Name";
-            sheet.Range[rowNumber, 1, rowNumber, 8].CellStyle.Font.Bold = true;
+            sheet.Range[rowNumber, 2].Text = "Patrol";
+            sheet.Range[rowNumber, 3].Text = "Role";
+            sheet.Range[rowNumber, 4].Text = " Registered";
+            sheet.Range[rowNumber, 5].Text = " Paid";
+            sheet.Range[rowNumber, 6].Text = " Attended";
+            sheet.Range[rowNumber, 4, rowNumber, 6].CellStyle.Rotation = 90;
+            sheet.Range[rowNumber, 4, rowNumber, 6].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+            sheet.Range[rowNumber, 7].Text = "Name";
+            sheet.Range[rowNumber, 1, rowNumber, 7].CellStyle.Font.Bold = true;
 
             foreach (var member in memberListModel.Where(m => m.isAdultLeader == 0))
             {
                 rowNumber++;
                 sheet.Range[rowNumber, 1].Text = $"{member.first_name} {member.last_name}";
                 sheet.Range[rowNumber, 1].BorderAround();
-                sheet.Range[rowNumber, 2].Text = member.member_number;
+                sheet.Range[rowNumber, 2].Text = member.patrol_name;
                 sheet.Range[rowNumber, 2].BorderAround();
-                sheet.Range[rowNumber, 3].Text = member.patrol_name;
+                sheet.Range[rowNumber, 3].Text = member.patrol_duty;
                 sheet.Range[rowNumber, 3].BorderAround();
-                sheet.Range[rowNumber, 4].Text = member.patrol_duty;
+                sheet.Range[rowNumber, 4].Text = "";
                 sheet.Range[rowNumber, 4].BorderAround();
                 sheet.Range[rowNumber, 5].Text = "";
                 sheet.Range[rowNumber, 5].BorderAround();
                 sheet.Range[rowNumber, 6].Text = "";
                 sheet.Range[rowNumber, 6].BorderAround();
-                sheet.Range[rowNumber, 7].Text = "";
+                sheet.Range[rowNumber, 7].Text = member.first_name;
                 sheet.Range[rowNumber, 7].BorderAround();
-                sheet.Range[rowNumber, 8].Text = member.first_name;
+                sheet.Range[rowNumber, 8].Text = "";
                 sheet.Range[rowNumber, 8].BorderAround();
-                sheet.Range[rowNumber, 9].Text = "";
-                sheet.Range[rowNumber, 9].BorderAround();
             }
 
             rowNumber++;
             // Add Header
             rowNumber++;
             sheet.Range[rowNumber, 1].Text = "Name";
-            sheet.Range[rowNumber, 2].Text = "Number";
-            sheet.Range[rowNumber, 3].Text = "Patrol";
-            sheet.Range[rowNumber, 4].Text = "Role";
-            sheet.Range[rowNumber, 5].Text = "Registered";
-            sheet.Range[rowNumber, 6].Text = "Paid";
-            sheet.Range[rowNumber, 7].Text = "Attended";
-            sheet.Range[rowNumber, 5, rowNumber, 7].CellStyle.Rotation = 90;
-            sheet.Range[rowNumber, 5, rowNumber, 7].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-            sheet.Range[rowNumber, 8].Text = "Name";
-            sheet.Range[rowNumber, 1, rowNumber, 8].CellStyle.Font.Bold = true;
+            sheet.Range[rowNumber, 2].Text = "Patrol";
+            sheet.Range[rowNumber, 3].Text = "Role";
+            sheet.Range[rowNumber, 4].Text = " Registered";
+            sheet.Range[rowNumber, 5].Text = " Paid";
+            sheet.Range[rowNumber, 6].Text = " Attended";
+            sheet.Range[rowNumber, 4, rowNumber, 6].CellStyle.Rotation = 90;
+            sheet.Range[rowNumber, 4, rowNumber, 6].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+            sheet.Range[rowNumber, 7].Text = "Name";
+            sheet.Range[rowNumber, 1, rowNumber, 7].CellStyle.Font.Bold = true;
 
             foreach (var member in memberListModel.Where(m => m.isAdultLeader == 1))
             {
                 rowNumber++;
                 sheet.Range[rowNumber, 1].Text = $"{member.first_name} {member.last_name}";
                 sheet.Range[rowNumber, 1].BorderAround();
-                sheet.Range[rowNumber, 2].Text = member.member_number;
+                sheet.Range[rowNumber, 2].Text = "";
                 sheet.Range[rowNumber, 2].BorderAround();
-                sheet.Range[rowNumber, 3].Text = "";
+                sheet.Range[rowNumber, 3].Text = member.patrol_duty;
                 sheet.Range[rowNumber, 3].BorderAround();
-                sheet.Range[rowNumber, 4].Text = member.patrol_duty;
+                sheet.Range[rowNumber, 4].Text = "";
                 sheet.Range[rowNumber, 4].BorderAround();
                 sheet.Range[rowNumber, 5].Text = "";
                 sheet.Range[rowNumber, 5].BorderAround();
                 sheet.Range[rowNumber, 6].Text = "";
                 sheet.Range[rowNumber, 6].BorderAround();
-                sheet.Range[rowNumber, 7].Text = "";
+                sheet.Range[rowNumber, 7].Text = member.first_name;
                 sheet.Range[rowNumber, 7].BorderAround();
-                sheet.Range[rowNumber, 8].Text = member.first_name;
-                sheet.Range[rowNumber, 8].BorderAround();
             }
 
             sheet.UsedRange.AutofitColumns();
@@ -744,18 +730,16 @@ namespace Topo.Services
 
             // Add Header
             rowNumber++;
-            sheet.Range[rowNumber, 2, rowNumber, 6].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
-            sheet.Range[rowNumber, 2, rowNumber, 6].CellStyle.Font.Bold = true;
+            sheet.Range[rowNumber, 2, rowNumber, 5].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
+            sheet.Range[rowNumber, 2, rowNumber, 5].CellStyle.Font.Bold = true;
             sheet.Range[rowNumber, 2].Text = "First Name";
             sheet.Range[rowNumber, 2].BorderAround();
             sheet.Range[rowNumber, 3].Text = "Last Name";
             sheet.Range[rowNumber, 3].BorderAround();
-            sheet.Range[rowNumber, 4].Text = "Number";
+            sheet.Range[rowNumber, 4].Text = "Patrol";
             sheet.Range[rowNumber, 4].BorderAround();
-            sheet.Range[rowNumber, 5].Text = "Patrol";
+            sheet.Range[rowNumber, 5].Text = "Attended";
             sheet.Range[rowNumber, 5].BorderAround();
-            sheet.Range[rowNumber, 6].Text = "Attended";
-            sheet.Range[rowNumber, 6].BorderAround();
 
             foreach (var attendee in eventListModel.attendees.Where(a => !a.isAdultMember).OrderBy(a => a.last_name))
             {
@@ -764,13 +748,11 @@ namespace Topo.Services
                 sheet.Range[rowNumber, 2].BorderAround();
                 sheet.Range[rowNumber, 3].Text = attendee.last_name;
                 sheet.Range[rowNumber, 3].BorderAround();
-                sheet.Range[rowNumber, 4].Text = attendee.member_number;
+                sheet.Range[rowNumber, 4].Text = attendee.patrol_name;
                 sheet.Range[rowNumber, 4].BorderAround();
-                sheet.Range[rowNumber, 5].Text = attendee.patrol_name;
+                sheet.Range[rowNumber, 5].Text = attendee.attended ? "Y" : "";
                 sheet.Range[rowNumber, 5].BorderAround();
-                sheet.Range[rowNumber, 6].Text = attendee.attended ? "Y" : "";
-                sheet.Range[rowNumber, 6].BorderAround();
-                sheet.Range[rowNumber, 6].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                sheet.Range[rowNumber, 5].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
             }
 
             rowNumber++;
@@ -782,13 +764,11 @@ namespace Topo.Services
                 sheet.Range[rowNumber, 2].BorderAround();
                 sheet.Range[rowNumber, 3].Text = attendee.last_name;
                 sheet.Range[rowNumber, 3].BorderAround();
-                sheet.Range[rowNumber, 4].Text = attendee.member_number;
+                sheet.Range[rowNumber, 4].Text = attendee.patrol_name;
                 sheet.Range[rowNumber, 4].BorderAround();
-                sheet.Range[rowNumber, 5].Text = attendee.patrol_name;
+                sheet.Range[rowNumber, 5].Text = attendee.attended ? "Y" : "";
                 sheet.Range[rowNumber, 5].BorderAround();
-                sheet.Range[rowNumber, 6].Text = attendee.attended ? "Y" : "";
-                sheet.Range[rowNumber, 6].BorderAround();
-                sheet.Range[rowNumber, 6].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                sheet.Range[rowNumber, 5].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
             }
 
             sheet.UsedRange.AutofitColumns();
