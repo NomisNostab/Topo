@@ -36,7 +36,6 @@ namespace Topo.Services
                         member_number = m.member_number,
                         first_name = m.first_name,
                         last_name = m.last_name,
-                        date_of_birth = DateTime.ParseExact(m.date_of_birth, "yyyy-MM-dd", CultureInfo.InvariantCulture),
                         age = GetAgeFromBirthdate(m.date_of_birth),
                         unit_council = m.unit.unit_council,
                         patrol_name = m.patrol == null ? "" : m.patrol.name,
