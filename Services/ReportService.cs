@@ -233,7 +233,7 @@ namespace Topo.Services
             {
                 columnNumber = distinctAwards.IndexOf(award.id) + 1;
                 var cell = sheet.Range[rowNumber, columnNumber + 1];
-                cell.Text = award.name;
+                cell.Text = " " + award.name;
                 cell.CellStyle.Rotation = 90;
                 cell.CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 cell.CellStyle.VerticalAlignment = ExcelVAlign.VAlignBottom;
@@ -260,14 +260,17 @@ namespace Topo.Services
                 {
                     columnNumber = distinctAwards.IndexOf(x.AwardId) + 1;
                     var cell = sheet.Range[rowNumber, columnNumber + 1];
-                    cell.DateTime = x.AwardDate.Value;
-                    cell.CellStyle.Color = Color.Orange;
-                    if (x.PresentedDate.HasValue)
+                    if (x.AwardDate.HasValue)
                     {
-                        cell.DateTime = x.PresentedDate.Value;
-                        cell.CellStyle.Color = Color.LightGreen;
+                        cell.DateTime = x.AwardDate.Value;
+                        cell.CellStyle.Color = Color.Orange;
+                        if (x.PresentedDate.HasValue)
+                        {
+                            cell.DateTime = x.PresentedDate.Value;
+                            cell.CellStyle.Color = Color.LightGreen;
+                        }
+                        cell.NumberFormat = "dd/MM/yy";
                     }
-                    cell.NumberFormat = "dd/MM/yy";
                 }
                 rowNumber++;
             }
