@@ -780,6 +780,8 @@ namespace Topo.Services
         {
             var workbook = CreateWorkbookWithLogo(groupName, section, 10);
             IWorksheet sheet = workbook.Worksheets[0];
+            sheet.EnableSheetCalculations();
+
             int rowNumber = 1;
 
             IStyle headingStyle = workbook.Styles["headingStyle"];
@@ -899,14 +901,14 @@ namespace Topo.Services
                 foreach (var eventAttendance in groupedAttendance)
                 {
                     columnNumber++;
-                    sheet.Range[rowNumber, columnNumber].Number = eventAttendance.Attended;
+                    sheet.Range[rowNumber, columnNumber].Text = eventAttendance.Pal;
                     sheet.Range[rowNumber, columnNumber].BorderAround();
                     sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 }
                 // Row total
                 var sumRange = sheet.Range[rowNumber, 2, rowNumber, columnNumber].AddressLocal;
                 columnNumber++;
-                sheet.Range[rowNumber, columnNumber].Formula = $"=SUM({sumRange})";
+                sheet.Range[rowNumber, columnNumber].Formula = @$"=COUNTIFS({sumRange}, ""P"")+COUNTIFS({sumRange}, ""A"")+COUNTIFS({sumRange}, ""L"")";
                 sheet.Range[rowNumber, columnNumber].BorderAround();
                 sheet.Range[rowNumber, columnNumber].CellStyle.Font.Bold = true;
                 sheet.Range[rowNumber, columnNumber].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
@@ -919,14 +921,19 @@ namespace Topo.Services
             var youthTotalRow = rowNumber;
             sheet.Range[rowNumber, 1].Text = "Youth Total";
             sheet.Range[rowNumber, 1].BorderAround();
-            for (int i = 2; i <= columnNumber; i++)
+            for (int i = 2; i <= columnNumber - 1; i++)
             {
                 var sumRange = sheet.Range[sumStartRow, i, sumEndRow, i].AddressLocal;
-                sheet.Range[rowNumber, i].Formula = $"=SUM({sumRange})";
+                sheet.Range[rowNumber, i].Formula = @$"=COUNTIFS({sumRange}, ""P"")+COUNTIFS({sumRange}, ""A"")+COUNTIFS({sumRange}, ""L"")";
                 sheet.Range[rowNumber, i].BorderAround();
                 sheet.Range[rowNumber, i].CellStyle.Font.Bold = true;
                 sheet.Range[rowNumber, i].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
             }
+            sheet.Range[rowNumber, columnNumber].Formula = $"SUM({sheet.Range[sumStartRow, columnNumber, sumEndRow, columnNumber].AddressLocal})";
+            sheet.Range[rowNumber, columnNumber].Number = sheet.Range[rowNumber, columnNumber].FormulaNumberValue;
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            sheet.Range[rowNumber, columnNumber].CellStyle.Font.Bold = true;
+            sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
             sheet.Range[rowNumber, 1, rowNumber, columnNumber].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
 
             // Group attendance by member for adults
@@ -943,14 +950,14 @@ namespace Topo.Services
                 foreach (var eventAttendance in groupedAttendance)
                 {
                     columnNumber++;
-                    sheet.Range[rowNumber, columnNumber].Number = eventAttendance.Attended;
+                    sheet.Range[rowNumber, columnNumber].Text = eventAttendance.Attended > 0 ? "Y" : "";
                     sheet.Range[rowNumber, columnNumber].BorderAround();
                     sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 }
                 // Row total
                 var sumRange = sheet.Range[rowNumber, 2, rowNumber, columnNumber].AddressLocal;
                 columnNumber++;
-                sheet.Range[rowNumber, columnNumber].Formula = $"=SUM({sumRange})";
+                sheet.Range[rowNumber, columnNumber].Formula = @$"=COUNTIFS({sumRange}, ""Y"")";
                 sheet.Range[rowNumber, columnNumber].BorderAround();
                 sheet.Range[rowNumber, columnNumber].CellStyle.Font.Bold = true;
                 sheet.Range[rowNumber, columnNumber].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
@@ -963,14 +970,19 @@ namespace Topo.Services
             var adultTotalRow = rowNumber;
             sheet.Range[rowNumber, 1].Text = "Adult Total";
             sheet.Range[rowNumber, 1].BorderAround();
-            for (int i = 2; i <= columnNumber; i++)
+            for (int i = 2; i <= columnNumber - 1; i++)
             {
                 var sumRange = sheet.Range[sumStartRow, i, sumEndRow, i].AddressLocal;
-                sheet.Range[rowNumber, i].Formula = $"=SUM({sumRange})";
+                sheet.Range[rowNumber, i].Formula = @$"=COUNTIFS({sumRange}, ""Y"")";
                 sheet.Range[rowNumber, i].BorderAround();
                 sheet.Range[rowNumber, i].CellStyle.Font.Bold = true;
                 sheet.Range[rowNumber, i].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
             }
+            sheet.Range[rowNumber, columnNumber].Formula = $"SUM({sheet.Range[sumStartRow, columnNumber, sumEndRow, columnNumber].AddressLocal})";
+            sheet.Range[rowNumber, columnNumber].Number = sheet.Range[rowNumber, columnNumber].FormulaNumberValue;
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            sheet.Range[rowNumber, columnNumber].CellStyle.Font.Bold = true;
+            sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
             sheet.Range[rowNumber, 1, rowNumber, columnNumber].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
 
             // Add Grand Total row
@@ -979,9 +991,9 @@ namespace Topo.Services
             sheet.Range[rowNumber, 1].BorderAround();
             for (int i = 2; i <= columnNumber; i++)
             {
-                var youthTotalCell = sheet.Range[youthTotalRow, i].AddressLocal;
-                var adultTotalCell = sheet.Range[adultTotalRow, i].AddressLocal;
-                sheet.Range[rowNumber, i].Formula = $"={youthTotalCell}+{adultTotalCell}";
+                var youthTotalCell = int.Parse(sheet.Range[youthTotalRow, i].CalculatedValue);
+                var adultTotalCell = int.Parse(sheet.Range[adultTotalRow, i].CalculatedValue);
+                sheet.Range[rowNumber, i].Number = youthTotalCell + adultTotalCell;
                 sheet.Range[rowNumber, i].BorderAround();
                 sheet.Range[rowNumber, i].CellStyle.Font.Bold = true;
                 sheet.Range[rowNumber, i].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
