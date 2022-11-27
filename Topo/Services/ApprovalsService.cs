@@ -2,6 +2,9 @@
 using Topo.Models.Approvals;
 using System.Linq;
 using System.Globalization;
+using System.IO;
+using System.Collections.Generic;
+using System.Text;
 
 namespace Topo.Services
 {
@@ -10,6 +13,8 @@ namespace Topo.Services
         Task<List<ApprovalsListModel>> GetApprovalListItems(string unitId);
         void UpdateApproval(string unitId, ApprovalsListModel approval);
         List<ApprovalsListModel> ReadApprovalListFromFileSystem(string unitId);
+        public string DownloadApprovalList(string unitId);
+        public Task UploadApprovals(IFormFile formFile, string unitId);
     }
     public class ApprovalsService : IApprovalsService
     {
@@ -35,6 +40,17 @@ namespace Topo.Services
             return list ?? new List<ApprovalsListModel>();
         }
 
+        public string DownloadApprovalList(string unitId)
+        {
+            var list = new List<ApprovalsListModel>();
+            string path = Constants.AppLocalPath;
+            using (StreamReader r = new StreamReader($@"{path}/{unitId}_ApprovalsList.json", new FileStreamOptions() { Mode = FileMode.OpenOrCreate }))
+            {
+                string json = r.ReadToEnd();
+                return json;
+            }
+        }
+
         private void WriteApprovalsListToFileSystem(List<ApprovalsListModel> approvalsList, string unitId)
         {
             //open file stream
@@ -44,6 +60,27 @@ namespace Topo.Services
                 JsonSerializer serializer = new JsonSerializer();
                 //serialize object directly into file stream
                 serializer.Serialize(file, approvalsList);
+            }
+        }
+
+        public async Task UploadApprovals(IFormFile approvalsFile, string unitId)
+        {
+            if (approvalsFile.Length > 0)
+            {
+                using (var stream = new MemoryStream())
+                {
+                    await approvalsFile.CopyToAsync(stream);
+                    string json = Encoding.UTF8.GetString(stream.ToArray());
+                    try
+                    {
+                        List<ApprovalsListModel>? list = JsonConvert.DeserializeObject<List<ApprovalsListModel>>(json);
+                        WriteApprovalsListToFileSystem(list ?? new List<ApprovalsListModel>(), unitId);
+                    }
+                    catch
+                    {
+                        return;
+                    }
+                }
             }
         }
 

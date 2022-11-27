@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Models", "Models\Models.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TopoReportFunction", "TopoReportFunction\TopoReportFunction.csproj", "{505456AB-03CC-4BDB-89FA-11E7FEA49885}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TopoReportFunctionTest", "TopoReportFunctionTest\TopoReportFunctionTest.csproj", "{215D7279-120F-4210-9B7B-D20129ED928C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TopoReportFunctionTest", "TopoReportFunctionTest\TopoReportFunctionTest.csproj", "{215D7279-120F-4210-9B7B-D20129ED928C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
