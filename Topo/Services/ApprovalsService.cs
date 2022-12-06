@@ -171,8 +171,11 @@ namespace Topo.Services
                     savedApprovalItems.Remove(pendingItem);
                 }
             }
-            // Get items in allTerrainApprovals that are not in savedApprovalItems, these are new since last time
-            var newSubmissions = allTerrainApprovals.Where(all => savedApprovalItems.Count(x => x.achievement_id == all.achievement_id) == 0).ToList();
+
+            // Get items in allTerrainApprovals that are not in savedApprovalItems, these are new since last time including SIA going from Approval to Review
+            var newSubmissions = allTerrainApprovals
+                .Where(all => savedApprovalItems.Count(x => x.achievement_id == all.achievement_id && x.submission_type == all.submission_type) == 0)
+                .ToList();
 
             foreach (var newApproval in newSubmissions)
             {
@@ -191,7 +194,9 @@ namespace Topo.Services
         public void UpdateApproval (string unitId, ApprovalsListModel approval)
         {
             var savedApprovalItems = ReadApprovalListFromFileSystem(unitId);
-            var approvalItem = savedApprovalItems.Where(a => a.achievement_id == approval.achievement_id && a.submission_type == approval.submission_type).FirstOrDefault();
+            var approvalItem = savedApprovalItems
+                .Where(a => a.achievement_id == approval.achievement_id && a.submission_type == approval.submission_type)
+                .FirstOrDefault();
             if (approvalItem != null)
             {
                 approvalItem.presented_date = approval.presented_date.HasValue ? approval.presented_date.Value.ToLocalTime() : null;
