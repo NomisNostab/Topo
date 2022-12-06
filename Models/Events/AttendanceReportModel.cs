@@ -19,6 +19,7 @@
         public int Attended { get; set; } = 0;
         public int IsAdultMember { get; set; } = 0;
         public string EventStatus { get; set; } = string.Empty;
+        public string Pal { get; set; } = string.Empty;
     }
     
     public class AttendanceReportMemberSummaryModel
