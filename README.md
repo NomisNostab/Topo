@@ -267,4 +267,15 @@ The report will reflect all of the filter and grouping options set on the page.
 
 ![ApprovalsReport](https://user-images.githubusercontent.com/65288066/183022924-a66078df-daf3-4d17-a5c5-2c498cd0280b.png)
 
+### Approvals Backup and Restore
+
+The Backup/Restore button takes you to a page where you can backup your changes or restore a previous backup. Use the backup function to transfer the approvals to the new online Topo app.
+
+![ApprovalsPageBackup1](https://user-images.githubusercontent.com/65288066/205900246-da48b660-07e2-4bbd-8e18-a651f64d2922.png)
+
+To backup the approval changes, select the unit and click the Download Approvals button. A file with a name like Approvals_Backup_Scout_Unit_2022-12-06.json will be downloaded.
+
+To restore a previous backup, select the unit, use the Browse button to select the backup file and click the Upload Approvals button. This will upload the file and navigate back to the approvals page.
+
+![ApprovalsPageBackup2](https://user-images.githubusercontent.com/65288066/205901593-0c914707-7eb2-41dd-92f3-694de03f5398.png)
 
