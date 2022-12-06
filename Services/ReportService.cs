@@ -1837,7 +1837,6 @@ namespace Topo.Services
             sheet.PageSetup.RightMargin = 0.25;
             sheet.PageSetup.HeaderMargin = 0;
             sheet.PageSetup.FooterMargin = 0;
-            sheet.PageSetup.IsFitToPage = true;
 
             return workbook;
         }

@@ -2,8 +2,9 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Syncfusion.Pdf;
 using Syncfusion.XlsIORenderer;
-using System.Text.Json;
+using System.Text;
 using Topo.Models.Approvals;
+using Topo.Models.MemberList;
 using Topo.Services;
 
 namespace Topo.Controllers
@@ -56,13 +57,14 @@ namespace Topo.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> Index(ApprovalsListViewModel memberListViewModel, string button)
+        public async Task<ActionResult> Index(ApprovalsListViewModel memberListViewModel, string button, IFormFile approvalsFile)
         {
             var model = new ApprovalsListViewModel();
             ModelState.Remove("button");
             ModelState.Remove("SelectedMembers");
             ModelState.Remove("SelectedMembersOperator");
             ModelState.Remove("SelectedGroupingColumn");
+            ModelState.Remove("approvalsFile");
             if (ModelState.IsValid)
             {
                 _storageService.SelectedUnitId = memberListViewModel.SelectedUnitId;
@@ -143,6 +145,64 @@ namespace Topo.Controllers
         public class CRUDModel<T> where T : class
         {
             public T value { get; set; }
+        }
+
+        public ActionResult BackupRestore()
+        {
+            BackupRestorePageViewModel model = SetupBackupRestorePageViewModel();
+            return View(model);
+        }
+
+        BackupRestorePageViewModel SetupBackupRestorePageViewModel()
+        {
+            var model = new BackupRestorePageViewModel();
+            model.Units = new List<SelectListItem>();
+            if (_storageService.Units != null)
+                model.Units = _storageService.Units;
+            if (_storageService.SelectedUnitId != null)
+            {
+                model.SelectedUnitId = _storageService.SelectedUnitId;
+            }
+            if (_storageService.SelectedUnitName != null)
+                model.SelectedUnitName = _storageService.SelectedUnitName;
+            SetViewBag();
+            return model;
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> BackupRestore(BackupRestorePageViewModel backupRestorePageViewModel, string button, IFormFile approvalsFile)
+        {
+            var model = new BackupRestorePageViewModel();
+            ModelState.Remove("button");
+            ModelState.Remove("approvalsFile");
+            if (ModelState.IsValid)
+            {
+                _storageService.SelectedUnitId = backupRestorePageViewModel.SelectedUnitId;
+                if (_storageService.Units != null)
+                    _storageService.SelectedUnitName = _storageService.Units.Where(u => u.Value == backupRestorePageViewModel.SelectedUnitId)?.FirstOrDefault()?.Text;
+                model = SetupBackupRestorePageViewModel();
+                var unitName = _storageService.SelectedUnitName ?? "";
+
+                if (button == "DownloadApprovals")
+                {
+                    var downloadJson = _approvalsService.DownloadApprovalList(_storageService.SelectedUnitId);
+                    return File(Encoding.ASCII.GetBytes(downloadJson), "application/json", $"Approvals_Backup_{unitName.Replace(' ', '_')}_{DateTime.Now.ToString("yyyy-MM-dd")}.json");
+                }
+
+                if (button == "UploadApprovals")
+                {
+                    if (approvalsFile != null)
+                    {
+                        await _approvalsService.UploadApprovals(approvalsFile, _storageService.SelectedUnitId);
+                    }
+                    return RedirectToAction("Index", "Approvals");
+                }
+            }
+            else
+            {
+                model = SetupBackupRestorePageViewModel();
+            }
+            return View(model);
         }
     }
 }

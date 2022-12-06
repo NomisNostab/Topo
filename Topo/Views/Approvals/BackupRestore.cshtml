@@ -1,0 +1,31 @@
+﻿@model Topo.Models.Approvals.BackupRestorePageViewModel
+
+@{
+    ViewData["Title"] = "Approvals Backup Restore";
+}
+
+<form class="row g-3" asp-action="BackupRestore" enctype="multipart/form-data">
+
+    <div class="mt-3 mb-3 row">
+        <label class="col-sm-3 col-form-label">Please select a Unit to process:</label>
+        <div class="col-sm-2 ">
+            @Html.DropDownListFor(m => m.SelectedUnitId, Model.Units, "Select Unit", new { @class ="form-select" })
+            <span asp-validation-for="SelectedUnitId" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="mt-3 mb-3 row">
+        <div class="col-sm-2">
+            <button type="submit" name="button" value="DownloadApprovals" class="btn btn-warning">Download Approvals</button>
+        </div>
+        <div class="col-sm-6">
+            <input class="form-control" type="file" id="approvalsFile" name="approvalsFile" accept=".json">
+        </div>
+        <div class="col-sm-2">
+            <button type="submit" name="button" value="UploadApprovals" class="btn btn-danger">Upload Approvals</button>
+        </div>
+        <div class="col-sm-2">
+        </div>
+    </div>
+
+</form>
