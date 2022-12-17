@@ -165,21 +165,12 @@ namespace Topo.Services
         public async Task<GetProfilesResultModel> GetProfilesAsync()
         {
             await RefreshTokenAsync();
-            GetProfilesResultModel? getProfilesResultModel = new GetProfilesResultModel();
-            using (var httpClient = new HttpClient())
-            {
-                HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Get, membersAddress + "profiles");
 
-                httpRequest.Content = new StringContent("", Encoding.UTF8, "application/x-amz-json-1.1");
-                httpRequest.Headers.Add("authorization", _storageService?.AuthenticationResult?.IdToken);
-                httpRequest.Headers.Add("accept", "application/json, text/plain, */*");
+            string requestUri = $"{membersAddress}profiles";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var getProfilesResultModel = DeserializeObject<GetProfilesResultModel>(result);
 
-                var response = await httpClient.SendAsync(httpRequest);
-                var responseContent = response.Content.ReadAsStringAsync();
-                var result = responseContent.Result;
-                getProfilesResultModel = DeserializeObject<GetProfilesResultModel>(result);
-                return getProfilesResultModel;
-            }
+            return getProfilesResultModel;
         }
 
         public async Task<GetMembersResultModel?> GetMembersAsync(string selectedUnitId)

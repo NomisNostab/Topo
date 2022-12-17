@@ -24,7 +24,7 @@ namespace Topo.Services
         public async Task<AuthenticationResultModel?> LoginAsync(string? branch, string? username, string? password)
         {
             var authenticationResultModel = await _terrainAPIService.LoginAsync(branch, username, password);
-            
+
             _storageService.IsAuthenticated = false;
             if (authenticationResultModel.AuthenticationSuccessResultModel.AuthenticationResult != null)
             {
@@ -37,24 +37,36 @@ namespace Topo.Services
 
         public async Task GetUserAsync()
         {
-            var getUserResultModel =  await _terrainAPIService.GetUserAsync();
+            var getUserResultModel = await _terrainAPIService.GetUserAsync();
             _storageService.GetUserResult = getUserResultModel;
         }
 
         public async Task GetProfilesAsync()
         {
             var getProfilesResultModel = await _terrainAPIService.GetProfilesAsync();
+            var profilesWithUnits = getProfilesResultModel.profiles.Where(p => p.unit != null).ToArray();
+            getProfilesResultModel.profiles = profilesWithUnits;
             if (_storageService != null)
                 _storageService.GetProfilesResult = getProfilesResultModel;
         }
 
         public List<SelectListItem>? GetUnits()
         {
-            return _storageService.GetProfilesResult?.profiles?
-                .Where(p => p.member.name == _storageService.MemberName)
-                .Select(p => p.unit)
-                .Select(u => new SelectListItem { Text = u?.name, Value = u?.id })
-                .ToList();
+            var groupCount = _storageService.GetProfilesResult?.profiles.Select(p => p.group.name).Distinct().Count();
+            if (groupCount == 1)
+            {
+                return _storageService.GetProfilesResult?.profiles?
+                    .Where(p => p.member.name == _storageService.MemberName)
+                    .Select(p => new SelectListItem { Text = $"{p.unit?.name}", Value = p.unit?.id })
+                    .ToList();
+            }
+            else
+            {
+                return _storageService.GetProfilesResult?.profiles?
+                    .Where(p => p.member.name == _storageService.MemberName)
+                    .Select(p => new SelectListItem { Text = $"{p.unit?.name} ({p.group?.name})", Value = p.unit?.id })
+                    .ToList();
+            }
         }
 
 
